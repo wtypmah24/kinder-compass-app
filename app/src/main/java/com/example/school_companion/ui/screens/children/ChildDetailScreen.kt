@@ -186,7 +186,13 @@ fun ChildDetailScreen(
 
                 // Tab Content
                 when (selectedTabIndex) {
-                    0 -> EventsTab(selectedChild = selectedChild!!, eventsViewModel)
+                    0 -> authToken?.let {
+                        EventsTab(
+                            selectedChild = selectedChild!!,
+                            it, eventsViewModel
+                        )
+                    }
+
                     1 -> MonitoringEntryTab(selectedChild!!, entriesViewModel)
                     2 -> NotesTab(selectedChild = selectedChild!!, notesViewModel)
                     3 -> SpecialNeedsTab(selectedChild = selectedChild!!, needsViewModel)

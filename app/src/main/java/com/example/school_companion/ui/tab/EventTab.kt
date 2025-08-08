@@ -1,5 +1,7 @@
 package com.example.school_companion.ui.tab
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +21,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
@@ -26,57 +31,87 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.school_companion.data.api.EventRequestDto
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.Event
+import com.example.school_companion.ui.dialog.event.AddEventDialog
 import com.example.school_companion.ui.viewmodel.EventsState
 import com.example.school_companion.ui.viewmodel.EventsViewModel
+import androidx.compose.material3.Button
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun EventsTab(selectedChild: Child, eventsViewModel: EventsViewModel) {
+fun EventsTab(
+    selectedChild: Child,
+    token: String,
+    eventsViewModel: EventsViewModel
+) {
     val eventsState by eventsViewModel.eventsState.collectAsStateWithLifecycle()
+    var showAddDialog by remember { mutableStateOf(false) }
 
-    when (eventsState) {
-        is EventsState.Loading -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
+    Column(modifier = Modifier.fillMaxSize()) {
+        Button(
+            onClick = { showAddDialog = true },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text("Add new event")
         }
 
-        is EventsState.Error -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Fehler: ${(eventsState as EventsState.Error).message}")
-            }
-        }
-
-        is EventsState.Success -> {
-            val events = (eventsState as EventsState.Success).events
-
-            if (events.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Keine Events für ${selectedChild.name}")
+        when (eventsState) {
+            is EventsState.Loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(events) { event ->
-                        ChildEventCard(event = event)
+            }
+
+            is EventsState.Error -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Fehler: ${(eventsState as EventsState.Error).message}")
+                }
+            }
+
+            is EventsState.Success -> {
+                val events = (eventsState as EventsState.Success).events
+                if (events.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Keine Events für ${selectedChild.name}")
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(events) { event ->
+                            ChildEventCard(event = event)
+                        }
                     }
                 }
             }
         }
+    }
+
+    if (showAddDialog) {
+        AddEventDialog(
+            onDismiss = { showAddDialog = false },
+            onSave = { title, description, start, end, location ->
+                eventsViewModel.createEvent(
+                    token,
+                    selectedChild.id,
+                    EventRequestDto(
+                        title = title,
+                        description = description,
+                        startDateTime = start.toString(),
+                        endDateTime = end.toString(),
+                        location = location
+                    )
+                )
+                showAddDialog = false
+            }
+        )
     }
 }
 

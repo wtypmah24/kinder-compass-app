@@ -57,8 +57,8 @@ interface EventApi {
 data class EventRequestDto(
     val title: String,
     val description: String,
-    val startDateTime: Instant,
-    val endDateTime: Instant,
+    val startDateTime: String,
+    val endDateTime: String,
     val location: String
 )
 
