@@ -3,6 +3,7 @@ package com.example.school_companion.ui.navigation
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -14,73 +15,67 @@ import com.example.school_companion.ui.screens.children.ChildDetailScreen
 import com.example.school_companion.ui.screens.children.ChildrenScreen
 import com.example.school_companion.ui.screens.dashboard.DashboardScreen
 import com.example.school_companion.ui.screens.events.EventsScreen
-import com.example.school_companion.ui.screens.monitoring.MonitoringScreen
-import com.example.school_companion.ui.screens.notes.NotesScreen
 import com.example.school_companion.ui.screens.profile.ProfileScreen
 import com.example.school_companion.ui.screens.settings.SettingsScreen
 import com.example.school_companion.ui.screens.statistics.StatisticsScreen
+import com.example.school_companion.ui.viewmodel.AuthViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavGraph(
     navController: NavHostController,
-    startDestination: String = Screen.Login.route
+    startDestination: String = Screen.Login.route,
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
+
         // Auth screens
         composable(Screen.Login.route) {
-            LoginScreen(navController = navController)
+            LoginScreen(navController = navController, authViewModel)
         }
 
         composable(Screen.Register.route) {
-            RegisterScreen(navController = navController)
+            RegisterScreen(navController = navController, authViewModel)
         }
 
         // Main screens
         composable(Screen.Dashboard.route) {
-            DashboardScreen(navController = navController)
+            DashboardScreen(navController = navController, authViewModel = authViewModel)
         }
 
         composable(Screen.Children.route) {
-            ChildrenScreen(navController = navController)
+            ChildrenScreen(navController = navController, authViewModel = authViewModel)
         }
 
         composable(
             route = Screen.ChildDetail.route + "/{childId}",
             arguments = listOf(
                 navArgument("childId") {
-                    type = NavType.StringType
+                    type = NavType.LongType
                 }
             )
         ) { backStackEntry ->
-            val childId = backStackEntry.arguments?.getString("childId")
+            val childId = backStackEntry.arguments?.getLong("childId")
             ChildDetailScreen(
                 navController = navController,
-                childId = childId ?: ""
+                childId = childId ?: 0L,
+                authViewModel = authViewModel
             )
         }
 
         composable(Screen.Events.route) {
-            EventsScreen(navController = navController)
-        }
-
-        composable(Screen.Monitoring.route) {
-            MonitoringScreen(navController = navController)
-        }
-
-        composable(Screen.Notes.route) {
-            NotesScreen(navController = navController)
+            EventsScreen(navController = navController, authViewModel = authViewModel)
         }
 
         composable(Screen.Statistics.route) {
-            StatisticsScreen(navController = navController)
+            StatisticsScreen(navController = navController, authViewModel = authViewModel)
         }
 
         composable(Screen.Profile.route) {
-            ProfileScreen(navController = navController)
+            ProfileScreen(navController = navController, authViewModel = authViewModel)
         }
 
         composable(Screen.Settings.route) {

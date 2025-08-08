@@ -1,5 +1,6 @@
 package com.example.school_companion.ui.viewmodel
 
+import androidx.compose.runtime.sourceInformation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.school_companion.data.model.Companion
@@ -16,7 +17,7 @@ class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
     
-    private val _authState = MutableStateFlow<AuthState>(AuthState.Initial)
+    private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
     
     private val _currentCompanion = MutableStateFlow<Companion?>(null)
@@ -32,6 +33,7 @@ class AuthViewModel @Inject constructor(
             authRepository.login(email, password).collect { result ->
                 result.fold(
                     onSuccess = { (token, user) ->
+                        println("in AuthViewModel token: $token, user: $user ")
                         _authToken.value = token
                         _currentCompanion.value = user
                         _authState.value = AuthState.Success
@@ -43,17 +45,15 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
-    
+
     fun register(email: String, password: String, firstName: String, lastName: String, role: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
-            
+
             authRepository.register(email, password, firstName, lastName, role).collect { result ->
                 result.fold(
-                    onSuccess = { (token, user) ->
-                        _authToken.value = token
-                        _currentCompanion.value = user
-                        _authState.value = AuthState.Success
+                    onSuccess = {
+                        _authState.value = AuthState.RegistrationSuccess
                     },
                     onFailure = { exception ->
                         _authState.value = AuthState.Error(exception.message ?: "Registration failed")
@@ -62,7 +62,7 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
-    
+
     fun logout() {
         viewModelScope.launch {
             _authToken.value?.let { token ->
@@ -71,7 +71,7 @@ class AuthViewModel @Inject constructor(
                         onSuccess = {
                             _authToken.value = null
                             _currentCompanion.value = null
-                            _authState.value = AuthState.Initial
+                            _authState.value = AuthState.Success
                         },
                         onFailure = { exception ->
                             _authState.value = AuthState.Error(exception.message ?: "Logout failed")
@@ -100,13 +100,14 @@ class AuthViewModel @Inject constructor(
     }
     
     fun clearError() {
-        _authState.value = AuthState.Initial
+        _authState.value = AuthState.Idle
     }
 }
 
 sealed class AuthState {
-    object Initial : AuthState()
+    object Idle : AuthState()
     object Loading : AuthState()
     object Success : AuthState()
+    object RegistrationSuccess : AuthState()
     data class Error(val message: String) : AuthState()
-} 
+}

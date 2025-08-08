@@ -15,82 +15,104 @@ import javax.inject.Inject
 class EventsViewModel @Inject constructor(
     private val eventsRepository: EventsRepository
 ) : ViewModel() {
-    
+
     private val _eventsState = MutableStateFlow<EventsState>(EventsState.Loading)
     val eventsState: StateFlow<EventsState> = _eventsState.asStateFlow()
-    
+
     private val _selectedEvent = MutableStateFlow<Event?>(null)
     val selectedEvent: StateFlow<Event?> = _selectedEvent.asStateFlow()
-    
-    fun loadEvents(token: String, childId: String? = null, date: String? = null) {
+
+    fun loadEventsByCompanion(token: String) {
         viewModelScope.launch {
             _eventsState.value = EventsState.Loading
-            
-            eventsRepository.getEvents(token, childId, date).collect { result ->
+
+            eventsRepository.getEventsByCompanion(token).collect { result ->
                 result.fold(
                     onSuccess = { events ->
                         _eventsState.value = EventsState.Success(events)
                     },
                     onFailure = { exception ->
-                        _eventsState.value = EventsState.Error(exception.message ?: "Failed to load events")
+                        _eventsState.value =
+                            EventsState.Error(exception.message ?: "Failed to load events")
                     }
                 )
             }
         }
     }
-    
-    fun createEvent(token: String, event: Event) {
+
+    fun loadEventsByChild(token: String, childId: Long) {
         viewModelScope.launch {
-            eventsRepository.createEvent(token, event).collect { result ->
+            _eventsState.value = EventsState.Loading
+
+            eventsRepository.getEventsByChild(token, childId).collect { result ->
                 result.fold(
-                    onSuccess = { createdEvent ->
-                        // Refresh events list
-                        loadEvents(token)
+                    onSuccess = { events ->
+                        _eventsState.value = EventsState.Success(events)
                     },
                     onFailure = { exception ->
-                        _eventsState.value = EventsState.Error(exception.message ?: "Failed to create event")
+                        _eventsState.value =
+                            EventsState.Error(exception.message ?: "Failed to load events")
                     }
                 )
             }
         }
     }
-    
-    fun updateEvent(token: String, eventId: String, event: Event) {
-        viewModelScope.launch {
-            eventsRepository.updateEvent(token, eventId, event).collect { result ->
-                result.fold(
-                    onSuccess = { updatedEvent ->
-                        // Refresh events list
-                        loadEvents(token)
-                    },
-                    onFailure = { exception ->
-                        _eventsState.value = EventsState.Error(exception.message ?: "Failed to update event")
-                    }
-                )
-            }
-        }
-    }
-    
-    fun deleteEvent(token: String, eventId: String) {
-        viewModelScope.launch {
-            eventsRepository.deleteEvent(token, eventId).collect { result ->
-                result.fold(
-                    onSuccess = {
-                        // Refresh events list
-                        loadEvents(token)
-                    },
-                    onFailure = { exception ->
-                        _eventsState.value = EventsState.Error(exception.message ?: "Failed to delete event")
-                    }
-                )
-            }
-        }
-    }
-    
+
+//    fun createEvent(token: String, event: Event) {
+//        viewModelScope.launch {
+//            eventsRepository.createEvent(token, event).collect { result ->
+//                result.fold(
+//                    onSuccess = { createdEvent ->
+//                        // Refresh events list
+//                        loadEventsByCompanion(token)
+//                    },
+//                    onFailure = { exception ->
+//                        _eventsState.value =
+//                            EventsState.Error(exception.message ?: "Failed to create event")
+//                    }
+//                )
+//            }
+//        }
+//    }
+
+//    fun updateEvent(token: String, eventId: String, event: Event) {
+//        viewModelScope.launch {
+//            eventsRepository.updateEvent(token, eventId, event).collect { result ->
+//                result.fold(
+//                    onSuccess = { updatedEvent ->
+//                        // Refresh events list
+//                        loadEventsByCompanion(token)
+//                    },
+//                    onFailure = { exception ->
+//                        _eventsState.value =
+//                            EventsState.Error(exception.message ?: "Failed to update event")
+//                    }
+//                )
+//            }
+//        }
+//    }
+
+//    fun deleteEvent(token: String, eventId: String) {
+//        viewModelScope.launch {
+//            eventsRepository.deleteEvent(token, eventId).collect { result ->
+//                result.fold(
+//                    onSuccess = {
+//                        // Refresh events list
+//                        loadEventsByCompanion(token)
+//                    },
+//                    onFailure = { exception ->
+//                        _eventsState.value =
+//                            EventsState.Error(exception.message ?: "Failed to delete event")
+//                    }
+//                )
+//            }
+//        }
+//    }
+
     fun selectEvent(event: Event) {
         _selectedEvent.value = event
     }
-    
+
     fun clearSelectedEvent() {
         _selectedEvent.value = null
     }

@@ -2,15 +2,45 @@ package com.example.school_companion.ui.screens.dashboard
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Assessment
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -20,10 +50,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.Event
-import com.example.school_companion.data.model.EventPriority
 import com.example.school_companion.ui.navigation.Screen
 import com.example.school_companion.ui.viewmodel.AuthViewModel
+import com.example.school_companion.ui.viewmodel.ChildrenState
 import com.example.school_companion.ui.viewmodel.ChildrenViewModel
+import com.example.school_companion.ui.viewmodel.EventsState
 import com.example.school_companion.ui.viewmodel.EventsViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -33,7 +64,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun DashboardScreen(
     navController: NavController,
-    authViewModel: AuthViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel,
     childrenViewModel: ChildrenViewModel = hiltViewModel(),
     eventsViewModel: EventsViewModel = hiltViewModel()
 ) {
@@ -41,14 +72,14 @@ fun DashboardScreen(
     val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
     val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
     val eventsState by eventsViewModel.eventsState.collectAsStateWithLifecycle()
-    
+
     LaunchedEffect(authToken) {
-        authToken?.let { token ->
-            childrenViewModel.loadChildren(token)
-            eventsViewModel.loadEvents(token)
+        if (!authToken.isNullOrBlank()) {
+            childrenViewModel.loadChildren(authToken!!)
+            eventsViewModel.loadEventsByCompanion(authToken!!)
         }
     }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -122,13 +153,15 @@ fun DashboardScreen(
                         modifier = Modifier.padding(16.dp)
                     ) {
                         Text(
-                            text = "Willkommen, ${currentUser?.firstName ?: "Schulbegleiterin"}!",
+                            text = "Willkommen, ${currentUser?.name ?: "Schulbegleiterin"}!",
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         Text(
-                            text = "Heute ist ${LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}",
+                            text = "Heute ist ${
+                                LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                            }",
                             fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
                             modifier = Modifier.padding(top = 4.dp)
@@ -136,7 +169,7 @@ fun DashboardScreen(
                     }
                 }
             }
-            
+
             // Quick Actions
             item {
                 Text(
@@ -146,7 +179,7 @@ fun DashboardScreen(
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
-            
+
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -166,7 +199,7 @@ fun DashboardScreen(
                     )
                 }
             }
-            
+
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -186,7 +219,7 @@ fun DashboardScreen(
                     )
                 }
             }
-            
+
             // Assigned Children
             item {
                 Text(
@@ -196,7 +229,7 @@ fun DashboardScreen(
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
-            
+
             when (childrenState) {
                 is com.example.school_companion.ui.viewmodel.ChildrenState.Loading -> {
                     item {
@@ -214,8 +247,10 @@ fun DashboardScreen(
                         }
                     }
                 }
-                is com.example.school_companion.ui.viewmodel.ChildrenState.Success -> {
-                    val children = (childrenState as com.example.school_companion.ui.viewmodel.ChildrenState.Success).children
+
+                is ChildrenState.Success -> {
+                    val children =
+                        (childrenState as ChildrenState.Success).children
                     if (children.isEmpty()) {
                         item {
                             Card(
@@ -264,7 +299,8 @@ fun DashboardScreen(
                         }
                     }
                 }
-                is com.example.school_companion.ui.viewmodel.ChildrenState.Error -> {
+
+                is ChildrenState.Error -> {
                     item {
                         Card(
                             modifier = Modifier.fillMaxWidth()
@@ -282,7 +318,7 @@ fun DashboardScreen(
                                     tint = MaterialTheme.colorScheme.error
                                 )
                                 Text(
-                                    text = (childrenState as com.example.school_companion.ui.viewmodel.ChildrenState.Error).message,
+                                    text = (childrenState as ChildrenState.Error).message,
                                     fontSize = 16.sp,
                                     color = MaterialTheme.colorScheme.error,
                                     textAlign = TextAlign.Center,
@@ -293,7 +329,7 @@ fun DashboardScreen(
                     }
                 }
             }
-            
+
             // Upcoming Events
             item {
                 Text(
@@ -303,9 +339,9 @@ fun DashboardScreen(
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
-            
+
             when (eventsState) {
-                is com.example.school_companion.ui.viewmodel.EventsState.Loading -> {
+                is EventsState.Loading -> {
                     item {
                         Card(
                             modifier = Modifier.fillMaxWidth()
@@ -321,8 +357,10 @@ fun DashboardScreen(
                         }
                     }
                 }
-                is com.example.school_companion.ui.viewmodel.EventsState.Success -> {
-                    val events = (eventsState as com.example.school_companion.ui.viewmodel.EventsState.Success).events
+
+                is EventsState.Success -> {
+                    val events =
+                        (eventsState as EventsState.Success).events
                     if (events.isEmpty()) {
                         item {
                             Card(
@@ -366,7 +404,8 @@ fun DashboardScreen(
                         }
                     }
                 }
-                is com.example.school_companion.ui.viewmodel.EventsState.Error -> {
+
+                is EventsState.Error -> {
                     item {
                         Card(
                             modifier = Modifier.fillMaxWidth()
@@ -384,7 +423,7 @@ fun DashboardScreen(
                                     tint = MaterialTheme.colorScheme.error
                                 )
                                 Text(
-                                    text = (eventsState as com.example.school_companion.ui.viewmodel.EventsState.Error).message,
+                                    text = (eventsState as EventsState.Error).message,
                                     fontSize = 16.sp,
                                     color = MaterialTheme.colorScheme.error,
                                     textAlign = TextAlign.Center,
@@ -403,7 +442,7 @@ fun DashboardScreen(
 @Composable
 fun QuickActionCard(
     title: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -468,7 +507,7 @@ fun ChildCard(
                     )
                 }
             }
-            
+
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -485,7 +524,7 @@ fun ChildCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            
+
             Icon(
                 Icons.Default.ChevronRight,
                 contentDescription = "View details",
@@ -515,39 +554,6 @@ fun EventCard(event: Event) {
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
                 )
-                AssistChip(
-                    onClick = { /* handle click */ },
-                    label = {
-                        Text(
-                            text = when (event.priority) {
-                                EventPriority.URGENT -> "Dringend"
-                                EventPriority.HIGH -> "Hoch"
-                                EventPriority.MEDIUM -> "Mittel"
-                                EventPriority.LOW -> "Niedrig"
-                            },
-                            fontSize = 12.sp
-                        )
-                    },
-                    colors = AssistChipDefaults.assistChipColors(
-                        containerColor = when (event.priority) {
-                            EventPriority.URGENT -> MaterialTheme.colorScheme.error
-                            EventPriority.HIGH -> MaterialTheme.colorScheme.errorContainer
-                            EventPriority.MEDIUM -> MaterialTheme.colorScheme.primaryContainer
-                            EventPriority.LOW -> MaterialTheme.colorScheme.surfaceVariant
-                        }
-                    )
-                )
-//                {
-//                    Text(
-//                        text = when (event.priority) {
-//                            com.example.school_companion.data.model.EventPriority.URGENT -> "Dringend"
-//                            com.example.school_companion.data.model.EventPriority.HIGH -> "Hoch"
-//                            com.example.school_companion.data.model.EventPriority.MEDIUM -> "Mittel"
-//                            com.example.school_companion.data.model.EventPriority.LOW -> "Niedrig"
-//                        },
-//                        fontSize = 12.sp
-//                    )
-//                }
             }
 
             Text(
@@ -556,7 +562,7 @@ fun EventCard(event: Event) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp)
             )
-            
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -564,18 +570,11 @@ fun EventCard(event: Event) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "${event.date} ${event.time}",
+                    text = event.startDateTime,
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                event.childName?.let { childName ->
-                    Text(
-                        text = childName,
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
             }
         }
     }
-} 
+}

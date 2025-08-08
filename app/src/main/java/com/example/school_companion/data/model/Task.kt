@@ -4,9 +4,10 @@ import kotlinx.parcelize.Parcelize
 import android.os.Parcelable
 
 @Parcelize
-data class WorkSession(
+data class Task(
     val id: Long,
-    val startTime: String,
-    val endTime: String,
-    val note: String,
-) : Parcelable 
+    val title: String,
+    val description: String,
+    val status: String,
+    val deadLine: String,
+) : Parcelable

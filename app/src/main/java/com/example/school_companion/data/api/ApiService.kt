@@ -71,20 +71,20 @@ interface ApiService {
         @Query("childId") childId: String? = null,
         @Query("startDate") startDate: String? = null,
         @Query("endDate") endDate: String? = null
-    ): Response<List<MonitoringData>>
+    ): Response<List<MonitoringParam>>
     
     @POST("monitoring")
     suspend fun createMonitoringData(
         @Header("Authorization") token: String,
-        @Body monitoringData: MonitoringData
-    ): Response<MonitoringData>
+        @Body monitoringParam: MonitoringParam
+    ): Response<MonitoringParam>
     
     @PUT("monitoring/{monitoringId}")
     suspend fun updateMonitoringData(
         @Header("Authorization") token: String,
         @Path("monitoringId") monitoringId: String,
-        @Body monitoringData: MonitoringData
-    ): Response<MonitoringData>
+        @Body monitoringParam: MonitoringParam
+    ): Response<MonitoringParam>
     
     // Notes
     @GET("notes")
@@ -149,9 +149,9 @@ data class LoginRequest(
 data class RegisterRequest(
     val email: String,
     val password: String,
-    val firstName: String,
-    val lastName: String,
-    val role: String
+    val name: String,
+    val surname: String,
+    val organization: String,
 )
 
 data class AuthResponse(

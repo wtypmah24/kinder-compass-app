@@ -1,25 +1,26 @@
 package com.example.school_companion.data.repository
 
-import com.example.school_companion.data.api.ApiService
-import com.example.school_companion.data.api.NoteApi
+import com.example.school_companion.data.api.GoalApi
+import com.example.school_companion.data.model.Goal
 import com.example.school_companion.data.model.Note
+import com.example.school_companion.data.model.SpecialNeed
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class NotesRepository @Inject constructor(
-    private val apiService: NoteApi
+class GoalsRepository @Inject constructor(
+    private val apiService: GoalApi
 ) {
 
-    suspend fun getNotes(
+    suspend fun getGoals(
         token: String,
         childId: Long
-    ): Flow<Result<List<Note>>> = flow {
+    ): Flow<Result<List<Goal>>> = flow {
         try {
-            val response = apiService.getNotesByChild("Bearer $token", childId)
+            val response = apiService.getGoalsByChild("Bearer $token", childId)
             if (response.isSuccessful) {
-                response.body()?.let { notes ->
-                    emit(Result.success(notes))
+                response.body()?.let { goals ->
+                    emit(Result.success(goals))
                 } ?: emit(Result.failure(Exception("Empty response")))
             } else {
                 emit(Result.failure(Exception("Failed to get notes: ${response.code()}")))

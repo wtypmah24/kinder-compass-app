@@ -3,6 +3,7 @@ package com.example.school_companion.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.school_companion.data.model.Child
+import com.example.school_companion.data.model.Photo
 import com.example.school_companion.data.repository.ChildrenRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,31 +16,34 @@ import javax.inject.Inject
 class ChildrenViewModel @Inject constructor(
     private val childrenRepository: ChildrenRepository
 ) : ViewModel() {
-    
+
     private val _childrenState = MutableStateFlow<ChildrenState>(ChildrenState.Loading)
     val childrenState: StateFlow<ChildrenState> = _childrenState.asStateFlow()
-    
+
     private val _selectedChild = MutableStateFlow<Child?>(null)
     val selectedChild: StateFlow<Child?> = _selectedChild.asStateFlow()
-    
+
+    private val _photosState = MutableStateFlow<PhotosState>(PhotosState.Loading)
+    val photosState: StateFlow<PhotosState> = _photosState.asStateFlow()
+
     fun loadChildren(token: String) {
         viewModelScope.launch {
             _childrenState.value = ChildrenState.Loading
-            
             childrenRepository.getChildren(token).collect { result ->
                 result.fold(
                     onSuccess = { children ->
                         _childrenState.value = ChildrenState.Success(children)
                     },
                     onFailure = { exception ->
-                        _childrenState.value = ChildrenState.Error(exception.message ?: "Failed to load children")
+                        _childrenState.value =
+                            ChildrenState.Error(exception.message ?: "Failed to load children")
                     }
                 )
             }
         }
     }
-    
-    fun loadChild(token: String, childId: String) {
+
+    fun loadChild(token: String, childId: Long) {
         viewModelScope.launch {
             childrenRepository.getChild(token, childId).collect { result ->
                 result.fold(
@@ -53,11 +57,26 @@ class ChildrenViewModel @Inject constructor(
             }
         }
     }
-    
+
+    fun loadChildPhotos(token: String, childId: Long) {
+        viewModelScope.launch {
+            childrenRepository.getChildPhotos(token, childId).collect { result ->
+                result.fold(
+                    onSuccess = { photos ->
+                        _photosState.value = PhotosState.Success(photos)
+                    },
+                    onFailure = { exception ->
+                        // Handle error
+                    }
+                )
+            }
+        }
+    }
+
     fun selectChild(child: Child) {
         _selectedChild.value = child
     }
-    
+
     fun clearSelectedChild() {
         _selectedChild.value = null
     }
@@ -67,4 +86,10 @@ sealed class ChildrenState {
     object Loading : ChildrenState()
     data class Success(val children: List<Child>) : ChildrenState()
     data class Error(val message: String) : ChildrenState()
-} 
+}
+
+sealed class PhotosState {
+    object Loading : PhotosState()
+    data class Success(val photos: List<Photo>) : PhotosState()
+    data class Error(val message: String) : PhotosState()
+}

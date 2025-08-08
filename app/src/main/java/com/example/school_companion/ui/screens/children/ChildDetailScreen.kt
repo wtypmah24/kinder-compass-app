@@ -1,5 +1,7 @@
 package com.example.school_companion.ui.screens.children
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,11 +18,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -37,16 +38,33 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.example.school_companion.ui.tab.EventsTab
+import com.example.school_companion.ui.tab.GoalsTab
+import com.example.school_companion.ui.tab.MonitoringEntryTab
+import com.example.school_companion.ui.tab.NotesTab
+import com.example.school_companion.ui.tab.PhotosTab
+import com.example.school_companion.ui.tab.SpecialNeedsTab
 import com.example.school_companion.ui.viewmodel.AuthViewModel
 import com.example.school_companion.ui.viewmodel.ChildrenViewModel
+import com.example.school_companion.ui.viewmodel.EventsViewModel
+import com.example.school_companion.ui.viewmodel.GoalsViewModel
+import com.example.school_companion.ui.viewmodel.MonitoringEntryViewModel
+import com.example.school_companion.ui.viewmodel.NeedsViewModel
+import com.example.school_companion.ui.viewmodel.NotesViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChildDetailScreen(
     navController: NavController,
-    childId: String,
-    authViewModel: AuthViewModel = hiltViewModel(),
-    childrenViewModel: ChildrenViewModel = hiltViewModel()
+    childId: Long,
+    authViewModel: AuthViewModel,
+    childrenViewModel: ChildrenViewModel = hiltViewModel(),
+    eventsViewModel: EventsViewModel = hiltViewModel(),
+    notesViewModel: NotesViewModel = hiltViewModel(),
+    needsViewModel: NeedsViewModel = hiltViewModel(),
+    goalsViewModel: GoalsViewModel = hiltViewModel(),
+    entriesViewModel: MonitoringEntryViewModel = hiltViewModel(),
 ) {
     val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
     val selectedChild by childrenViewModel.selectedChild.collectAsStateWithLifecycle()
@@ -55,6 +73,12 @@ fun ChildDetailScreen(
     LaunchedEffect(authToken, childId) {
         authToken?.let { token ->
             childrenViewModel.loadChild(token, childId)
+            childrenViewModel.loadChildPhotos(token, childId)
+            eventsViewModel.loadEventsByChild(token, childId)
+            notesViewModel.loadNotes(token, childId)
+            needsViewModel.loadNeeds(token, childId)
+            goalsViewModel.loadGoals(token, childId)
+            entriesViewModel.loadMonitoringEntryData(token, childId)
         }
     }
 
@@ -128,20 +152,22 @@ fun ChildDetailScreen(
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-//                            if (child.diagnosis != null) {
-//                                Text(
-//                                    text = "Diagnose: ${child.diagnosis}",
-//                                    fontSize = 12.sp,
-//                                    color = MaterialTheme.colorScheme.primary,
-//                                    modifier = Modifier.padding(top = 4.dp)
-//                                )
-//                            }
+                            Text(
+                                text = "Email: ${child.email}",
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "Phone number: ${child.phoneNumber}",
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
 
                 // Tabs
-                TabRow(selectedTabIndex = selectedTabIndex) {
+                ScrollableTabRow(selectedTabIndex = selectedTabIndex) {
                     listOf(
                         "Events",
                         "Monitoring",
@@ -160,12 +186,12 @@ fun ChildDetailScreen(
 
                 // Tab Content
                 when (selectedTabIndex) {
-                    0 -> EventsTab(childId = childId)
-                    1 -> MonitoringTab(childId = childId)
-                    2 -> NotesTab(childId = childId)
-                    3 -> SpecialNeedsTab(child = child)
-                    4 -> GoalsTab(child = child)
-                    5 -> PhotosTab(childId = childId)
+                    0 -> EventsTab(selectedChild = selectedChild!!, eventsViewModel)
+                    1 -> MonitoringEntryTab(selectedChild!!, entriesViewModel)
+                    2 -> NotesTab(selectedChild = selectedChild!!, notesViewModel)
+                    3 -> SpecialNeedsTab(selectedChild = selectedChild!!, needsViewModel)
+                    4 -> GoalsTab(child = selectedChild!!, goalsViewModel)
+                    5 -> PhotosTab(child = selectedChild!!, childrenViewModel)
                 }
             }
         } ?: run {
@@ -181,150 +207,3 @@ fun ChildDetailScreen(
     }
 }
 
-@Composable
-fun EventsTab(childId: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Events für Kind $childId")
-    }
-}
-
-@Composable
-fun MonitoringTab(childId: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Monitoring für Kind $childId")
-    }
-}
-
-@Composable
-fun NotesTab(childId: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Notizen für Kind $childId")
-    }
-}
-
-@Composable
-fun SpecialNeedsTab(child: com.example.school_companion.data.model.Child) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Besondere Bedürfnisse",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-//        if (child.specialNeeds.isNotEmpty()) {
-//            child.specialNeeds.forEach { need ->
-//                Card(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(vertical = 4.dp)
-//                ) {
-//                    Text(
-//                        text = need,
-//                        modifier = Modifier.padding(16.dp)
-//                    )
-//                }
-//            }
-//        } else {
-//            Text("Keine besonderen Bedürfnisse dokumentiert")
-//        }
-
-//        if (child.supportNeeds != null) {
-//            Card(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(top = 16.dp)
-//            ) {
-//                Column(
-//                    modifier = Modifier.padding(16.dp)
-//                ) {
-//                    Text(
-//                        text = "Unterstützungsbedarf",
-//                        fontSize = 16.sp,
-//                        fontWeight = FontWeight.Medium
-//                    )
-//                    Text(
-//                        text = child.supportNeeds,
-//                        modifier = Modifier.padding(top = 8.dp)
-//                    )
-//                }
-//            }
-//        }
-    }
-}
-
-@Composable
-fun GoalsTab(child: com.example.school_companion.data.model.Child) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Entwicklungsziele",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-//        if (child.goals.isNotEmpty()) {
-//            child.goals.forEach { goal ->
-//                Card(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(vertical = 4.dp)
-//                ) {
-//                    Column(
-//                        modifier = Modifier.padding(16.dp)
-//                    ) {
-//                        Text(
-//                            text = goal.title,
-//                            fontSize = 16.sp,
-//                            fontWeight = FontWeight.Medium
-//                        )
-//                        Text(
-//                            text = goal.description,
-//                            modifier = Modifier.padding(top = 4.dp)
-//                        )
-//                        LinearProgressIndicator(
-//                            progress = goal.progress / 100f,
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .padding(top = 8.dp)
-//                        )
-//                        Text(
-//                            text = "Fortschritt: ${goal.progress}%",
-//                            fontSize = 12.sp,
-//                            modifier = Modifier.padding(top = 4.dp)
-//                        )
-//                    }
-//                }
-//            }
-//        } else {
-//            Text("Keine Ziele definiert")
-//        }
-    }
-}
-
-@Composable
-fun PhotosTab(childId: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Fotos für Kind $childId")
-    }
-}

@@ -8,8 +8,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -28,7 +26,7 @@ fun EventsScreen(
     
     LaunchedEffect(authToken) {
         authToken?.let { token ->
-            eventsViewModel.loadEvents(token)
+            eventsViewModel.loadEventsByCompanion(token)
         }
     }
     

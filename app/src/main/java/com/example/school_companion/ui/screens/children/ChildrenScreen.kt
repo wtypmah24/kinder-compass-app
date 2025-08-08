@@ -16,8 +16,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.example.school_companion.data.model.Child
 import com.example.school_companion.ui.navigation.Screen
 import com.example.school_companion.ui.viewmodel.AuthViewModel
+import com.example.school_companion.ui.viewmodel.ChildrenState
 import com.example.school_companion.ui.viewmodel.ChildrenViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,7 +56,7 @@ fun ChildrenScreen(
         }
     ) { paddingValues ->
         when (childrenState) {
-            is com.example.school_companion.ui.viewmodel.ChildrenState.Loading -> {
+            is ChildrenState.Loading -> {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -64,8 +66,8 @@ fun ChildrenScreen(
                     CircularProgressIndicator()
                 }
             }
-            is com.example.school_companion.ui.viewmodel.ChildrenState.Success -> {
-                val children = (childrenState as com.example.school_companion.ui.viewmodel.ChildrenState.Success).children
+            is ChildrenState.Success -> {
+                val children = (childrenState as ChildrenState.Success).children
                 if (children.isEmpty()) {
                     Box(
                         modifier = Modifier
@@ -110,7 +112,7 @@ fun ChildrenScreen(
                     }
                 }
             }
-            is com.example.school_companion.ui.viewmodel.ChildrenState.Error -> {
+            is ChildrenState.Error -> {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -127,7 +129,7 @@ fun ChildrenScreen(
                             tint = MaterialTheme.colorScheme.error
                         )
                         Text(
-                            text = (childrenState as com.example.school_companion.ui.viewmodel.ChildrenState.Error).message,
+                            text = (childrenState as ChildrenState.Error).message,
                             fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center,
@@ -143,7 +145,7 @@ fun ChildrenScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChildCard(
-    child: com.example.school_companion.data.model.Child,
+    child: Child,
     onClick: () -> Unit
 ) {
     Card(

@@ -35,17 +35,17 @@ fun RegisterScreen(
     navController: NavController,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
-    var firstName by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
+    var surname by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
-    var role by remember { mutableStateOf("Schulbegleiterin") }
-    
+    var organization by remember { mutableStateOf("") }
+
     val authState by viewModel.authState.collectAsStateWithLifecycle()
-    
+
     LaunchedEffect(authState) {
         when (authState) {
             is AuthState.Success -> {
@@ -53,10 +53,11 @@ fun RegisterScreen(
                     popUpTo(Screen.Register.route) { inclusive = true }
                 }
             }
+
             else -> {}
         }
     }
-    
+
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
@@ -84,7 +85,7 @@ fun RegisterScreen(
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
-            
+
             // Registration Form
             Card(
                 modifier = Modifier
@@ -103,11 +104,11 @@ fun RegisterScreen(
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
-                    
+
                     // First Name Field
                     OutlinedTextField(
-                        value = firstName,
-                        onValueChange = { firstName = it },
+                        value = name,
+                        onValueChange = { name = it },
                         label = { Text("Vorname") },
                         leadingIcon = {
                             Icon(Icons.Default.Person, contentDescription = "First Name")
@@ -118,11 +119,11 @@ fun RegisterScreen(
                         ),
                         singleLine = true
                     )
-                    
+
                     // Last Name Field
                     OutlinedTextField(
-                        value = lastName,
-                        onValueChange = { lastName = it },
+                        value = surname,
+                        onValueChange = { surname = it },
                         label = { Text("Nachname") },
                         leadingIcon = {
                             Icon(Icons.Default.Person, contentDescription = "Last Name")
@@ -133,7 +134,7 @@ fun RegisterScreen(
                         ),
                         singleLine = true
                     )
-                    
+
                     // Email Field
                     OutlinedTextField(
                         value = email,
@@ -149,7 +150,7 @@ fun RegisterScreen(
                         ),
                         singleLine = true
                     )
-                    
+
                     // Password Field
                     OutlinedTextField(
                         value = password,
@@ -174,7 +175,7 @@ fun RegisterScreen(
                         ),
                         singleLine = true
                     )
-                    
+
                     // Confirm Password Field
                     OutlinedTextField(
                         value = confirmPassword,
@@ -184,7 +185,9 @@ fun RegisterScreen(
                             Icon(Icons.Default.Lock, contentDescription = "Confirm Password")
                         },
                         trailingIcon = {
-                            IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                            IconButton(onClick = {
+                                confirmPasswordVisible = !confirmPasswordVisible
+                            }) {
                                 Icon(
                                     if (confirmPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                                     contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password"
@@ -200,67 +203,61 @@ fun RegisterScreen(
                         singleLine = true,
                         isError = password != confirmPassword && confirmPassword.isNotEmpty()
                     )
-                    
-                    // Role Selection
-                    ExposedDropdownMenuBox(
-                        expanded = false,
-                        onExpandedChange = { },
-                    ) {
-                        OutlinedTextField(
-                            value = role,
-                            onValueChange = { },
-                            readOnly = true,
-                            label = { Text("Rolle") },
-                            modifier = Modifier.fillMaxWidth(),
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = false) }
-                        )
-                    }
-                    
-                    // Error Message
-                    if (authState is AuthState.Error) {
-                        Text(
-                            text = (authState as AuthState.Error).message,
-                            color = MaterialTheme.colorScheme.error,
-                            fontSize = 14.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                    
-                    // Register Button
-                    Button(
-                        onClick = {
-                            if (firstName.isNotBlank() && lastName.isNotBlank() && 
-                                email.isNotBlank() && password.isNotBlank() && 
-                                password == confirmPassword) {
-                                viewModel.register(email, password, firstName, lastName, role)
-                            }
-                        },
+
+                    OutlinedTextField(
+                        value = organization,
+                        onValueChange = { organization = it },
+                        label = { Text("Organization") },
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = authState !is AuthState.Loading && 
-                                firstName.isNotBlank() && lastName.isNotBlank() && 
-                                email.isNotBlank() && password.isNotBlank() && 
-                                password == confirmPassword
-                    ) {
-                        if (authState is AuthState.Loading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        } else {
-                            Text("Registrieren")
-                        }
-                    }
-                    
-                    // Login Link
-                    TextButton(
-                        onClick = { navController.navigate(Screen.Login.route) },
+                        singleLine = true
+                    )
+                }
+
+                // Error Message
+                if (authState is AuthState.Error) {
+                    Text(
+                        text = (authState as AuthState.Error).message,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Bereits ein Konto? Anmelden")
+                    )
+                }
+
+                // Register Button
+                Button(
+                    onClick = {
+                        if (name.isNotBlank() && surname.isNotBlank() &&
+                            email.isNotBlank() && password.isNotBlank() &&
+                            password == confirmPassword
+                        ) {
+                            viewModel.register(email, password, name, surname, organization)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = authState !is AuthState.Loading &&
+                            name.isNotBlank() && surname.isNotBlank() &&
+                            email.isNotBlank() && password.isNotBlank() &&
+                            password == confirmPassword
+                ) {
+                    if (authState is AuthState.Loading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    } else {
+                        Text("Registrieren")
                     }
+                }
+
+                // Login Link
+                TextButton(
+                    onClick = { navController.navigate(Screen.Login.route) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Bereits ein Konto? Anmelden")
                 }
             }
         }
     }
-} 
+}

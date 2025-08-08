@@ -25,7 +25,7 @@ fun ProfileScreen(
 ) {
     val currentUser by authViewModel.currentCompanion.collectAsStateWithLifecycle()
     val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
-    val currentSession by workSessionViewModel.currentSession.collectAsStateWithLifecycle()
+//    val currentSession by workSessionViewModel.currentSession.collectAsStateWithLifecycle()
     
     Scaffold(
         topBar = {
@@ -100,7 +100,7 @@ fun ProfileScreen(
                                     .padding(start = 16.dp)
                             ) {
                                 Text(
-                                    text = "${user.firstName} ${user.lastName}",
+                                    text = "${user.name} ${user.surname}",
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -109,11 +109,11 @@ fun ProfileScreen(
                                     fontSize = 14.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                Text(
-                                    text = "Rolle: ${user.role}",
-                                    fontSize = 14.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+//                                Text(
+//                                    text = "Organization: ${user.organization}",
+//                                    fontSize = 14.sp,
+//                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+//                                )
                             }
                         }
                     }
@@ -145,7 +145,7 @@ fun ProfileScreen(
                                 }
                             },
                             modifier = Modifier.weight(1f),
-                            enabled = currentSession == null
+//                            enabled = currentSession == null
                         ) {
                             Icon(
                                 Icons.Default.PlayArrow,
@@ -159,13 +159,13 @@ fun ProfileScreen(
                         Button(
                             onClick = {
                                 authToken?.let { token ->
-                                    currentSession?.let { session ->
-                                        workSessionViewModel.endWorkSession(token, session.id)
-                                    }
+//                                    currentSession?.let { session ->
+//                                        workSessionViewModel.endWorkSession(token, )
+//                                    }
                                 }
                             },
                             modifier = Modifier.weight(1f),
-                            enabled = currentSession != null,
+//                            enabled = currentSession != null,
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.error
                             )
@@ -180,26 +180,26 @@ fun ProfileScreen(
                         }
                     }
                     
-                    if (currentSession != null) {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 12.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer
-                            )
-                        ) {
-                            Text(
-                                text = "Arbeitszeit läuft seit: ${currentSession!!.startTime}",
-                                modifier = Modifier.padding(16.dp),
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
-                    }
+//                    if (currentSession != null) {
+//                        Card(
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .padding(top = 12.dp),
+//                            colors = CardDefaults.cardColors(
+//                                containerColor = MaterialTheme.colorScheme.primaryContainer
+//                            )
+//                        ) {
+//                            Text(
+//                                text = "Arbeitszeit läuft seit: ${currentSession!!.startTime}",
+//                                modifier = Modifier.padding(16.dp),
+//                                color = MaterialTheme.colorScheme.onPrimaryContainer
+//                            )
+//                        }
+//                    }
                 }
             }
             
-            // Work Hours Summary Card
+//             Work Hours Summary Card
             Card(
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -215,7 +215,7 @@ fun ProfileScreen(
                     
                     currentUser?.let { user ->
                         Text(
-                            text = "Gesamtstunden: ${user.workHours} Stunden",
+                            text = "Gesamtstunden:",
                             fontSize = 16.sp
                         )
                     }
@@ -223,4 +223,4 @@ fun ProfileScreen(
             }
         }
     }
-} 
+}

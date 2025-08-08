@@ -2,8 +2,8 @@ package com.example.school_companion.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.school_companion.data.model.Note
-import com.example.school_companion.data.repository.NotesRepository
+import com.example.school_companion.data.model.Goal
+import com.example.school_companion.data.repository.GoalsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,33 +12,34 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class NotesViewModel @Inject constructor(
-    private val notesRepository: NotesRepository
+class GoalsViewModel @Inject constructor(
+    private val goalsRepository: GoalsRepository
 ) : ViewModel() {
-    
-    private val _notesState = MutableStateFlow<NotesState>(NotesState.Loading)
-    val notesState: StateFlow<NotesState> = _notesState.asStateFlow()
-    
-    private val _selectedNote = MutableStateFlow<Note?>(null)
-    val selectedNote: StateFlow<Note?> = _selectedNote.asStateFlow()
-    
-    fun loadNotes(token: String, childId: Long) {
+
+    private val _goalsState = MutableStateFlow<GoalsState>(GoalsState.Loading)
+    val goalsState: StateFlow<GoalsState> = _goalsState.asStateFlow()
+
+    private val _selectedGoal = MutableStateFlow<Goal?>(null)
+    val selectedGoal: StateFlow<Goal?> = _selectedGoal.asStateFlow()
+
+    fun loadGoals(token: String, childId: Long) {
         viewModelScope.launch {
-            _notesState.value = NotesState.Loading
-            
-            notesRepository.getNotes(token, childId).collect { result ->
+            _goalsState.value = GoalsState.Loading
+
+            goalsRepository.getGoals(token, childId).collect { result ->
                 result.fold(
                     onSuccess = { notes ->
-                        _notesState.value = NotesState.Success(notes)
+                        _goalsState.value = GoalsState.Success(notes)
                     },
                     onFailure = { exception ->
-                        _notesState.value = NotesState.Error(exception.message ?: "Failed to load notes")
+                        _goalsState.value =
+                            GoalsState.Error(exception.message ?: "Failed to load notes")
                     }
                 )
             }
         }
     }
-    
+
 //    fun createNote(token: String, note: Note) {
 //        viewModelScope.launch {
 //            notesRepository.createNote(token, note).collect { result ->
@@ -54,7 +55,7 @@ class NotesViewModel @Inject constructor(
 //            }
 //        }
 //    }
-    
+
 //    fun updateNote(token: String, noteId: String, note: Note) {
 //        viewModelScope.launch {
 //            notesRepository.updateNote(token, noteId, note).collect { result ->
@@ -70,7 +71,7 @@ class NotesViewModel @Inject constructor(
 //            }
 //        }
 //    }
-    
+
 //    fun deleteNote(token: String, noteId: String, childId: String) {
 //        viewModelScope.launch {
 //            notesRepository.deleteNote(token, noteId).collect { result ->
@@ -86,18 +87,18 @@ class NotesViewModel @Inject constructor(
 //            }
 //        }
 //    }
-    
-    fun selectNote(note: Note) {
-        _selectedNote.value = note
+
+    fun selectGoal(goal: Goal) {
+        _selectedGoal.value = goal
     }
-    
-    fun clearSelectedNote() {
-        _selectedNote.value = null
+
+    fun clearSelectedGoal() {
+        _selectedGoal.value = null
     }
 }
 
-sealed class NotesState {
-    object Loading : NotesState()
-    data class Success(val notes: List<Note>) : NotesState()
-    data class Error(val message: String) : NotesState()
+sealed class GoalsState {
+    object Loading : GoalsState()
+    data class Success(val notes: List<Goal>) : GoalsState()
+    data class Error(val message: String) : GoalsState()
 } 

@@ -4,7 +4,8 @@ import kotlinx.parcelize.Parcelize
 import android.os.Parcelable
 
 @Parcelize
-data class Note(
-    val id: Long,
-    val content: String
+data class Photo(
+    val id: String,
+    val description: String,
+    val createdAt: String
 ) : Parcelable
