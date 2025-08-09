@@ -63,4 +63,41 @@ class EventsRepository @Inject constructor(
             emit(Result.failure(e))
         }
     }
+
+    suspend fun updateEvent(
+        token: String,
+        childId: Long,
+        eventId: Long,
+        event: EventRequestDto
+    ) = flow {
+        try {
+            val response = apiService.updateEvent("Bearer $token", event, childId, eventId)
+            if (response.isSuccessful) {
+                val message = response.body()?.string() ?: "Event updated successfully"
+                emit(Result.success(message))
+            } else {
+                emit(Result.failure(Exception("Failed to create event: ${response.code()}")))
+            }
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
+    }
+
+    suspend fun deleteEvent(
+        token: String,
+        eventId: Long,
+        childId: Long
+    ) = flow {
+        try {
+            val response = apiService.delete("Bearer $token", eventId, childId)
+            if (response.isSuccessful) {
+                val message = response.body()?.string() ?: "Event deleted successfully"
+                emit(Result.success(message))
+            } else {
+                emit(Result.failure(Exception("Failed to create event: ${response.code()}")))
+            }
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
+    }
 }

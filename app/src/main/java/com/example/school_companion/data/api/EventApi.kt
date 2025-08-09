@@ -28,13 +28,14 @@ interface EventApi {
         @Body eventUpdateDto: EventRequestDto,
         @Path("childId") childId: Long,
         @Path("eventId") eventId: Long
-    )
+    ): Response<ResponseBody>
 
-    @DELETE("event/{eventId}")
+    @DELETE("event/{eventId}/child/{childId}")
     suspend fun delete(
         @Header("Authorization") token: String,
-        @Path("eventId") eventId: Long
-    )
+        @Path("eventId") eventId: Long,
+        @Path("childId") childId: Long
+    ): Response<ResponseBody>
 
     @GET("event/{eventId}")
     suspend fun getEventById(

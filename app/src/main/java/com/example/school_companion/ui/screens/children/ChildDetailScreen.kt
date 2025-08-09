@@ -193,11 +193,34 @@ fun ChildDetailScreen(
                         )
                     }
 
-                    1 -> MonitoringEntryTab(selectedChild!!, entriesViewModel)
-                    2 -> NotesTab(selectedChild = selectedChild!!, notesViewModel)
-                    3 -> SpecialNeedsTab(selectedChild = selectedChild!!, needsViewModel)
-                    4 -> GoalsTab(child = selectedChild!!, goalsViewModel)
-                    5 -> PhotosTab(child = selectedChild!!, childrenViewModel)
+                    1 -> authToken?.let {
+                        MonitoringEntryTab(
+                            selectedChild!!, entriesViewModel,
+                            it
+                        )
+                    }
+
+                    2 -> authToken?.let {
+                        NotesTab(
+                            selectedChild = selectedChild!!,
+                            it, notesViewModel
+                        )
+                    }
+
+                    3 -> authToken?.let {
+                        SpecialNeedsTab(
+                            selectedChild = selectedChild!!, needsViewModel,
+                            it
+                        )
+                    }
+
+                    4 -> authToken?.let { GoalsTab(child = selectedChild!!, goalsViewModel, it) }
+                    5 -> authToken?.let {
+                        PhotosTab(
+                            child = selectedChild!!, childrenViewModel,
+                            it
+                        )
+                    }
                 }
             }
         } ?: run {

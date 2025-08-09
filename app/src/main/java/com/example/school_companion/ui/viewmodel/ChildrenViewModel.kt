@@ -2,6 +2,7 @@ package com.example.school_companion.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.school_companion.data.api.DeletePhotoRequestDto
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.Photo
 import com.example.school_companion.data.repository.ChildrenRepository
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -70,6 +72,51 @@ class ChildrenViewModel @Inject constructor(
                     }
                 )
             }
+        }
+    }
+
+    fun addChildPhotos(
+        token: String,
+        childId: Long,
+        file: File,
+        descriptionText: String
+    ) {
+        viewModelScope.launch {
+            childrenRepository.addChildPhotos(token, childId, file, descriptionText)
+                .collect { result ->
+                    result.fold(
+                        onSuccess = {
+                            loadChildPhotos(token, childId)
+                        },
+                        onFailure = { exception ->
+                            _childrenState.value =
+                                ChildrenState.Error(exception.message ?: "Failed to add photo")
+                            loadChildPhotos(token, childId)
+                        }
+                    )
+                }
+        }
+    }
+
+    fun deleteChildPhotos(
+        token: String,
+        deletePhotoRequestDto: DeletePhotoRequestDto,
+        childId: Long
+    ) {
+        viewModelScope.launch {
+            childrenRepository.deleteChildPhoto(token, deletePhotoRequestDto)
+                .collect { result ->
+                    result.fold(
+                        onSuccess = {
+                            loadChildPhotos(token, childId)
+                        },
+                        onFailure = { exception ->
+                            _childrenState.value =
+                                ChildrenState.Error(exception.message ?: "Failed to delete photo")
+                            loadChildPhotos(token, childId)
+                        }
+                    )
+                }
         }
     }
 

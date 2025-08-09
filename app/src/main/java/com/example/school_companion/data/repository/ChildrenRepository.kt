@@ -2,10 +2,16 @@ package com.example.school_companion.data.repository
 
 import com.example.school_companion.data.api.ApiService
 import com.example.school_companion.data.api.ChildrenApi
+import com.example.school_companion.data.api.DeletePhotoRequestDto
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.Photo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
 import javax.inject.Inject
 
 class ChildrenRepository @Inject constructor(
@@ -56,4 +62,48 @@ class ChildrenRepository @Inject constructor(
             emit(Result.failure(e))
         }
     }
+
+    suspend fun addChildPhotos(
+        token: String,
+        childId: Long,
+        file: File,
+        descriptionText: String
+    ) = flow {
+        val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
+
+        val filePart = MultipartBody.Part.createFormData(
+            name = "file",
+            filename = file.name,
+            body = requestFile
+        )
+        val descriptionPart = descriptionText.toRequestBody("text/plain".toMediaTypeOrNull())
+
+        try {
+            val response =
+                apiService.addChildPhoto("Bearer $token", childId, filePart, descriptionPart)
+            if (response.isSuccessful) {
+                val message = response.body()?.string() ?: "Photo added successfully"
+                emit(Result.success(message))
+            } else {
+                emit(Result.failure(Exception("Failed to add child photo: ${response.code()}")))
+            }
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
+    }
+
+    suspend fun deleteChildPhoto(token: String, deletePhotoRequestDto: DeletePhotoRequestDto) =
+        flow {
+            try {
+                val response = apiService.deleteChildPhoto("Bearer $token", deletePhotoRequestDto)
+                if (response.isSuccessful) {
+                    val message = response.body()?.string() ?: "Photo deleted successfully"
+                    emit(Result.success(message))
+                } else {
+                    emit(Result.failure(Exception("Failed to delete child photo: ${response.code()}")))
+                }
+            } catch (e: Exception) {
+                emit(Result.failure(e))
+            }
+        }
 } 

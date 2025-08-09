@@ -131,6 +131,17 @@ fun DashboardScreen(
                     icon = { Icon(Icons.Default.BarChart, contentDescription = "Statistics") },
                     label = { Text("Statistiken") }
                 )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = { navController.navigate(Screen.Statistics.route) },
+                    icon = {
+                        Icon(
+                            Icons.Default.BarChart,
+                            contentDescription = "School Companion"
+                        )
+                    },
+                    label = { Text("School Companion") }
+                )
             }
         }
     ) { paddingValues ->

@@ -2,6 +2,7 @@ package com.example.school_companion.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.school_companion.data.api.GoalRequestDto
 import com.example.school_companion.data.model.Goal
 import com.example.school_companion.data.repository.GoalsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,53 +41,53 @@ class GoalsViewModel @Inject constructor(
         }
     }
 
-//    fun createNote(token: String, note: Note) {
-//        viewModelScope.launch {
-//            notesRepository.createNote(token, note).collect { result ->
-//                result.fold(
-//                    onSuccess = { createdNote ->
-//                        // Refresh notes list
-//                        loadNotes(token, note.childId)
-//                    },
-//                    onFailure = { exception ->
-//                        _notesState.value = NotesState.Error(exception.message ?: "Failed to create note")
-//                    }
-//                )
-//            }
-//        }
-//    }
+    fun createGoal(token: String, goal: GoalRequestDto, childId: Long) {
+        viewModelScope.launch {
+            goalsRepository.createGoal(token, goal, childId).collect { result ->
+                result.fold(
+                    onSuccess = {
+                        loadGoals(token, childId)
+                    },
+                    onFailure = { exception ->
+                        _goalsState.value =
+                            GoalsState.Error(exception.message ?: "Failed to create goal")
+                    }
+                )
+            }
+        }
+    }
 
-//    fun updateNote(token: String, noteId: String, note: Note) {
-//        viewModelScope.launch {
-//            notesRepository.updateNote(token, noteId, note).collect { result ->
-//                result.fold(
-//                    onSuccess = { updatedNote ->
-//                        // Refresh notes list
-//                        loadNotes(token, note.childId)
-//                    },
-//                    onFailure = { exception ->
-//                        _notesState.value = NotesState.Error(exception.message ?: "Failed to update note")
-//                    }
-//                )
-//            }
-//        }
-//    }
+    fun updateGoal(token: String, goalId: Long, goal: GoalRequestDto, childId: Long) {
+        viewModelScope.launch {
+            goalsRepository.updateGoal(token, goalId, goal, childId).collect { result ->
+                result.fold(
+                    onSuccess = {
+                        loadGoals(token, childId)
+                    },
+                    onFailure = { exception ->
+                        _goalsState.value =
+                            GoalsState.Error(exception.message ?: "Failed to update goal")
+                    }
+                )
+            }
+        }
+    }
 
-//    fun deleteNote(token: String, noteId: String, childId: String) {
-//        viewModelScope.launch {
-//            notesRepository.deleteNote(token, noteId).collect { result ->
-//                result.fold(
-//                    onSuccess = {
-//                        // Refresh notes list
-//                        loadNotes(token, childId)
-//                    },
-//                    onFailure = { exception ->
-//                        _notesState.value = NotesState.Error(exception.message ?: "Failed to delete note")
-//                    }
-//                )
-//            }
-//        }
-//    }
+    fun deleteGoal(token: String, goalId: Long, childId: Long) {
+        viewModelScope.launch {
+            goalsRepository.deleteGoal(token, goalId).collect { result ->
+                result.fold(
+                    onSuccess = {
+                        loadGoals(token, childId)
+                    },
+                    onFailure = { exception ->
+                        _goalsState.value =
+                            GoalsState.Error(exception.message ?: "Failed to delete goal")
+                    }
+                )
+            }
+        }
+    }
 
     fun selectGoal(goal: Goal) {
         _selectedGoal.value = goal

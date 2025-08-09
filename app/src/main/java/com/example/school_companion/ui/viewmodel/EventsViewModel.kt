@@ -76,6 +76,43 @@ class EventsViewModel @Inject constructor(
             }
         }
     }
+
+    fun updateEvent(token: String, childId: Long, eventId: Long, event: EventRequestDto) {
+        viewModelScope.launch {
+            eventsRepository.updateEvent(token, childId, eventId, event).collect { result ->
+                result.fold(
+                    onSuccess = {
+                        // Refresh events list
+                        loadEventsByCompanion(token)
+                    },
+                    onFailure = { exception ->
+                        _eventsState.value =
+                            EventsState.Error(exception.message ?: "Failed to create event")
+                        loadEventsByCompanion(token)
+                    }
+                )
+            }
+        }
+    }
+
+    fun deleteEvent(token: String, eventId: Long, childId: Long) {
+        viewModelScope.launch {
+            eventsRepository.deleteEvent(token, eventId, childId).collect { result ->
+                result.fold(
+                    onSuccess = {
+                        // Refresh events list
+                        loadEventsByCompanion(token)
+                    },
+                    onFailure = { exception ->
+                        _eventsState.value =
+                            EventsState.Error(exception.message ?: "Failed to create event")
+                        loadEventsByCompanion(token)
+                    }
+                )
+            }
+        }
+    }
+
     fun selectEvent(event: Event) {
         _selectedEvent.value = event
     }

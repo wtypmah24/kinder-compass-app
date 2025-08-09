@@ -2,6 +2,7 @@ package com.example.school_companion.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.school_companion.data.api.EntryRequestDto
 import com.example.school_companion.data.model.MonitoringEntry
 import com.example.school_companion.data.repository.MonitoringEntryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,45 +38,83 @@ class MonitoringEntryViewModel @Inject constructor(
                     },
                     onFailure = { exception ->
                         _entriesState.value =
-                            EntriesState.Error(exception.message ?: "Failed to load monitoring data")
+                            EntriesState.Error(
+                                exception.message ?: "Failed to load monitoring data"
+                            )
                     }
                 )
             }
         }
     }
 
-    //    fun createMonitoringData(token: String, monitoringParam: MonitoringParam) {
-//        viewModelScope.launch {
-//            monitoringRepository.createMonitoringData(token, monitoringParam).collect { result ->
-//                result.fold(
-//                    onSuccess = { createdData ->
-//                        // Refresh monitoring data list
-//                        loadMonitoringData(token, monitoringParam.childId)
-//                    },
-//                    onFailure = { exception ->
-//                        _monitoringState.value = MonitoringState.Error(exception.message ?: "Failed to create monitoring data")
-//                    }
-//                )
-//            }
-//        }
-//    }
-//
-//    fun updateMonitoringData(token: String, monitoringId: String, monitoringParam: MonitoringParam) {
-//        viewModelScope.launch {
-//            monitoringRepository.updateMonitoringData(token, monitoringId, monitoringParam).collect { result ->
-//                result.fold(
-//                    onSuccess = { updatedData ->
-//                        // Refresh monitoring data list
-//                        loadMonitoringData(token, monitoringParam.childId)
-//                    },
-//                    onFailure = { exception ->
-//                        _monitoringState.value = MonitoringState.Error(exception.message ?: "Failed to update monitoring data")
-//                    }
-//                )
-//            }
-//        }
-//    }
-//
+    fun createMonitoringEntry(
+        token: String,
+        entry: EntryRequestDto,
+        childId: Long,
+        paramId: Long
+    ) {
+        viewModelScope.launch {
+            monitoringEntryRepository.createMonitoringEntry(token, entry, childId, paramId)
+                .collect { result ->
+                    result.fold(
+                        onSuccess = {
+                            loadMonitoringEntryData(token, childId)
+                        },
+                        onFailure = { exception ->
+                            _entriesState.value = EntriesState.Error(
+                                exception.message ?: "Failed to create monitoring data"
+                            )
+                        }
+                    )
+                }
+        }
+    }
+
+    fun updateMonitoringEntry(
+        token: String,
+        entry: EntryRequestDto,
+        childId: Long,
+        paramId: Long
+    ) {
+        viewModelScope.launch {
+            monitoringEntryRepository.updateMonitoringEntry(token, entry, childId, paramId)
+                .collect { result ->
+                    result.fold(
+                        onSuccess = {
+                            loadMonitoringEntryData(token, childId)
+                        },
+                        onFailure = { exception ->
+                            _entriesState.value = EntriesState.Error(
+                                exception.message ?: "Failed to update monitoring data"
+                            )
+                        }
+                    )
+                }
+        }
+    }
+
+    fun deleteMonitoringEntry(
+        token: String,
+        entryId: Long,
+        childId: Long,
+    ) {
+        viewModelScope.launch {
+            monitoringEntryRepository.deleteMonitoringEntry(token, entryId, childId)
+                .collect { result ->
+                    result.fold(
+                        onSuccess = {
+                            loadMonitoringEntryData(token, childId)
+                        },
+                        onFailure = { exception ->
+                            _entriesState.value = EntriesState.Error(
+                                exception.message ?: "Failed to delete monitoring data"
+                            )
+                        }
+                    )
+                }
+        }
+    }
+
     fun selectMonitoringData(monitoringParam: MonitoringEntry) {
         _selectedMonitoringEntry.value = monitoringParam
     }
@@ -86,7 +125,7 @@ class MonitoringEntryViewModel @Inject constructor(
 }
 
 sealed class EntriesState {
-    object Loading : EntriesState()
+    data object Loading : EntriesState()
     data class Success(val entryData: List<MonitoringEntry>) : EntriesState()
     data class Error(val message: String) : EntriesState()
 } 

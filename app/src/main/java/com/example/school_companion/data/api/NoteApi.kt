@@ -25,13 +25,13 @@ interface NoteApi {
         @Body noteUpdateDto: NoteRequestDto,
         @Path("childId") childId: Long,
         @Path("noteId") noteId: Long
-    )
+    ): Response<ResponseBody>
 
     @DELETE("note/{noteId}")
     suspend fun delete(
         @Header("Authorization") token: String,
         @Path("noteId") noteId: Long
-    )
+    ): Response<ResponseBody>
 
     @GET("note/{noteId}")
     suspend fun getNoteById(

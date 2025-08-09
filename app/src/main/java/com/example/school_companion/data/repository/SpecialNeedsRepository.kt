@@ -1,5 +1,6 @@
 package com.example.school_companion.data.repository
 
+import com.example.school_companion.data.api.NeedRequestDto
 import com.example.school_companion.data.api.SpecialNeedApi
 import com.example.school_companion.data.model.SpecialNeed
 import kotlinx.coroutines.flow.Flow
@@ -28,46 +29,46 @@ class SpecialNeedsRepository @Inject constructor(
         }
     }
 
-//    suspend fun createNote(token: String, note: Note): Flow<Result<Note>> = flow {
-//        try {
-//            val response = apiService.createNote("Bearer $token", note)
-//            if (response.isSuccessful) {
-//                response.body()?.let { createdNote ->
-//                    emit(Result.success(createdNote))
-//                } ?: emit(Result.failure(Exception("Empty response")))
-//            } else {
-//                emit(Result.failure(Exception("Failed to create note: ${response.code()}")))
-//            }
-//        } catch (e: Exception) {
-//            emit(Result.failure(e))
-//        }
-//    }
+    suspend fun createNeed(token: String, need: NeedRequestDto, childId: Long) = flow {
+        try {
+            val response = apiService.addNeed("Bearer $token", need, childId)
+            if (response.isSuccessful) {
+                val message = response.body()?.string() ?: "Special need added successfully"
+                emit(Result.success(message))
+            } else {
+                emit(Result.failure(Exception("Failed to create special need: ${response.code()}")))
+            }
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
+    }
 
-//    suspend fun updateNote(token: String, noteId: String, note: Note): Flow<Result<Note>> = flow {
-//        try {
-//            val response = apiService.updateNote("Bearer $token", noteId, note)
-//            if (response.isSuccessful) {
-//                response.body()?.let { updatedNote ->
-//                    emit(Result.success(updatedNote))
-//                } ?: emit(Result.failure(Exception("Empty response")))
-//            } else {
-//                emit(Result.failure(Exception("Failed to update note: ${response.code()}")))
-//            }
-//        } catch (e: Exception) {
-//            emit(Result.failure(e))
-//        }
-//    }
+    suspend fun updateNeed(token: String, needId: Long, need: NeedRequestDto, childId: Long) =
+        flow {
+            try {
+                val response = apiService.updateNeed("Bearer $token", need, childId, needId)
+                if (response.isSuccessful) {
+                    val message = response.body()?.string() ?: "Special need updated successfully"
+                    emit(Result.success(message))
+                } else {
+                    emit(Result.failure(Exception("Failed to update special need: ${response.code()}")))
+                }
+            } catch (e: Exception) {
+                emit(Result.failure(e))
+            }
+        }
 
-//    suspend fun deleteNote(token: String, noteId: String): Flow<Result<Unit>> = flow {
-//        try {
-//            val response = apiService.deleteNote("Bearer $token", noteId)
-//            if (response.isSuccessful) {
-//                emit(Result.success(Unit))
-//            } else {
-//                emit(Result.failure(Exception("Failed to delete note: ${response.code()}")))
-//            }
-//        } catch (e: Exception) {
-//            emit(Result.failure(e))
-//        }
-//    }
+    suspend fun deleteNeed(token: String, needId: Long) = flow {
+        try {
+            val response = apiService.delete("Bearer $token", needId)
+            if (response.isSuccessful) {
+                val message = response.body()?.string() ?: "Special need deleted successfully"
+                emit(Result.success(message))
+            } else {
+                emit(Result.failure(Exception("Failed to delete special need: ${response.code()}")))
+            }
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
+    }
 } 

@@ -9,7 +9,7 @@ data class Event(
     val title: String,
     val description: String,
     val startDateTime: String,
-    val endDateTIme: String,
+    val endDateTime: String,
     val location: String,
 ) : Parcelable
 

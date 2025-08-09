@@ -1,6 +1,7 @@
 package com.example.school_companion.data.api
 
 import com.example.school_companion.data.model.MonitoringEntry
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -17,7 +18,7 @@ interface EntryApi {
         @Body entryRequestDto: EntryRequestDto,
         @Path("childId") childId: Long,
         @Path("paramId") paramId: Long
-    ): Response<MonitoringEntry>
+    ): Response<ResponseBody>
 
     @PATCH("entry/{entryId}/child/{childId}")
     suspend fun updateEntry(
@@ -25,14 +26,14 @@ interface EntryApi {
         @Body entryUpdateDto: EntryRequestDto,
         @Path("childId") childId: Long,
         @Path("entryId") entryId: Long
-    )
+    ): Response<ResponseBody>
 
     @DELETE("entry/{entryId}/child/{childId}")
     suspend fun delete(
         @Header("Authorization") token: String,
         @Path("entryId") entryId: Long,
         @Path("childId") childId: Long
-    )
+    ): Response<ResponseBody>
 
     @GET("entry/{entryId}")
     suspend fun getEntryById(

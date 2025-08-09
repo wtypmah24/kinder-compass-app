@@ -11,7 +11,7 @@ data class MonitoringEntry(
     val notes: String,
     val parameterId: Long,
     val parameterName: String,
-    val type: String,
+    val type: ScaleType,
     val childId: Long,
     val createdAt: String
 

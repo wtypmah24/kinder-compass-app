@@ -38,6 +38,16 @@ import com.example.school_companion.ui.dialog.event.AddEventDialog
 import com.example.school_companion.ui.viewmodel.EventsState
 import com.example.school_companion.ui.viewmodel.EventsViewModel
 import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import com.example.school_companion.ui.dialog.event.EditEventDialog
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.graphics.Color
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -86,7 +96,12 @@ fun EventsTab(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(events) { event ->
-                            ChildEventCard(event = event)
+                            ChildEventCard(
+                                event = event,
+                                token,
+                                selectedChild.id,
+                                eventsViewModel
+                            )
                         }
                     }
                 }
@@ -115,54 +130,127 @@ fun EventsTab(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ChildEventCard(event: Event) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = event.title,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
+fun ChildEventCard(
+    event: Event,
+    token: String,
+    childId: Long,
+    eventsViewModel: EventsViewModel,
+) {
+    var showEditDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
-            Text(
-                text = event.description,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp)
-            )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = "Start: ${event.startDateTime}",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "Ende: ${event.endDateTIme}",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = event.title,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
 
                 Text(
-                    text = event.location,
-                    fontSize = 12.sp,
-                    fontStyle = FontStyle.Italic,
-                    color = MaterialTheme.colorScheme.primary
+                    text = event.description,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
+                        Text(
+                            text = "Start: ${event.startDateTime}",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "Ende: ${event.endDateTime}",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Text(
+                        text = event.location,
+                        fontSize = 12.sp,
+                        fontStyle = FontStyle.Italic,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(8.dp)
+        ) {
+            IconButton(onClick = { showEditDialog = true }) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit Event",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+            IconButton(onClick = { showDeleteConfirm = true }) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete Event",
+                    tint = MaterialTheme.colorScheme.error
                 )
             }
         }
+    }
+
+    if (showEditDialog) {
+        EditEventDialog(
+            event = event,
+            onDismiss = { showEditDialog = false },
+            onSave = { updatedEventRequestDto ->
+                eventsViewModel.updateEvent(
+                    token = token,
+                    childId = childId,
+                    eventId = event.id,
+                    event = updatedEventRequestDto
+                )
+                showEditDialog = false
+            }
+        )
+    }
+
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text("Delete event?") },
+            text = { Text("Are you sure you want to delete «${event.title}»?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        eventsViewModel.deleteEvent(token, event.id, childId)
+                        showDeleteConfirm = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Delete", color = Color.White)
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDeleteConfirm = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }

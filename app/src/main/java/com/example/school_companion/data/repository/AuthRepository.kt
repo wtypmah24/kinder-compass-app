@@ -86,22 +86,6 @@ class AuthRepository @Inject constructor(
             emit(Result.failure(e))
         }
     }
-
-//    suspend fun updateUserProfile(token: String, companion: Companion): Flow<Result<Companion>> =
-//        flow {
-//            try {
-//                val response = apiService.updateUserProfile("Bearer $token", companion)
-//                if (response.isSuccessful) {
-//                    response.body()?.let { updatedUser ->
-//                        emit(Result.success(updatedUser))
-//                    } ?: emit(Result.failure(Exception("Empty response")))
-//                } else {
-//                    emit(Result.failure(Exception("Failed to update profile: ${response.code()}")))
-//                }
-//            } catch (e: Exception) {
-//                emit(Result.failure(e))
-//            }
-//        }
 }
 
 object SessionManager {

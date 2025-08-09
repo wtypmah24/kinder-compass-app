@@ -26,13 +26,13 @@ interface SpecialNeedApi {
         @Body needUpdateDto: NeedRequestDto,
         @Path("childId") childId: Long,
         @Path("needId") needId: Long
-    )
+    ): Response<ResponseBody>
 
     @DELETE("need/{needId}")
     suspend fun delete(
         @Header("Authorization") token: String,
         @Path("needId") needId: Long
-    )
+    ): Response<ResponseBody>
 
     @GET("need/{needId}")
     suspend fun getNeedById(

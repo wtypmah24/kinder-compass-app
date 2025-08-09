@@ -2,6 +2,7 @@ package com.example.school_companion.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.school_companion.data.api.NeedRequestDto
 import com.example.school_companion.data.model.Goal
 import com.example.school_companion.data.model.SpecialNeed
 import com.example.school_companion.data.repository.SpecialNeedsRepository
@@ -41,53 +42,53 @@ class NeedsViewModel @Inject constructor(
         }
     }
 
-//    fun createNote(token: String, note: Note) {
-//        viewModelScope.launch {
-//            notesRepository.createNote(token, note).collect { result ->
-//                result.fold(
-//                    onSuccess = { createdNote ->
-//                        // Refresh notes list
-//                        loadNotes(token, note.childId)
-//                    },
-//                    onFailure = { exception ->
-//                        _notesState.value = NotesState.Error(exception.message ?: "Failed to create note")
-//                    }
-//                )
-//            }
-//        }
-//    }
+    fun createNeed(token: String, need: NeedRequestDto, childId: Long) {
+        viewModelScope.launch {
+            needsRepository.createNeed(token, need, childId).collect { result ->
+                result.fold(
+                    onSuccess = {
+                        loadNeeds(token, childId)
+                    },
+                    onFailure = { exception ->
+                        _needsState.value =
+                            NeedsState.Error(exception.message ?: "Failed to create special need")
+                    }
+                )
+            }
+        }
+    }
 
-//    fun updateNote(token: String, noteId: String, note: Note) {
-//        viewModelScope.launch {
-//            notesRepository.updateNote(token, noteId, note).collect { result ->
-//                result.fold(
-//                    onSuccess = { updatedNote ->
-//                        // Refresh notes list
-//                        loadNotes(token, note.childId)
-//                    },
-//                    onFailure = { exception ->
-//                        _notesState.value = NotesState.Error(exception.message ?: "Failed to update note")
-//                    }
-//                )
-//            }
-//        }
-//    }
+    fun updateNeed(token: String, needId: Long, need: NeedRequestDto, childId: Long) {
+        viewModelScope.launch {
+            needsRepository.updateNeed(token, needId, need, childId).collect { result ->
+                result.fold(
+                    onSuccess = {
+                        loadNeeds(token, childId)
+                    },
+                    onFailure = { exception ->
+                        _needsState.value =
+                            NeedsState.Error(exception.message ?: "Failed to update special need")
+                    }
+                )
+            }
+        }
+    }
 
-//    fun deleteNote(token: String, noteId: String, childId: String) {
-//        viewModelScope.launch {
-//            notesRepository.deleteNote(token, noteId).collect { result ->
-//                result.fold(
-//                    onSuccess = {
-//                        // Refresh notes list
-//                        loadNotes(token, childId)
-//                    },
-//                    onFailure = { exception ->
-//                        _notesState.value = NotesState.Error(exception.message ?: "Failed to delete note")
-//                    }
-//                )
-//            }
-//        }
-//    }
+    fun deleteNeed(token: String, needId: Long, childId: Long) {
+        viewModelScope.launch {
+            needsRepository.deleteNeed(token, needId).collect { result ->
+                result.fold(
+                    onSuccess = {
+                        loadNeeds(token, childId)
+                    },
+                    onFailure = { exception ->
+                        _needsState.value =
+                            NeedsState.Error(exception.message ?: "Failed to delete special need")
+                    }
+                )
+            }
+        }
+    }
 
     fun selectGoal(goal: Goal) {
         _selectedNeed.value = goal
@@ -99,7 +100,7 @@ class NeedsViewModel @Inject constructor(
 }
 
 sealed class NeedsState {
-    object Loading : NeedsState()
+    data object Loading : NeedsState()
     data class Success(val notes: List<SpecialNeed>) : NeedsState()
     data class Error(val message: String) : NeedsState()
 } 

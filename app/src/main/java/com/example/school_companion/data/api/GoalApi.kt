@@ -25,13 +25,13 @@ interface GoalApi {
         @Body goalUpdateDto: GoalRequestDto,
         @Path("childId") childId: Long,
         @Path("goalId") goalId: Long
-    )
+    ): Response<ResponseBody>
 
     @DELETE("goal/{goalId}")
     suspend fun delete(
         @Header("Authorization") token: String,
         @Path("goalId") goalId: Long
-    )
+    ): Response<ResponseBody>
 
     @GET("goal/{goalId}")
     suspend fun getGoalById(

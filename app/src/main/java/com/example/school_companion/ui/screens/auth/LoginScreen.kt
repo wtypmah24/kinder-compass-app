@@ -40,6 +40,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -49,6 +50,7 @@ import com.example.school_companion.ui.viewmodel.AuthState
 import com.example.school_companion.ui.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
+//@Preview()
 @Composable
 fun LoginScreen(
     navController: NavController,
@@ -57,7 +59,7 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    
+
     val authState by viewModel.authState.collectAsStateWithLifecycle()
 
     LaunchedEffect(authState) {
@@ -67,10 +69,11 @@ fun LoginScreen(
                     popUpTo(Screen.Login.route) { inclusive = true }
                 }
             }
+
             else -> {}
         }
     }
-    
+
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
@@ -98,7 +101,7 @@ fun LoginScreen(
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
-            
+
             // Login Form
             Card(
                 modifier = Modifier
@@ -117,7 +120,7 @@ fun LoginScreen(
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
-                    
+
                     // Email Field
                     OutlinedTextField(
                         value = email,
@@ -133,7 +136,7 @@ fun LoginScreen(
                         ),
                         singleLine = true
                     )
-                    
+
                     // Password Field
                     OutlinedTextField(
                         value = password,
@@ -158,7 +161,7 @@ fun LoginScreen(
                         ),
                         singleLine = true
                     )
-                    
+
                     // Error Message
                     if (authState is AuthState.Error) {
                         Text(
@@ -169,7 +172,7 @@ fun LoginScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
-                    
+
                     // Login Button
                     Button(
                         onClick = {
@@ -189,7 +192,7 @@ fun LoginScreen(
                             Text("Anmelden")
                         }
                     }
-                    
+
                     // Register Link
                     TextButton(
                         onClick = { navController.navigate(Screen.Register.route) },
