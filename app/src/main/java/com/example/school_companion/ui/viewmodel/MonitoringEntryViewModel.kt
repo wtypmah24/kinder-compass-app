@@ -47,6 +47,28 @@ class MonitoringEntryViewModel @Inject constructor(
         }
     }
 
+    fun loadMonitoringEntryByCompanion(
+        token: String
+    ) {
+        viewModelScope.launch {
+            _entriesState.value = EntriesState.Loading
+
+            monitoringEntryRepository.getMonitoringEntryByCompanion(token).collect { result ->
+                result.fold(
+                    onSuccess = { monitoringData ->
+                        _entriesState.value = EntriesState.Success(monitoringData)
+                    },
+                    onFailure = { exception ->
+                        _entriesState.value =
+                            EntriesState.Error(
+                                exception.message ?: "Failed to load monitoring data"
+                            )
+                    }
+                )
+            }
+        }
+    }
+
     fun createMonitoringEntry(
         token: String,
         entry: EntryRequestDto,

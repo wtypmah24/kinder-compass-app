@@ -34,6 +34,24 @@ class MonitoringEntryRepository @Inject constructor(
         }
     }
 
+    suspend fun getMonitoringEntryByCompanion(
+        token: String,
+    ): Flow<Result<List<MonitoringEntry>>> = flow {
+        try {
+            val response =
+                apiService.getEntriesByCompanion("Bearer $token")
+            if (response.isSuccessful) {
+                response.body()?.let { monitoringData ->
+                    emit(Result.success(monitoringData))
+                } ?: emit(Result.failure(Exception("Empty response")))
+            } else {
+                emit(Result.failure(Exception("Failed to get monitoring data: ${response.code()}")))
+            }
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
+    }
+
     suspend fun createMonitoringEntry(
         token: String,
         monitoringParam: EntryRequestDto,

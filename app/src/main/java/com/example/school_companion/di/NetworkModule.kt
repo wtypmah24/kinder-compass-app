@@ -7,6 +7,7 @@ import com.example.school_companion.data.api.EntryApi
 import com.example.school_companion.data.api.EventApi
 import com.example.school_companion.data.api.GoalApi
 import com.example.school_companion.data.api.NoteApi
+import com.example.school_companion.data.api.ParamApi
 import com.example.school_companion.data.api.SpecialNeedApi
 import dagger.Module
 import dagger.Provides
@@ -90,5 +91,11 @@ object NetworkModule {
     @Singleton
     fun provideEntryApi(retrofit: Retrofit): EntryApi {
         return retrofit.create(EntryApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideParamApi(retrofit: Retrofit): ParamApi {
+        return retrofit.create(ParamApi::class.java)
     }
 } 

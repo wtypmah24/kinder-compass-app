@@ -12,7 +12,7 @@ data class MonitoringParam(
     val description: String,
     val minValue: Int,
     val maxValue: Int,
-    val createdAt: LocalDateTime
+    val createdAt: String
 ) : Parcelable
 
 enum class ScaleType {

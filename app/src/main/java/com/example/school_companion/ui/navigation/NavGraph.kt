@@ -15,6 +15,7 @@ import com.example.school_companion.ui.screens.children.ChildDetailScreen
 import com.example.school_companion.ui.screens.children.ChildrenScreen
 import com.example.school_companion.ui.screens.dashboard.DashboardScreen
 import com.example.school_companion.ui.screens.events.EventsScreen
+import com.example.school_companion.ui.screens.monitoring.MonitoringScreen
 import com.example.school_companion.ui.screens.profile.ProfileScreen
 import com.example.school_companion.ui.screens.settings.SettingsScreen
 import com.example.school_companion.ui.screens.statistics.StatisticsScreen
@@ -80,6 +81,10 @@ fun NavGraph(
 
         composable(Screen.Settings.route) {
             SettingsScreen(navController = navController)
+        }
+
+        composable(Screen.Monitoring.route) {
+            MonitoringScreen(navController = navController, authViewModel = authViewModel)
         }
     }
 } 
