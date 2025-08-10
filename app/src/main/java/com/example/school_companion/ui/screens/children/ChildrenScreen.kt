@@ -31,13 +31,13 @@ fun ChildrenScreen(
 ) {
     val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
     val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
-    
+
     LaunchedEffect(authToken) {
         authToken?.let { token ->
             childrenViewModel.loadChildren(token)
         }
     }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -66,6 +66,7 @@ fun ChildrenScreen(
                     CircularProgressIndicator()
                 }
             }
+
             is ChildrenState.Success -> {
                 val children = (childrenState as ChildrenState.Success).children
                 if (children.isEmpty()) {
@@ -112,6 +113,7 @@ fun ChildrenScreen(
                     }
                 }
             }
+
             is ChildrenState.Error -> {
                 Box(
                     modifier = Modifier
@@ -176,7 +178,7 @@ fun ChildCard(
                     )
                 }
             }
-            
+
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -192,16 +194,8 @@ fun ChildCard(
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-//                if (child.specialNeeds.isNotEmpty()) {
-//                    Text(
-//                        text = "Besondere Bedürfnisse: ${child.specialNeeds.joinToString(", ")}",
-//                        fontSize = 12.sp,
-//                        color = MaterialTheme.colorScheme.primary,
-//                        modifier = Modifier.padding(top = 4.dp)
-//                    )
-//                }
             }
-            
+
             Icon(
                 Icons.Default.ChevronRight,
                 contentDescription = "View details",

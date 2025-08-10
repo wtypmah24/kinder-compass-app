@@ -6,6 +6,7 @@ import com.example.school_companion.data.api.DeletePhotoRequestDto
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.Photo
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -34,19 +35,18 @@ class ChildrenRepository @Inject constructor(
     }
 
     suspend fun getChild(token: String, childId: Long): Flow<Result<Child>> = flow {
-        try {
-            val response = apiService.getChild("Bearer $token", childId)
-            if (response.isSuccessful) {
-                response.body()?.let { child ->
-                    emit(Result.success(child))
-                } ?: emit(Result.failure(Exception("Empty response")))
-            } else {
-                emit(Result.failure(Exception("Failed to get child: ${response.code()}")))
-            }
-        } catch (e: Exception) {
-            emit(Result.failure(e))
+        val response = apiService.getChild("Bearer $token", childId)
+        if (response.isSuccessful) {
+            response.body()?.let { child ->
+                emit(Result.success(child))
+            } ?: emit(Result.failure(Exception("Empty response")))
+        } else {
+            emit(Result.failure(Exception("Failed to get child: ${response.code()}")))
         }
+    }.catch { e ->
+        emit(Result.failure(e))
     }
+
 
     suspend fun getChildPhotos(token: String, childId: Long): Flow<Result<List<Photo>>> = flow {
         try {

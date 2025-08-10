@@ -10,6 +10,7 @@ data class Companion(
     val name: String,
     val surname: String,
     val avatarId: String? = null,
+    val organization: String? = null,
     val startWorkingTime: String? = null,
     val endWorkingTime: String? = null
 ) : Parcelable

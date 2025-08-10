@@ -26,7 +26,7 @@ fun ProfileScreen(
     val currentUser by authViewModel.currentCompanion.collectAsStateWithLifecycle()
     val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
 //    val currentSession by workSessionViewModel.currentSession.collectAsStateWithLifecycle()
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -69,7 +69,7 @@ fun ProfileScreen(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
-                    
+
                     currentUser?.let { user ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -93,7 +93,7 @@ fun ProfileScreen(
                                     )
                                 }
                             }
-                            
+
                             Column(
                                 modifier = Modifier
                                     .weight(1f)
@@ -109,17 +109,17 @@ fun ProfileScreen(
                                     fontSize = 14.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-//                                Text(
-//                                    text = "Organization: ${user.organization}",
-//                                    fontSize = 14.sp,
-//                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-//                                )
+                                Text(
+                                    text = "Organization: ${user.organization}",
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
                     }
                 }
             }
-            
+
             // Work Time Tracking Card
             Card(
                 modifier = Modifier.fillMaxWidth()
@@ -133,7 +133,7 @@ fun ProfileScreen(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
-                    
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -155,7 +155,7 @@ fun ProfileScreen(
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Arbeitszeit starten")
                         }
-                        
+
                         Button(
                             onClick = {
                                 authToken?.let { token ->
@@ -179,7 +179,7 @@ fun ProfileScreen(
                             Text("Arbeitszeit beenden")
                         }
                     }
-                    
+
 //                    if (currentSession != null) {
 //                        Card(
 //                            modifier = Modifier
@@ -198,7 +198,7 @@ fun ProfileScreen(
 //                    }
                 }
             }
-            
+
 //             Work Hours Summary Card
             Card(
                 modifier = Modifier.fillMaxWidth()
@@ -212,7 +212,7 @@ fun ProfileScreen(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
-                    
+
                     currentUser?.let { user ->
                         Text(
                             text = "Gesamtstunden:",

@@ -4,6 +4,7 @@ import com.example.school_companion.data.api.EventApi
 import com.example.school_companion.data.api.EventRequestDto
 import com.example.school_companion.data.model.Event
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
@@ -14,19 +15,18 @@ class EventsRepository @Inject constructor(
     suspend fun getEventsByCompanion(
         token: String
     ): Flow<Result<List<Event>>> = flow {
-        try {
-            val response = apiService.getEventsByCompanion("Bearer $token")
-            if (response.isSuccessful) {
-                response.body()?.let { events ->
-                    emit(Result.success(events))
-                } ?: emit(Result.failure(Exception("Empty response")))
-            } else {
-                emit(Result.failure(Exception("Failed to get events: ${response.code()}")))
-            }
-        } catch (e: Exception) {
-            emit(Result.failure(e))
+        val response = apiService.getEventsByCompanion("Bearer $token")
+        if (response.isSuccessful) {
+            response.body()?.let { events ->
+                emit(Result.success(events))
+            } ?: emit(Result.failure(Exception("Empty response")))
+        } else {
+            emit(Result.failure(Exception("Failed to get events: ${response.code()}")))
         }
+    }.catch { e ->
+        emit(Result.failure(e))
     }
+
 
     suspend fun getEventsByChild(
         token: String,

@@ -32,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -58,6 +59,12 @@ import com.example.school_companion.ui.viewmodel.EventsState
 import com.example.school_companion.ui.viewmodel.EventsViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import androidx.compose.material3.Tab
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -100,49 +107,35 @@ fun DashboardScreen(
             )
         },
         bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = true,
-                    onClick = { },
-                    icon = { Icon(Icons.Default.Dashboard, contentDescription = "Dashboard") },
-                    label = { Text("Dashboard") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { navController.navigate(Screen.Children.route) },
-                    icon = { Icon(Icons.Default.People, contentDescription = "Children") },
-                    label = { Text("Kinder") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { navController.navigate(Screen.Events.route) },
-                    icon = { Icon(Icons.Default.Event, contentDescription = "Events") },
-                    label = { Text("Termine") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { navController.navigate(Screen.Monitoring.route) },
-                    icon = { Icon(Icons.Default.Assessment, contentDescription = "Monitoring") },
-                    label = { Text("Monitoring") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { navController.navigate(Screen.Statistics.route) },
-                    icon = { Icon(Icons.Default.BarChart, contentDescription = "Statistics") },
-                    label = { Text("Statistiken") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { navController.navigate(Screen.Statistics.route) },
-                    icon = {
-                        Icon(
-                            Icons.Default.BarChart,
-                            contentDescription = "School Companion"
-                        )
-                    },
-                    label = { Text("School Companion") }
-                )
+            val tabs = listOf(
+                Screen.Dashboard to Icons.Default.Dashboard,
+                Screen.Children to Icons.Default.People,
+                Screen.Events to Icons.Default.Event,
+                Screen.Monitoring to Icons.Default.Assessment,
+                Screen.Statistics to Icons.Default.BarChart,
+//                Screen.SchoolCompanion to Icons.Default.School
+            )
+
+            var selectedTabIndex by remember { mutableIntStateOf(0) }
+
+            ScrollableTabRow(
+                selectedTabIndex = selectedTabIndex,
+                edgePadding = 8.dp
+            ) {
+                tabs.forEachIndexed { index, pair ->
+                    val (screen, icon) = pair
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = {
+                            selectedTabIndex = index
+                            navController.navigate(screen.route)
+                        },
+                        icon = { Icon(icon, contentDescription = screen.route) },
+                        text = { Text(screen.route) }
+                    )
+                }
             }
+
         }
     ) { paddingValues ->
         LazyColumn(

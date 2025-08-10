@@ -11,6 +11,9 @@ data class Event(
     val startDateTime: String,
     val endDateTime: String,
     val location: String,
+    val childId: Long
 ) : Parcelable
-
-
+data class EventWithChild(
+    val event: Event,
+    val child: Child
+)
