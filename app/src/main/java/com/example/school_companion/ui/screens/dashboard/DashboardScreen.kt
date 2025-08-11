@@ -14,9 +14,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Assessment
+import androidx.compose.material.icons.filled.Assistant
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.People
@@ -29,16 +31,18 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -59,11 +63,6 @@ import com.example.school_companion.ui.viewmodel.EventsState
 import com.example.school_companion.ui.viewmodel.EventsViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import androidx.compose.material3.Tab
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -113,7 +112,7 @@ fun DashboardScreen(
                 Screen.Events to Icons.Default.Event,
                 Screen.Monitoring to Icons.Default.Assessment,
                 Screen.Statistics to Icons.Default.BarChart,
-//                Screen.SchoolCompanion to Icons.Default.School
+                Screen.Assistant to Icons.Default.Assistant
             )
 
             var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -224,6 +223,26 @@ fun DashboardScreen(
                 }
             }
 
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    QuickActionCard(
+                        title = "AI Assistant",
+                        icon = Icons.Default.Assistant,
+                        onClick = { navController.navigate(Screen.Assistant.route) },
+                        modifier = Modifier.weight(1f)
+                    )
+                    QuickActionCard(
+                        title = "Planner",
+                        icon = Icons.Default.EditCalendar,
+                        onClick = { },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+
             // Assigned Children
             item {
                 Text(
@@ -235,7 +254,7 @@ fun DashboardScreen(
             }
 
             when (childrenState) {
-                is com.example.school_companion.ui.viewmodel.ChildrenState.Loading -> {
+                is ChildrenState.Loading -> {
                     item {
                         Card(
                             modifier = Modifier.fillMaxWidth()

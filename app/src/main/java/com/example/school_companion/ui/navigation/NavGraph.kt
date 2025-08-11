@@ -9,6 +9,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.school_companion.ui.screens.assistant.AssistantScreen
 import com.example.school_companion.ui.screens.auth.LoginScreen
 import com.example.school_companion.ui.screens.auth.RegisterScreen
 import com.example.school_companion.ui.screens.children.ChildDetailScreen
@@ -85,6 +86,10 @@ fun NavGraph(
 
         composable(Screen.Monitoring.route) {
             MonitoringScreen(navController = navController, authViewModel = authViewModel)
+        }
+
+        composable(Screen.Assistant.route) {
+            AssistantScreen(navController = navController, authViewModel = authViewModel)
         }
     }
 } 

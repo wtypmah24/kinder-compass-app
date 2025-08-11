@@ -20,6 +20,7 @@ import java.time.LocalDate
 interface ChildrenApi {
     @POST("child")
     suspend fun addChild(
+        @Header("Authorization") token: String,
         @Body childRequestDto: ChildRequestDto,
     ): Response<ResponseBody>
 

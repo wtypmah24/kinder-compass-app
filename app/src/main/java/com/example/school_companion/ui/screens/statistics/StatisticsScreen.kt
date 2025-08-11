@@ -292,33 +292,12 @@ fun LineChart(entries: List<MonitoringEntry>, range: String) {
 
     val lineColor = MaterialTheme.colorScheme.primary
     val textMeasurer = rememberTextMeasurer()
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
     val timeFormatterForLastDay = DateTimeFormatter.ofPattern("HH:mm") // для Last Day по времени
 
     // -------------------
     // Фильтрация по range
     // -------------------
-    val now = System.currentTimeMillis()
-    val rangeMillis = when (range) {
-        "Last Day" -> 1L * 24 * 60 * 60 * 1000
-        "Last 7 Days" -> 7L * 24 * 60 * 60 * 1000
-        "Last 30 Days" -> 30L * 24 * 60 * 60 * 1000
-        "Last 90 Days" -> 90L * 24 * 60 * 60 * 1000
-        else -> Long.MAX_VALUE
-    }
-    val filtered = entries.filter { entry ->
-        try {
-            val dateMillis = LocalDateTime.parse(entry.createdAt, formatter)
-                .atZone(ZoneId.systemDefault())
-                .toInstant()
-                .toEpochMilli()
-            (now - dateMillis) <= rangeMillis
-        } catch (_: Exception) {
-            false
-        }
-    }
-
-    Log.d("LineChart", "Filtered entries count=${filtered.size} for range=$range")
+    val filtered = filterByRange(range, entries)
 
     if (filtered.isEmpty()) {
         Text("No data for selected range")
@@ -328,35 +307,7 @@ fun LineChart(entries: List<MonitoringEntry>, range: String) {
     // -------------------
     // Группировка и усреднение или просто список (Last Day)
     // -------------------
-    val points = if (range == "Last Day") {
-        filtered.mapNotNull { entry ->
-            entry.value.toFloatOrNull()?.let { value ->
-                val timeMillis = try {
-                    LocalDateTime.parse(entry.createdAt, formatter)
-                        .atZone(ZoneId.systemDefault())
-                        .toInstant()
-                        .toEpochMilli()
-                } catch (_: Exception) {
-                    null
-                }
-                timeMillis?.let { it to value }
-            }
-        }.sortedBy { it.first }
-    } else {
-        filtered.groupBy { entry ->
-            try {
-                LocalDateTime.parse(entry.createdAt, formatter).toLocalDate()
-            } catch (_: Exception) {
-                null
-            }
-        }.filterKeys { it != null }
-            .map { (date, list) ->
-                val avg = list.mapNotNull { it.value.toFloatOrNull() }.average().toFloat()
-                val millis = date!!.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                millis to avg
-            }
-            .sortedBy { it.first }
-    }
+    val points = createPointsFromEntries(entries, range)
 
     if (points.isEmpty()) {
         Text("No numeric data to plot after grouping")
@@ -508,7 +459,7 @@ fun LineChart(entries: List<MonitoringEntry>, range: String) {
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun FilterByRange(range: String, entries: List<MonitoringEntry>) {
+fun filterByRange(range: String, entries: List<MonitoringEntry>): List<MonitoringEntry> {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
 
     val now = System.currentTimeMillis()
@@ -519,7 +470,7 @@ fun FilterByRange(range: String, entries: List<MonitoringEntry>) {
         "Last 90 Days" -> 90L * 24 * 60 * 60 * 1000
         else -> Long.MAX_VALUE
     }
-    val filtered = entries.filter { entry ->
+    return entries.filter { entry ->
         try {
             val dateMillis = LocalDateTime.parse(entry.createdAt, formatter)
                 .atZone(ZoneId.systemDefault())
@@ -530,4 +481,42 @@ fun FilterByRange(range: String, entries: List<MonitoringEntry>) {
             false
         }
     }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun createPointsFromEntries(
+    entries: List<MonitoringEntry>,
+    range: String
+): List<Pair<Long, Float>> {
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
+    val points = if (range == "Last Day") {
+        entries.mapNotNull { entry ->
+            entry.value.toFloatOrNull()?.let { value ->
+                val timeMillis = try {
+                    LocalDateTime.parse(entry.createdAt, formatter)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli()
+                } catch (_: Exception) {
+                    null
+                }
+                timeMillis?.let { it to value }
+            }
+        }.sortedBy { it.first }
+    } else {
+        entries.groupBy { entry ->
+            try {
+                LocalDateTime.parse(entry.createdAt, formatter).toLocalDate()
+            } catch (_: Exception) {
+                null
+            }
+        }.filterKeys { it != null }
+            .map { (date, list) ->
+                val avg = list.mapNotNull { it.value.toFloatOrNull() }.average().toFloat()
+                val millis = date!!.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                millis to avg
+            }
+            .sortedBy { it.first }
+    }
+    return points
 }

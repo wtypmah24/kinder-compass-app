@@ -2,6 +2,7 @@ package com.example.school_companion.di
 
 import com.example.school_companion.data.api.ApiService
 import com.example.school_companion.data.api.AuthApi
+import com.example.school_companion.data.api.ChatApi
 import com.example.school_companion.data.api.ChildrenApi
 import com.example.school_companion.data.api.EntryApi
 import com.example.school_companion.data.api.EventApi
@@ -39,7 +40,8 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8080/")
+//            .baseUrl("http://10.0.2.2:8080/")
+            .baseUrl("http://192.168.178.21:8080/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -97,5 +99,11 @@ object NetworkModule {
     @Singleton
     fun provideParamApi(retrofit: Retrofit): ParamApi {
         return retrofit.create(ParamApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideChatApi(retrofit: Retrofit): ChatApi {
+        return retrofit.create(ChatApi::class.java)
     }
 } 
