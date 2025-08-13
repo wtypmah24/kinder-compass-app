@@ -7,8 +7,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScopeInstance.weight
-import androidx.compose.foundation.layout.FlowColumnScopeInstance.weight
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,7 +26,6 @@ import androidx.compose.material.icons.filled.Message
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -164,81 +161,31 @@ fun AssistantScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             if (childrenState is ChildrenState.Success) {
-                DropdownMenuWrapper(
-                    items = (childrenState as ChildrenState.Success).children,
-                    selectedItem = selectedChild,
-                    onItemSelected = {
+                ChildSelector(
+                    children = (childrenState as ChildrenState.Success).children,
+                    selectedChild = selectedChild,
+                    onSelect = {
                         selectedChild = it
                         messageText = ""
-                    },
-                    itemToString = { "${it.name} ${it.surname}" },
-                    placeholder = "Choose Child"
+                    }
                 )
             }
 
             if (chatIdsState is ChatViewModel.ChatIdsState.Success) {
-                val threads = (chatIdsState as ChatViewModel.ChatIdsState.Success).children
-                var showDeleteConfirm by remember { mutableStateOf(false) }
-                DropdownMenuWrapper(
-                    items = threads,
-                    selectedItem = selectedThread,
-                    onItemSelected = { tid ->
+                ThreadSelector(
+                    threads = (chatIdsState as ChatViewModel.ChatIdsState.Success).children,
+                    selectedThread = selectedThread,
+                    onSelect = { tid ->
                         selectedThread = tid
-                        authToken?.let { token ->
-                            chatViewModel.getChatByThreadId(token, tid)
-                        }
+                        authToken?.let { chatViewModel.getChatByThreadId(it, tid) }
                     },
-                    itemToString = { it },
-                    placeholder = "Choose Chat Thread",
-                    customItemContent = { tid ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(tid, modifier = Modifier.weight(1f))
-                            IconButton(
-                                onClick = { showDeleteConfirm = true }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Delete chat",
-                                    tint = Color.Red
-                                )
-                            }
-
+                    onDelete = { tid ->
+                        authToken?.let {
+                            chatViewModel.removeChatByThreadId(it, tid)
+                            chatViewModel.getChatIds(it)
                         }
-                        if (showDeleteConfirm) {
-                            AlertDialog(
-                                onDismissRequest = { showDeleteConfirm = false },
-                                title = { Text("Delete chat with AI?") },
-                                text = { Text("Are you sure you want to delete ${tid}?") },
-                                confirmButton = {
-                                    Button(
-                                        onClick = {
-                                            authToken?.let {
-                                                chatViewModel.removeChatByThreadId(
-                                                    it,
-                                                    tid
-                                                )
-                                                chatViewModel.getChatIds(it)
-                                            }
-                                            if (tid == selectedThread) localMessages = emptyList()
-                                            selectedThread = null
-                                            showDeleteConfirm = false
-                                        },
-                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                                    ) {
-                                        Text("Delete", color = Color.White)
-                                    }
-                                },
-                                dismissButton = {
-                                    Button(onClick = { showDeleteConfirm = false }) {
-                                        Text("Cancel")
-                                    }
-                                }
-                            )
-                        }
+                        if (tid == selectedThread) localMessages = emptyList()
+                        selectedThread = null
                     }
                 )
             }
@@ -251,113 +198,60 @@ fun AssistantScreen(
                 tonalElevation = 2.dp,
                 shape = MaterialTheme.shapes.medium
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(8.dp)
-                ) {
-                    if (localMessages.isNotEmpty()) {
-                        LazyColumn(
-                            state = listState,
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth(),
-                            contentPadding = PaddingValues(vertical = 8.dp)
-                        ) {
-                            items(localMessages) { msg ->
-                                ChatMessageItem(msg)
-                            }
-                        }
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (selectedThread == null) {
-                                Text("No chat selected")
-                            } else {
-                                if (chatState is ChatViewModel.ChatState.Loading) {
-                                    CircularProgressIndicator()
-                                } else {
-                                    Text("No messages")
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        val canSend = (selectedChild != null) || (selectedThread != null)
-
-                        OutlinedTextField(
-                            value = messageText,
-                            onValueChange = { messageText = it },
-                            modifier = Modifier.weight(1f),
-                            placeholder = {
-                                if (!canSend) Text("To start chat you have to select a child")
-                                else Text("Type your message")
-                            },
-                            enabled = canSend,
-                            singleLine = false,
-                        )
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        Button(
-                            onClick = {
-                                authToken?.let { token ->
-                                    val now = System.currentTimeMillis()
-
-                                    val userMsg = AssistantAnswer(
-                                        id = "TEMP_USER_$now",
-                                        role = "User",
-                                        message = messageText,
-                                        thread_id = selectedThread ?: "",
-                                        created_at = now
-                                    )
-
-                                    val typingMsg = AssistantAnswer(
-                                        id = "TEMP_ASSISTANT_ID",
-                                        role = "assistant",
-                                        message = "...",
-                                        thread_id = selectedThread ?: "",
-                                        created_at = now + 1
-                                    )
-
-                                    localMessages = localMessages + userMsg + typingMsg
-
-                                    if (selectedThread == null) {
-                                        selectedChild?.let { child ->
-                                            chatViewModel.askNewChat(
-                                                token,
-                                                ChatRequest(messageText),
-                                                child.id
-                                            )
-                                        }
-                                    } else {
-                                        chatViewModel.ask(
-                                            token,
-                                            selectedChild?.id ?: 0L,
-                                            ChatRequest(messageText),
-                                            selectedThread!!
-                                        )
-                                    }
-                                    messageText = ""
-                                }
-                            },
-                            enabled = canSend && messageText.isNotBlank()
-                        ) {
-                            Text("Send")
-                        }
-                    }
+                Column {
+                    MessagesList(
+                        messages = localMessages,
+                        listState = listState,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
+            MessageInput(
+                messageText = messageText,
+                onMessageChange = { messageText = it },
+                canSend = (selectedChild != null) || (selectedThread != null),
+                onSend = {
+                    authToken?.let { token ->
+                        val now = System.currentTimeMillis()
+
+                        val userMsg = AssistantAnswer(
+                            id = "TEMP_USER_$now",
+                            role = "User",
+                            message = messageText,
+                            thread_id = selectedThread ?: "",
+                            created_at = now
+                        )
+
+                        val typingMsg = AssistantAnswer(
+                            id = "TEMP_ASSISTANT_ID",
+                            role = "assistant",
+                            message = "...",
+                            thread_id = selectedThread ?: "",
+                            created_at = now + 1
+                        )
+
+                        localMessages = localMessages + userMsg + typingMsg
+
+                        if (selectedThread == null) {
+                            selectedChild?.let { child ->
+                                chatViewModel.askNewChat(
+                                    token,
+                                    ChatRequest(messageText),
+                                    child.id
+                                )
+                            }
+                        } else {
+                            chatViewModel.ask(
+                                token,
+                                selectedChild?.id ?: 0L,
+                                ChatRequest(messageText),
+                                selectedThread!!
+                            )
+                        }
+                        messageText = ""
+                    }
+                }
+            )
         }
     }
 }
@@ -489,14 +383,13 @@ fun ThreadSelector(
 @Composable
 fun MessagesList(
     messages: List<AssistantAnswer>,
-    listState: LazyListState
+    listState: LazyListState,
+    modifier: Modifier = Modifier
 ) {
     if (messages.isNotEmpty()) {
         LazyColumn(
             state = listState,
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
+            modifier = modifier.fillMaxWidth(),
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
             items(messages) { msg ->
@@ -505,9 +398,7 @@ fun MessagesList(
         }
     } else {
         Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
+            modifier = modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
             Text("No messages")
@@ -549,8 +440,6 @@ fun MessageInput(
     }
 }
 
-
-
 @Composable
 fun AnimatedDots() {
     var dotCount by remember { mutableIntStateOf(1) }
@@ -561,4 +450,5 @@ fun AnimatedDots() {
         }
     }
     Text(".".repeat(dotCount))
+
 }
