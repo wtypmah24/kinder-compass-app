@@ -269,14 +269,14 @@ fun MonitoringScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> DropdownMenuWrapper(
     items: List<T>,
     selectedItem: T?,
     onItemSelected: (T) -> Unit,
     itemToString: (T) -> String,
-    placeholder: String
+    placeholder: String,
+    customItemContent: (@Composable (T) -> Unit)? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
     val displayText = selectedItem?.let { itemToString(it) } ?: placeholder
@@ -309,16 +309,23 @@ fun <T> DropdownMenuWrapper(
         ) {
             items.forEach { item ->
                 DropdownMenuItem(
-                    text = { Text(itemToString(item)) },
                     onClick = {
                         onItemSelected(item)
                         expanded = false
+                    },
+                    text = {
+                        if (customItemContent != null) {
+                            customItemContent(item)
+                        } else {
+                            Text(itemToString(item))
+                        }
                     }
                 )
             }
         }
     }
 }
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable

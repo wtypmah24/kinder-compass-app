@@ -3,17 +3,13 @@ package com.example.school_companion.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.school_companion.data.api.ChatRequest
-import com.example.school_companion.data.api.DeletePhotoRequestDto
 import com.example.school_companion.data.model.AssistantAnswer
 import com.example.school_companion.data.repository.ChatRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
-import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,7 +30,6 @@ class ChatViewModel @Inject constructor(
         token: String,
         prompt: ChatRequest,
         childId: Long,
-        onThreadCreated: (String) -> Unit
     ) {
         viewModelScope.launch {
             _chatState.value = ChatState.Loading
@@ -42,9 +37,6 @@ class ChatViewModel @Inject constructor(
                 result.fold(
                     onSuccess = { answers ->
                         _chatState.value = ChatState.Success(answers)
-                        if (answers.isNotEmpty()) {
-                            onThreadCreated(answers.first().thread_id)
-                        }
                     },
                     onFailure = { exception ->
                         _chatState.value =
@@ -130,7 +122,7 @@ class ChatViewModel @Inject constructor(
 
     sealed class ChatState {
         data object Loading : ChatState()
-        data class Success(val children: List<AssistantAnswer>) : ChatState()
+        data class Success(val answers: List<AssistantAnswer>) : ChatState()
         data class Error(val message: String) : ChatState()
     }
 

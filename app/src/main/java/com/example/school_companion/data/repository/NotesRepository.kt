@@ -1,6 +1,5 @@
 package com.example.school_companion.data.repository
 
-import com.example.school_companion.data.api.ApiService
 import com.example.school_companion.data.api.NoteApi
 import com.example.school_companion.data.api.NoteRequestDto
 import com.example.school_companion.data.model.Note

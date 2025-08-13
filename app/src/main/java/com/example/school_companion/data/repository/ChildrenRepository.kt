@@ -1,6 +1,5 @@
 package com.example.school_companion.data.repository
 
-import com.example.school_companion.data.api.ApiService
 import com.example.school_companion.data.api.ChildrenApi
 import com.example.school_companion.data.api.DeletePhotoRequestDto
 import com.example.school_companion.data.model.Child

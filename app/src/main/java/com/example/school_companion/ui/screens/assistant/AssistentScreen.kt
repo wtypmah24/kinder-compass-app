@@ -1,23 +1,34 @@
 package com.example.school_companion.ui.screens.assistant
 
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScopeInstance.weight
+import androidx.compose.foundation.layout.FlowColumnScopeInstance.weight
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Message
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,15 +41,16 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -50,6 +62,7 @@ import com.example.school_companion.ui.viewmodel.AuthViewModel
 import com.example.school_companion.ui.viewmodel.ChatViewModel
 import com.example.school_companion.ui.viewmodel.ChildrenState
 import com.example.school_companion.ui.viewmodel.ChildrenViewModel
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -70,8 +83,12 @@ fun AssistantScreen(
 
     var selectedChild by remember { mutableStateOf<Child?>(null) }
     var selectedThread by remember { mutableStateOf<String?>(null) }
-    var showHistory by remember { mutableStateOf(false) }
     var messageText by remember { mutableStateOf("") }
+    val listState = rememberLazyListState()
+    val coroutine = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    var localMessages by remember { mutableStateOf<List<AssistantAnswer>>(emptyList()) }
 
     LaunchedEffect(authToken) {
         authToken?.let { token ->
@@ -80,38 +97,78 @@ fun AssistantScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Statistics", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { showHistory = !showHistory }) {
-                        Icon(Icons.Default.History, contentDescription = "History")
+    LaunchedEffect(chatState) {
+        if (chatState is ChatViewModel.ChatState.Success) {
+            val answers =
+                (chatState as ChatViewModel.ChatState.Success).answers.sortedBy { it.created_at }
+            if (answers.isEmpty()) return@LaunchedEffect
+
+            val answerThread = answers.first().thread_id
+
+            if (selectedThread == null) {
+                selectedThread = answerThread
+                localMessages = answers
+                authToken?.let { token -> chatViewModel.getChatIds(token) }
+            } else if (selectedThread == answerThread) {
+                localMessages = answers
+            } else {
+                val lastAssistant = answers.lastOrNull { it.role == "assistant" }
+                if (lastAssistant != null) {
+                    localMessages = localMessages.map {
+                        if (it.id == "TEMP_ASSISTANT_ID") lastAssistant else it
                     }
                 }
-            )
+            }
+            if (localMessages.isNotEmpty()) {
+                coroutine.launch {
+                    listState.animateScrollToItem(localMessages.size - 1)
+                }
+            }
         }
-    ) { paddingValues ->
+    }
+
+    Scaffold(topBar = {
+        TopAppBar(title = {
+            Text(
+                "AI Assistant", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+            )
+        }, navigationIcon = {
+            IconButton(onClick = { navController.navigateUp() }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            }
+        }, actions = {
+            IconButton(onClick = {
+                if (selectedChild != null) {
+                    selectedThread = null
+                    localMessages = emptyList()
+                    messageText = ""
+                } else {
+                    Toast
+                        .makeText(
+                            context,
+                            "To start a new chat you need to choose a child",
+                            Toast.LENGTH_SHORT
+                        )
+                        .show()
+                }
+            }) {
+                Icon(Icons.Filled.Message, contentDescription = "New chat")
+            }
+        })
+    }) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Выбор ребенка
             if (childrenState is ChildrenState.Success) {
                 DropdownMenuWrapper(
                     items = (childrenState as ChildrenState.Success).children,
                     selectedItem = selectedChild,
                     onItemSelected = {
                         selectedChild = it
-                        selectedThread = null
                         messageText = ""
                     },
                     itemToString = { "${it.name} ${it.surname}" },
@@ -119,152 +176,184 @@ fun AssistantScreen(
                 )
             }
 
-            // Выбор threadId (если есть)
-            if (chatIdsState is ChatViewModel.ChatIdsState.Success && !showHistory) {
+            if (chatIdsState is ChatViewModel.ChatIdsState.Success) {
+                val threads = (chatIdsState as ChatViewModel.ChatIdsState.Success).children
+                var showDeleteConfirm by remember { mutableStateOf(false) }
                 DropdownMenuWrapper(
-                    items = (chatIdsState as ChatViewModel.ChatIdsState.Success).children,
+                    items = threads,
                     selectedItem = selectedThread,
-                    onItemSelected = {
-                        selectedThread = it
+                    onItemSelected = { tid ->
+                        selectedThread = tid
                         authToken?.let { token ->
-                            chatViewModel.getChatByThreadId(token, it)
+                            chatViewModel.getChatByThreadId(token, tid)
                         }
                     },
                     itemToString = { it },
-                    placeholder = "Choose Chat Thread"
+                    placeholder = "Choose Chat Thread",
+                    customItemContent = { tid ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(tid, modifier = Modifier.weight(1f))
+                            IconButton(
+                                onClick = { showDeleteConfirm = true }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete chat",
+                                    tint = Color.Red
+                                )
+                            }
+
+                        }
+                        if (showDeleteConfirm) {
+                            AlertDialog(
+                                onDismissRequest = { showDeleteConfirm = false },
+                                title = { Text("Delete chat with AI?") },
+                                text = { Text("Are you sure you want to delete ${tid}?") },
+                                confirmButton = {
+                                    Button(
+                                        onClick = {
+                                            authToken?.let {
+                                                chatViewModel.removeChatByThreadId(
+                                                    it,
+                                                    tid
+                                                )
+                                                chatViewModel.getChatIds(it)
+                                            }
+                                            if (tid == selectedThread) localMessages = emptyList()
+                                            selectedThread = null
+                                            showDeleteConfirm = false
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                                    ) {
+                                        Text("Delete", color = Color.White)
+                                    }
+                                },
+                                dismissButton = {
+                                    Button(onClick = { showDeleteConfirm = false }) {
+                                        Text("Cancel")
+                                    }
+                                }
+                            )
+                        }
+                    }
                 )
             }
 
-            // Режим истории (список threadId)
-            if (showHistory) {
-                when (chatIdsState) {
-                    is ChatViewModel.ChatIdsState.Success -> {
-                        LazyColumn {
-                            items((chatIdsState as ChatViewModel.ChatIdsState.Success).children) { threadId ->
-                                Text(
-                                    text = threadId,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            selectedThread = threadId
-                                            authToken?.let { token ->
-                                                chatViewModel.getChatByThreadId(token, threadId)
-                                            }
-                                            showHistory = false
-                                        }
-                                        .padding(8.dp)
-                                )
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .border(1.dp, Color.Gray, shape = MaterialTheme.shapes.medium),
+                tonalElevation = 2.dp,
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(8.dp)
+                ) {
+                    if (localMessages.isNotEmpty()) {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
+                            contentPadding = PaddingValues(vertical = 8.dp)
+                        ) {
+                            items(localMessages) { msg ->
+                                ChatMessageItem(msg)
+                            }
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (selectedThread == null) {
+                                Text("No chat selected")
+                            } else {
+                                if (chatState is ChatViewModel.ChatState.Loading) {
+                                    CircularProgressIndicator()
+                                } else {
+                                    Text("No messages")
+                                }
                             }
                         }
                     }
 
-                    is ChatViewModel.ChatIdsState.Error -> Text("Failed to load history")
-                    else -> {}
-                }
-            } else {
-                // Окно чата с рамкой
-                Surface(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .border(1.dp, Color.Gray, RoundedCornerShape(8.dp)),
-                    tonalElevation = 2.dp,
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(8.dp)
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (selectedThread == null) {
-                            // Нет выбранного чата — просто пустое место
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxWidth(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("No chat selected")
-                            }
-                        } else {
-                            // Показываем чат
-                            when (chatState) {
-                                is ChatViewModel.ChatState.Success -> {
-                                    val messages =
-                                        (chatState as ChatViewModel.ChatState.Success).children
-                                            .sortedBy { it.created_at }
-                                    LazyColumn(
-                                        modifier = Modifier.weight(1f)
-                                    ) {
-                                        items(messages) { msg ->
-                                            ChatMessageItem(msg)
+                        val canSend = (selectedChild != null) || (selectedThread != null)
+
+                        OutlinedTextField(
+                            value = messageText,
+                            onValueChange = { messageText = it },
+                            modifier = Modifier.weight(1f),
+                            placeholder = {
+                                if (!canSend) Text("To start chat you have to select a child")
+                                else Text("Type your message")
+                            },
+                            enabled = canSend,
+                            singleLine = false,
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Button(
+                            onClick = {
+                                authToken?.let { token ->
+                                    val now = System.currentTimeMillis()
+
+                                    val userMsg = AssistantAnswer(
+                                        id = "TEMP_USER_$now",
+                                        role = "User",
+                                        message = messageText,
+                                        thread_id = selectedThread ?: "",
+                                        created_at = now
+                                    )
+
+                                    val typingMsg = AssistantAnswer(
+                                        id = "TEMP_ASSISTANT_ID",
+                                        role = "assistant",
+                                        message = "...",
+                                        thread_id = selectedThread ?: "",
+                                        created_at = now + 1
+                                    )
+
+                                    localMessages = localMessages + userMsg + typingMsg
+
+                                    if (selectedThread == null) {
+                                        selectedChild?.let { child ->
+                                            chatViewModel.askNewChat(
+                                                token,
+                                                ChatRequest(messageText),
+                                                child.id
+                                            )
                                         }
+                                    } else {
+                                        chatViewModel.ask(
+                                            token,
+                                            selectedChild?.id ?: 0L,
+                                            ChatRequest(messageText),
+                                            selectedThread!!
+                                        )
                                     }
+                                    messageText = ""
                                 }
-
-                                is ChatViewModel.ChatState.Error -> {
-                                    Box(
-                                        Modifier.fillMaxSize(),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text("Failed to load chat")
-                                    }
-                                }
-
-                                else -> {}
-                            }
-                        }
-
-                        // Панель ввода сообщения
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            },
+                            enabled = canSend && messageText.isNotBlank()
                         ) {
-                            if (selectedChild == null) {
-                                Text("To start chat you have to select a child")
-                            } else {
-                                OutlinedTextField(
-                                    value = messageText,
-                                    onValueChange = { messageText = it },
-                                    modifier = Modifier.weight(1f),
-                                    placeholder = { Text("Type your message") }
-                                )
-                                Button(
-                                    onClick = {
-                                        authToken?.let { token ->
-                                            if (selectedThread == null) {
-                                                // Новый чат
-                                                chatViewModel.askNewChat(
-                                                    token,
-                                                    ChatRequest(messageText),
-                                                    selectedChild!!.id
-                                                ) { newThreadId ->
-                                                    selectedThread = newThreadId
-                                                    chatViewModel.getChatByThreadId(
-                                                        token,
-                                                        newThreadId
-                                                    )
-                                                }
-                                            } else {
-                                                // Продолжение чата
-                                                chatViewModel.ask(
-                                                    token,
-                                                    selectedChild!!.id,
-                                                    ChatRequest(messageText),
-                                                    selectedThread!!
-                                                )
-                                            }
-                                            messageText = ""
-                                        }
-                                    },
-                                    enabled = messageText.isNotBlank(),
-                                    modifier = Modifier.padding(start = 8.dp)
-                                ) {
-                                    Text("Send")
-                                }
-                            }
+                            Text("Send")
                         }
                     }
                 }
@@ -276,30 +365,200 @@ fun AssistantScreen(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ChatMessageItem(msg: AssistantAnswer) {
+    val isUser = msg.role.equals("User", ignoreCase = true)
     val time = Instant.ofEpochMilli(msg.created_at)
         .atZone(ZoneId.systemDefault())
         .toLocalTime()
         .format(DateTimeFormatter.ofPattern("HH:mm"))
 
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalAlignment = if (msg.role == "User") Alignment.End else Alignment.Start
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        horizontalArrangement = if (isUser) Arrangement.Start else Arrangement.End
     ) {
         Surface(
-            shape = RoundedCornerShape(8.dp),
-            color = if (msg.role == "User") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+            shape = MaterialTheme.shapes.medium,
+            color = if (isUser) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
+            tonalElevation = 2.dp
         ) {
-            Column(Modifier.padding(8.dp)) {
+            Column(modifier = Modifier.padding(8.dp)) {
                 Text(
-                    text = if (msg.role == "User") "You" else "AI Assistant",
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    text = if (isUser) "You" else "AI Assistant",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondary
                 )
-                Text(msg.message, color = Color.White)
-                Text(time, fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
+                Spacer(modifier = Modifier.height(4.dp))
+                if (msg.id == "TEMP_ASSISTANT_ID") {
+                    AnimatedDots()
+                } else {
+                    Text(
+                        text = msg.message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondary
+                    )
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = time,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = (if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondary).copy(
+                        alpha = 0.8f
+                    )
+                )
             }
         }
     }
+}
+
+@Composable
+fun ChildSelector(
+    children: List<Child>,
+    selectedChild: Child?,
+    onSelect: (Child) -> Unit
+) {
+    DropdownMenuWrapper(
+        items = children,
+        selectedItem = selectedChild,
+        onItemSelected = onSelect,
+        itemToString = { "${it.name} ${it.surname}" },
+        placeholder = "Choose Child"
+    )
+}
+
+@Composable
+fun ThreadSelector(
+    threads: List<String>,
+    selectedThread: String?,
+    onSelect: (String) -> Unit,
+    onDelete: (String) -> Unit
+) {
+    var threadToDelete by remember { mutableStateOf<String?>(null) }
+
+    DropdownMenuWrapper(
+        items = threads,
+        selectedItem = selectedThread,
+        onItemSelected = onSelect,
+        itemToString = { it },
+        placeholder = "Choose Chat Thread",
+        customItemContent = { tid ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(tid, modifier = Modifier.weight(1f))
+                IconButton(onClick = { threadToDelete = tid }) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete chat",
+                        tint = Color.Red
+                    )
+                }
+            }
+        }
+    )
+
+    if (threadToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { threadToDelete = null },
+            title = { Text("Delete chat with AI?") },
+            text = { Text("Are you sure you want to delete ${threadToDelete}?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDelete(threadToDelete!!)
+                        threadToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Delete", color = Color.White)
+                }
+            },
+            dismissButton = {
+                Button(onClick = { threadToDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun MessagesList(
+    messages: List<AssistantAnswer>,
+    listState: LazyListState
+) {
+    if (messages.isNotEmpty()) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            contentPadding = PaddingValues(vertical = 8.dp)
+        ) {
+            items(messages) { msg ->
+                ChatMessageItem(msg)
+            }
+        }
+    } else {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("No messages")
+        }
+    }
+}
+
+@Composable
+fun MessageInput(
+    messageText: String,
+    onMessageChange: (String) -> Unit,
+    canSend: Boolean,
+    onSend: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        OutlinedTextField(
+            value = messageText,
+            onValueChange = onMessageChange,
+            modifier = Modifier.weight(1f),
+            placeholder = {
+                if (!canSend) Text("To start chat you have to select a child")
+                else Text("Type your message")
+            },
+            enabled = canSend,
+            singleLine = false,
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Button(
+            onClick = onSend,
+            enabled = canSend && messageText.isNotBlank()
+        ) {
+            Text("Send")
+        }
+    }
+}
+
+
+
+@Composable
+fun AnimatedDots() {
+    var dotCount by remember { mutableIntStateOf(1) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(500)
+            dotCount = (dotCount % 3) + 1
+        }
+    }
+    Text(".".repeat(dotCount))
 }
