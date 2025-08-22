@@ -27,6 +27,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,6 +39,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.example.school_companion.data.model.Child
+import com.example.school_companion.ui.header.child.ChildHeaderCard
+import com.example.school_companion.ui.tab.ChildTabContent
+import com.example.school_companion.ui.tab.ChildTabs
 import com.example.school_companion.ui.tab.EventsTab
 import com.example.school_companion.ui.tab.GoalsTab
 import com.example.school_companion.ui.tab.MonitoringEntryTab
@@ -68,7 +73,7 @@ fun ChildDetailScreen(
 ) {
     val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
     val selectedChild by childrenViewModel.selectedChild.collectAsStateWithLifecycle()
-    var selectedTabIndex by remember { mutableStateOf(0) }
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(authToken, childId) {
         authToken?.let { token ->
@@ -106,122 +111,24 @@ fun ChildDetailScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                // Child Info Header
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Child photo placeholder
-                        Card(
-                            modifier = Modifier.size(80.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer
-                            )
-                        ) {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    Icons.Default.Person,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            }
-                        }
+                ChildHeaderCard(child = child)
 
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(start = 16.dp)
-                        ) {
-                            Text(
-                                text = "${child.name} ${child.surname}",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = "Geboren: ${child.dateOfBirth}",
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = "Email: ${child.email}",
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = "Phone number: ${child.phoneNumber}",
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
+                ChildTabs(
+                    selectedTabIndex = selectedTabIndex,
+                    onTabSelected = { selectedTabIndex = it }
+                )
 
-                // Tabs
-                ScrollableTabRow(selectedTabIndex = selectedTabIndex) {
-                    listOf(
-                        "Events",
-                        "Monitoring",
-                        "Notizen",
-                        "Besondere Bedürfnisse",
-                        "Ziele",
-                        "Fotos"
-                    ).forEachIndexed { index, title ->
-                        Tab(
-                            selected = selectedTabIndex == index,
-                            onClick = { selectedTabIndex = index },
-                            text = { Text(title) }
-                        )
-                    }
-                }
-
-                // Tab Content
-                when (selectedTabIndex) {
-                    0 -> authToken?.let {
-                        EventsTab(
-                            selectedChild = selectedChild!!,
-                            it, eventsViewModel
-                        )
-                    }
-
-                    1 -> authToken?.let {
-                        MonitoringEntryTab(
-                            selectedChild!!, entriesViewModel,
-                            it
-                        )
-                    }
-
-                    2 -> authToken?.let {
-                        NotesTab(
-                            selectedChild = selectedChild!!,
-                            it, notesViewModel
-                        )
-                    }
-
-                    3 -> authToken?.let {
-                        SpecialNeedsTab(
-                            selectedChild = selectedChild!!, needsViewModel,
-                            it
-                        )
-                    }
-
-                    4 -> authToken?.let { GoalsTab(child = selectedChild!!, goalsViewModel, it) }
-                    5 -> authToken?.let {
-                        PhotosTab(
-                            child = selectedChild!!, childrenViewModel,
-                            it
-                        )
-                    }
-                }
+                ChildTabContent(
+                    index = selectedTabIndex,
+                    child = child,
+                    authToken = authToken,
+                    eventsViewModel = eventsViewModel,
+                    notesViewModel = notesViewModel,
+                    needsViewModel = needsViewModel,
+                    goalsViewModel = goalsViewModel,
+                    entriesViewModel = entriesViewModel,
+                    childrenViewModel = childrenViewModel
+                )
             }
         } ?: run {
             Box(
@@ -235,4 +142,3 @@ fun ChildDetailScreen(
         }
     }
 }
-

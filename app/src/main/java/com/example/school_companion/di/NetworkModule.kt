@@ -1,15 +1,17 @@
 package com.example.school_companion.di
 
-import com.example.school_companion.data.api.ApiService
 import com.example.school_companion.data.api.AuthApi
 import com.example.school_companion.data.api.ChatApi
 import com.example.school_companion.data.api.ChildrenApi
+import com.example.school_companion.data.api.CompanionApi
 import com.example.school_companion.data.api.EntryApi
 import com.example.school_companion.data.api.EventApi
 import com.example.school_companion.data.api.GoalApi
 import com.example.school_companion.data.api.NoteApi
 import com.example.school_companion.data.api.ParamApi
+import com.example.school_companion.data.api.SessionApi
 import com.example.school_companion.data.api.SpecialNeedApi
+import com.example.school_companion.data.api.TaskApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -41,16 +43,11 @@ object NetworkModule {
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
 //            .baseUrl("http://10.0.2.2:8080/")
-            .baseUrl("http://192.168.178.21:8080/")
+//            .baseUrl("http://192.168.178.21:8080/")
+            .baseUrl("https://wtypmah.duckdns.org/api/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-    }
-
-    @Provides
-    @Singleton
-    fun provideApiService(retrofit: Retrofit): ApiService {
-        return retrofit.create(ApiService::class.java)
     }
 
     @Provides
@@ -105,5 +102,23 @@ object NetworkModule {
     @Singleton
     fun provideChatApi(retrofit: Retrofit): ChatApi {
         return retrofit.create(ChatApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSessionApi(retrofit: Retrofit): SessionApi {
+        return retrofit.create(SessionApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCompanionApi(retrofit: Retrofit): CompanionApi {
+        return retrofit.create(CompanionApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTaskApi(retrofit: Retrofit): TaskApi {
+        return retrofit.create(TaskApi::class.java)
     }
 } 

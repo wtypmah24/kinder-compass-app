@@ -1,7 +1,6 @@
 package com.example.school_companion.ui.screens.statistics
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -12,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
@@ -50,7 +51,7 @@ import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.MonitoringEntry
 import com.example.school_companion.data.model.MonitoringParam
 import com.example.school_companion.data.model.ScaleType
-import com.example.school_companion.ui.screens.monitoring.DropdownMenuWrapper
+import com.example.school_companion.ui.dropdown.DropdownMenuWrapper
 import com.example.school_companion.ui.viewmodel.AuthViewModel
 import com.example.school_companion.ui.viewmodel.ChildrenState
 import com.example.school_companion.ui.viewmodel.ChildrenViewModel
@@ -94,18 +95,13 @@ fun StatisticsScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Statistics", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
+    Scaffold(topBar = {
+        TopAppBar(title = { Text("Statistics", fontWeight = FontWeight.Bold) }, navigationIcon = {
+            IconButton(onClick = { navController.navigateUp() }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            }
+        })
+    }) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
@@ -145,11 +141,9 @@ fun StatisticsScreen(
             val tabs = listOf("View by Parameter", "View by Child")
             ScrollableTabRow(selectedTabIndex = selectedTabIndex) {
                 tabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedTabIndex == index,
+                    Tab(selected = selectedTabIndex == index,
                         onClick = { selectedTabIndex = index },
-                        text = { Text(title) }
-                    )
+                        text = { Text(title) })
                 }
             }
 
@@ -189,12 +183,18 @@ fun StatisticsScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(16.dp)
                         )
+                    } else if ((childrenState !is ChildrenState.Success) || (entriesState !is EntriesState.Success)) {
+                        Text(
+                            "Something went wrong. Try again later.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(16.dp)
+                        )
                     } else {
                         val filteredEntries =
                             (entriesState as EntriesState.Success).entryData.filter { e ->
-                                e.childId == (selectedChild?.id ?: 0)
+                                e.childId == selectedChild?.id
                             }
-                        ViewByChild(filteredEntries)
+                        ViewByChild(filteredEntries, selectedChild!!, selectedRange)
                     }
 
                 }
@@ -211,8 +211,7 @@ fun StatisticsSummaryCard(entries: List<MonitoringEntry>) {
     val avgPerDay = if (entries.isNotEmpty()) totalEntries / 30 else 0 // Пример
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(4.dp)
+        modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(Modifier.padding(16.dp)) {
             Text("Statistics Summary", fontWeight = FontWeight.Bold)
@@ -235,7 +234,13 @@ fun ViewByParameter(entries: List<MonitoringEntry>, children: List<Child>, range
 
     val entriesByChild = entries.groupBy { it.childId }
 
-    Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
         entriesByChild.forEach { (childId, childEntries) ->
             val child = children.find { it.id == childId }
             val childName = "${child?.name ?: "Unknown"} ${child?.surname ?: ""}".trim()
@@ -269,9 +274,58 @@ fun ViewByParameter(entries: List<MonitoringEntry>, children: List<Child>, range
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ViewByChild(entries: List<MonitoringEntry>) {
-    Text("View by Child - Coming soon")
+fun ViewByChild(entries: List<MonitoringEntry>, child: Child, range: String) {
+    if (entries.isEmpty()) {
+        Text("No data available")
+        return
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        Text(
+            "Entries for: ${child.name} ${child.surname}",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        val entriesByParam = entries.groupBy { it.parameterName }
+
+        entriesByParam.forEach { (paramName, paramEntries) ->
+
+            Text(
+                text = "Chart parameter $paramName",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            when (paramEntries.first().type) {
+                ScaleType.SCALE, ScaleType.QUANTITATIVE -> {
+                    LineChart(paramEntries, range)
+                }
+
+                ScaleType.BINARY -> {
+                    BinaryBarChart(paramEntries)
+                }
+
+                ScaleType.QUALITATIVE -> {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        paramEntries.forEach {
+                            Text("${it.createdAt}: ${it.value}")
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -285,30 +339,21 @@ fun BinaryBarChart(entries: List<MonitoringEntry>) {
 @Composable
 fun LineChart(entries: List<MonitoringEntry>, range: String) {
     if (entries.isEmpty()) {
-        Log.d("LineChart", "No entries passed to chart")
         Text("No data")
         return
     }
 
     val lineColor = MaterialTheme.colorScheme.primary
     val textMeasurer = rememberTextMeasurer()
-    val timeFormatterForLastDay = DateTimeFormatter.ofPattern("HH:mm") // для Last Day по времени
+    val timeFormatterForLastDay = DateTimeFormatter.ofPattern("HH:mm")
 
-    // -------------------
-    // Фильтрация по range
-    // -------------------
     val filtered = filterByRange(range, entries)
-
     if (filtered.isEmpty()) {
         Text("No data for selected range")
         return
     }
 
-    // -------------------
-    // Группировка и усреднение или просто список (Last Day)
-    // -------------------
-    val points = createPointsFromEntries(entries, range)
-
+    val points = createPointsFromEntries(filtered, range)
     if (points.isEmpty()) {
         Text("No numeric data to plot after grouping")
         return
@@ -334,87 +379,88 @@ fun LineChart(entries: List<MonitoringEntry>, range: String) {
         val pxPadding = padding.toPx()
         val chartWidth = size.width - pxPadding * 2
         val chartHeight = size.height - pxPadding * 2
+        val maxYBound = maxOf(0f, size.height - 10f) // защита от отрицательного диапазона
 
         val xScale =
-            chartWidth / (if (range == "Last Day") (points.size - 1).coerceAtLeast(1)
-                .toFloat() else xRange.toFloat())
+            chartWidth / (if (range == "Last Day") (points.size - 1).coerceAtLeast(1).toFloat()
+            else xRange.toFloat())
         val yScale = chartHeight / yRange
 
-        // Оси
         drawLine(
-            color = Color.Gray,
-            start = Offset(pxPadding, size.height - pxPadding),
-            end = Offset(size.width - pxPadding, size.height - pxPadding),
-            strokeWidth = 1.dp.toPx()
+            Color.Gray,
+            Offset(pxPadding, size.height - pxPadding),
+            Offset(size.width - pxPadding, size.height - pxPadding),
+            1.dp.toPx()
         )
         drawLine(
-            color = Color.Gray,
-            start = Offset(pxPadding, pxPadding),
-            end = Offset(pxPadding, size.height - pxPadding),
-            strokeWidth = 1.dp.toPx()
+            Color.Gray,
+            Offset(pxPadding, pxPadding),
+            Offset(pxPadding, size.height - pxPadding),
+            1.dp.toPx()
         )
 
-        // Подписи Y
         val yLabelCount = 5
         val yStep = yRange / yLabelCount
         for (i in 0..yLabelCount) {
             val value = minValue + i * yStep
             val y = size.height - pxPadding - (value - minValue) * yScale
+            val safeY = y.coerceIn(0f, maxYBound)
+
             drawText(
                 textMeasurer = textMeasurer,
                 text = String.format("%.1f", value),
-                topLeft = Offset(4f, y - 8f),
+                topLeft = Offset(4f, safeY - 8f),
                 style = TextStyle(fontSize = 10.sp, color = Color.Gray)
             )
+
             drawLine(
                 color = Color.LightGray.copy(alpha = 0.3f),
-                start = Offset(pxPadding, y),
-                end = Offset(size.width - pxPadding, y),
+                start = Offset(pxPadding, safeY),
+                end = Offset(size.width - pxPadding, safeY),
                 strokeWidth = 0.5.dp.toPx()
             )
         }
 
-        // Подписи X
         if (range == "Last Day") {
-            // Временная ось равномерно разбита по количеству точек
             points.forEachIndexed { index, (time, _) ->
                 val x = pxPadding + index.toFloat() * xScale
                 val label = try {
-                    val dt =
-                        LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault())
-                    dt.format(timeFormatterForLastDay)
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault())
+                        .format(timeFormatterForLastDay)
                 } catch (_: Exception) {
                     ""
                 }
+                val labelY = (size.height - pxPadding + 4.dp.toPx()).coerceIn(0f, maxYBound)
+                val safeX = (x - 10f).coerceAtLeast(0f)
+
                 drawText(
                     textMeasurer = textMeasurer,
                     text = label,
-                    topLeft = Offset(x - 10f, size.height - pxPadding + 4.dp.toPx()),
+                    topLeft = Offset(safeX, labelY),
                     style = TextStyle(fontSize = 10.sp, color = Color.Gray)
                 )
             }
         } else {
-            // Для остальных диапазонов — шаг по дням (X ось по дням)
-            // Посчитаем количество дней между minTime и maxTime
             val startDate =
                 Instant.ofEpochMilli(minTime).atZone(ZoneId.systemDefault()).toLocalDate()
             val endDate = Instant.ofEpochMilli(maxTime).atZone(ZoneId.systemDefault()).toLocalDate()
             val daysBetween = ChronoUnit.DAYS.between(startDate, endDate).toInt()
 
-            // Показываем метки по оси X с шагом 1 день
             for (dayIndex in 0..daysBetween) {
                 val currentDate = startDate.plusDays(dayIndex.toLong())
                 val millis =
                     currentDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
                 val x = pxPadding + ((millis - minTime).toFloat() / xRange.toFloat()) * chartWidth
-                val label = currentDate.toString() // или можно форматировать по-другому
+                val safeX = (x - 20f).coerceAtLeast(0f)
+                val labelY = (size.height - pxPadding + 4.dp.toPx()).coerceIn(0f, maxYBound)
+
                 drawText(
                     textMeasurer = textMeasurer,
-                    text = label,
-                    topLeft = Offset(x - 20f, size.height - pxPadding + 4.dp.toPx()),
+                    text = currentDate.toString(),
+                    topLeft = Offset(safeX, labelY),
                     style = TextStyle(fontSize = 10.sp, color = Color.Gray)
                 )
-                // Можно добавить тонкие вертикальные линии для удобства чтения графика
+
                 drawLine(
                     color = Color.LightGray.copy(alpha = 0.3f),
                     start = Offset(x, pxPadding),
@@ -424,7 +470,6 @@ fun LineChart(entries: List<MonitoringEntry>, range: String) {
             }
         }
 
-        // Линия графика
         val path = Path()
         points.forEachIndexed { index, (time, value) ->
             val x = if (range == "Last Day") {
@@ -438,7 +483,6 @@ fun LineChart(entries: List<MonitoringEntry>, range: String) {
         }
         drawPath(path, color = lineColor, style = Stroke(width = 2.dp.toPx()))
 
-        // Точки и значения
         points.forEachIndexed { index, (time, value) ->
             val x = if (range == "Last Day") {
                 pxPadding + index.toFloat() * xScale
@@ -446,17 +490,19 @@ fun LineChart(entries: List<MonitoringEntry>, range: String) {
                 pxPadding + ((time - minTime).toFloat() / xRange.toFloat()) * chartWidth
             }
             val y = size.height - pxPadding - (value - minValue) * yScale
+            val safeY = y.coerceIn(0f, maxYBound)
 
-            drawCircle(color = lineColor, radius = pointRadius.toPx(), center = Offset(x, y))
+            drawCircle(color = lineColor, radius = pointRadius.toPx(), center = Offset(x, safeY))
             drawText(
                 textMeasurer = textMeasurer,
                 text = String.format("%.1f", value),
-                topLeft = Offset(x + 6f, y - 16f),
+                topLeft = Offset((x + 6f).coerceAtLeast(0f), safeY - 16f),
                 style = TextStyle(fontSize = 10.sp, color = Color.DarkGray)
             )
         }
     }
 }
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun filterByRange(range: String, entries: List<MonitoringEntry>): List<MonitoringEntry> {
@@ -472,10 +518,9 @@ fun filterByRange(range: String, entries: List<MonitoringEntry>): List<Monitorin
     }
     return entries.filter { entry ->
         try {
-            val dateMillis = LocalDateTime.parse(entry.createdAt, formatter)
-                .atZone(ZoneId.systemDefault())
-                .toInstant()
-                .toEpochMilli()
+            val dateMillis =
+                LocalDateTime.parse(entry.createdAt, formatter).atZone(ZoneId.systemDefault())
+                    .toInstant().toEpochMilli()
             (now - dateMillis) <= rangeMillis
         } catch (_: Exception) {
             false
@@ -485,18 +530,15 @@ fun filterByRange(range: String, entries: List<MonitoringEntry>): List<Monitorin
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun createPointsFromEntries(
-    entries: List<MonitoringEntry>,
-    range: String
+    entries: List<MonitoringEntry>, range: String
 ): List<Pair<Long, Float>> {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
     val points = if (range == "Last Day") {
         entries.mapNotNull { entry ->
             entry.value.toFloatOrNull()?.let { value ->
                 val timeMillis = try {
-                    LocalDateTime.parse(entry.createdAt, formatter)
-                        .atZone(ZoneId.systemDefault())
-                        .toInstant()
-                        .toEpochMilli()
+                    LocalDateTime.parse(entry.createdAt, formatter).atZone(ZoneId.systemDefault())
+                        .toInstant().toEpochMilli()
                 } catch (_: Exception) {
                     null
                 }
@@ -510,13 +552,11 @@ fun createPointsFromEntries(
             } catch (_: Exception) {
                 null
             }
-        }.filterKeys { it != null }
-            .map { (date, list) ->
-                val avg = list.mapNotNull { it.value.toFloatOrNull() }.average().toFloat()
-                val millis = date!!.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                millis to avg
-            }
-            .sortedBy { it.first }
+        }.filterKeys { it != null }.map { (date, list) ->
+            val avg = list.mapNotNull { it.value.toFloatOrNull() }.average().toFloat()
+            val millis = date!!.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            millis to avg
+        }.sortedBy { it.first }
     }
     return points
 }

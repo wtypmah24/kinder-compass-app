@@ -17,52 +17,40 @@ class ChatViewModel @Inject constructor(
     private val chatRepository: ChatRepository
 ) : ViewModel() {
 
-    private val _chatState = MutableStateFlow<ChatState>(ChatState.Loading)
-    val chatState: StateFlow<ChatState> = _chatState.asStateFlow()
+    private val _messages = MutableStateFlow<List<AssistantAnswer>>(emptyList())
+    val messages: StateFlow<List<AssistantAnswer>> = _messages.asStateFlow()
 
     private val _chatIdsState = MutableStateFlow<ChatIdsState>(ChatIdsState.Loading)
     val chatIdsState: StateFlow<ChatIdsState> = _chatIdsState.asStateFlow()
 
-    private val _selectedChat = MutableStateFlow<AssistantAnswer?>(null)
-    val selectedChat: StateFlow<AssistantAnswer?> = _selectedChat.asStateFlow()
+    private val _selectedThreadId = MutableStateFlow<String?>(null)
 
-    fun askNewChat(
-        token: String,
-        prompt: ChatRequest,
-        childId: Long,
-    ) {
+    private fun askNewChat(token: String, prompt: ChatRequest, childId: Long) {
         viewModelScope.launch {
-            _chatState.value = ChatState.Loading
             chatRepository.askNewChat(token, prompt, childId).collect { result ->
                 result.fold(
                     onSuccess = { answers ->
-                        _chatState.value = ChatState.Success(answers)
+                        _messages.value = answers
+                        if (answers.isNotEmpty()) {
+                            _selectedThreadId.value = answers.first().thread_id
+                            getChatIds(token)
+                        }
                     },
                     onFailure = { exception ->
-                        _chatState.value =
-                            ChatState.Error(exception.message ?: "Failed to send question")
                     }
                 )
             }
         }
     }
 
-    fun ask(
-        token: String,
-        childId: Long,
-        prompt: ChatRequest,
-        threadId: String
-    ) {
+    private fun ask(token: String, childId: Long, prompt: ChatRequest, threadId: String) {
         viewModelScope.launch {
-            _chatState.value = ChatState.Loading
             chatRepository.ask(token, childId, prompt, threadId).collect { result ->
                 result.fold(
                     onSuccess = { answers ->
-                        _chatState.value = ChatState.Success(answers)
+                        _messages.value = answers
                     },
                     onFailure = { exception ->
-                        _chatState.value =
-                            ChatState.Error(exception.message ?: "Failed to send question")
                     }
                 )
             }
@@ -71,7 +59,6 @@ class ChatViewModel @Inject constructor(
 
     fun getChatIds(token: String) {
         viewModelScope.launch {
-            _chatIdsState.value = ChatIdsState.Loading
             chatRepository.getChatIds(token).collect { result ->
                 result.fold(
                     onSuccess = { ids ->
@@ -86,18 +73,14 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-
     fun getChatByThreadId(token: String, threadId: String) {
         viewModelScope.launch {
-            _chatState.value = ChatState.Loading
             chatRepository.getChatByThreadId(token, threadId).collect { result ->
                 result.fold(
-                    onSuccess = { answer ->
-                        _chatState.value = ChatState.Success(answer)
+                    onSuccess = { answers ->
+                        _messages.value = answers
                     },
                     onFailure = { exception ->
-                        _chatState.value =
-                            ChatState.Error(exception.message ?: "Failed to get thread ids")
                     }
                 )
             }
@@ -106,25 +89,65 @@ class ChatViewModel @Inject constructor(
 
     fun removeChatByThreadId(token: String, threadId: String) {
         viewModelScope.launch {
-            _chatState.value = ChatState.Loading
             chatRepository.removeChatByThreadId(token, threadId).collect { result ->
                 result.fold(
                     onSuccess = {
+                        if (_selectedThreadId.value == threadId) {
+                            _messages.value = emptyList()
+                            _selectedThreadId.value = null
+                        }
+                        getChatIds(token)
                     },
                     onFailure = { exception ->
-                        _chatState.value =
-                            ChatState.Error(exception.message ?: "Failed to remove thread")
                     }
                 )
             }
         }
     }
 
-    sealed class ChatState {
-        data object Loading : ChatState()
-        data class Success(val answers: List<AssistantAnswer>) : ChatState()
-        data class Error(val message: String) : ChatState()
+    private fun addTemporaryMessages(userMsg: AssistantAnswer, typingMsg: AssistantAnswer) {
+        _messages.value = _messages.value + userMsg + typingMsg
     }
+
+    fun clearMessages() {
+        _messages.value = emptyList()
+    }
+
+    fun sendMessage(
+        token: String,
+        messageText: String,
+        selectedChildId: Long?,
+        selectedThread: String?
+    ) {
+        val now = System.currentTimeMillis()
+
+        val userMsg = AssistantAnswer(
+            id = "TEMP_USER_$now",
+            role = "user",
+            message = messageText,
+            thread_id = selectedThread ?: "",
+            created_at = now
+        )
+
+        val typingMsg = AssistantAnswer(
+            id = "TEMP_ASSISTANT_ID",
+            role = "assistant",
+            message = "...",
+            thread_id = selectedThread ?: "",
+            created_at = now + 1
+        )
+
+        addTemporaryMessages(userMsg, typingMsg)
+
+        if (selectedThread == null) {
+            selectedChildId?.let { childId ->
+                askNewChat(token, ChatRequest(messageText), childId)
+            }
+        } else {
+            ask(token, selectedChildId ?: 0L, ChatRequest(messageText), selectedThread)
+        }
+    }
+
 
     sealed class ChatIdsState {
         data object Loading : ChatIdsState()

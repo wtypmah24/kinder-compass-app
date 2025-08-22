@@ -7,6 +7,6 @@ import android.os.Parcelable
 data class WorkSession(
     val id: Long,
     val startTime: String,
-    val endTime: String,
-    val note: String,
+    val endTime: String?,
+    val note: String?,
 ) : Parcelable 

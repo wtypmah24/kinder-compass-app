@@ -1,6 +1,5 @@
 package com.example.school_companion.ui.viewmodel
 
-import androidx.compose.runtime.sourceInformation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.school_companion.data.model.Companion

@@ -1,115 +1,166 @@
 package com.example.school_companion.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.school_companion.data.api.StatisticsResponse
+import com.example.school_companion.data.api.SessionApi.SessionUpdateDto
 import com.example.school_companion.data.model.WorkSession
-import com.example.school_companion.data.repository.WorkSessionRepository
+import com.example.school_companion.data.repository.SessionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
 class WorkSessionViewModel @Inject constructor(
-    private val workSessionRepository: WorkSessionRepository
+    private val workSessionRepository: SessionRepository
 ) : ViewModel() {
-    
-    private val _workSessionsState = MutableStateFlow<WorkSessionsState>(WorkSessionsState.Loading)
-    val workSessionsState: StateFlow<WorkSessionsState> = _workSessionsState.asStateFlow()
-    
-    private val _currentSession = MutableStateFlow<WorkSession?>(null)
-    val currentSession: StateFlow<WorkSession?> = _currentSession.asStateFlow()
-    
-    private val _statisticsState = MutableStateFlow<StatisticsState>(StatisticsState.Loading)
-    val statisticsState: StateFlow<StatisticsState> = _statisticsState.asStateFlow()
-    
-    fun loadWorkSessions(token: String, startDate: String? = null, endDate: String? = null) {
-        viewModelScope.launch {
-            _workSessionsState.value = WorkSessionsState.Loading
-            
-            workSessionRepository.getWorkSessions(token, startDate, endDate).collect { result ->
-                result.fold(
-                    onSuccess = { sessions ->
-                        _workSessionsState.value = WorkSessionsState.Success(sessions)
-                    },
-                    onFailure = { exception ->
-                        _workSessionsState.value = WorkSessionsState.Error(exception.message ?: "Failed to load work sessions")
-                    }
-                )
-            }
-        }
-    }
-    
-    fun startWorkSession(token: String) {
-        viewModelScope.launch {
-            workSessionRepository.startWorkSession(token).collect { result ->
-                result.fold(
-                    onSuccess = { session ->
-                        _currentSession.value = session
-                    },
-                    onFailure = { exception ->
-                        _workSessionsState.value = WorkSessionsState.Error(exception.message ?: "Failed to start work session")
-                    }
-                )
-            }
-        }
-    }
-    
-    fun endWorkSession(token: String, sessionId: String) {
-        viewModelScope.launch {
-            workSessionRepository.endWorkSession(token, sessionId).collect { result ->
-                result.fold(
-                    onSuccess = { session ->
-                        _currentSession.value = null
-                        // Refresh work sessions list
-                        loadWorkSessions(token)
-                    },
-                    onFailure = { exception ->
-                        _workSessionsState.value = WorkSessionsState.Error(exception.message ?: "Failed to end work session")
-                    }
-                )
-            }
-        }
-    }
-    
-    fun loadStatistics(
+
+    private val _sessionsState = MutableStateFlow<SessionsState>(SessionsState.Loading)
+    val sessions: StateFlow<SessionsState> = _sessionsState.asStateFlow()
+
+    private val _sessionState = MutableStateFlow<SessionState>(SessionState.Loading)
+    val session: StateFlow<SessionState> = _sessionState.asStateFlow()
+
+
+    fun startWorkSession(
         token: String,
-        childId: String? = null,
-        startDate: String? = null,
-        endDate: String? = null
     ) {
         viewModelScope.launch {
-            _statisticsState.value = StatisticsState.Loading
-            
-            workSessionRepository.getStatistics(token, childId, startDate, endDate).collect { result ->
+            workSessionRepository.startSession(token)
+                .collect { result ->
+                    result.fold(
+                        onSuccess = {
+                            status(token)
+                        },
+                        onFailure = { exception ->
+
+                        }
+                    )
+                }
+        }
+    }
+
+    fun endWorkSession(
+        token: String,
+    ) {
+        viewModelScope.launch {
+            workSessionRepository.endSession(token)
+                .collect { result ->
+                    result.fold(
+                        onSuccess = {
+                            status(token)
+                        },
+                        onFailure = { exception ->
+
+                        }
+                    )
+                }
+        }
+    }
+
+    fun status(token: String) {
+        viewModelScope.launch {
+            Log.d("WorkSessionViewModel", "status() called with token=$token")
+            workSessionRepository.status(token).collect { result ->
                 result.fold(
-                    onSuccess = { statistics ->
-                        _statisticsState.value = StatisticsState.Success(statistics)
+                    onSuccess = { session ->
+                        Log.d("WorkSessionViewModel", "status success: $session")
+                        _sessionState.value = SessionState.Success(session)
                     },
                     onFailure = { exception ->
-                        _statisticsState.value = StatisticsState.Error(exception.message ?: "Failed to load statistics")
+                        Log.e(
+                            "WorkSessionViewModel",
+                            "status failed: ${exception.message}",
+                            exception
+                        )
+                        _sessionState.value =
+                            SessionState.Error(exception.message ?: "Failed to load session")
                     }
                 )
             }
         }
     }
-    
-    fun clearCurrentSession() {
-        _currentSession.value = null
+
+
+    fun report(
+        token: String,
+        startTime: LocalDate,
+        endTime: LocalDate
+    ) {
+        viewModelScope.launch {
+            _sessionsState.value = SessionsState.Loading
+            workSessionRepository.reports(token, startTime, endTime).collect { result ->
+                result.fold(
+                    onSuccess = { s ->
+                        _sessionsState.value = SessionsState.Success(s)
+                    },
+                    onFailure = { exception ->
+                        _sessionsState.value =
+                            SessionsState.Error(exception.message ?: "Failed to load children")
+                    }
+                )
+            }
+        }
     }
+
+    fun update(
+        token: String,
+        sessionId: Long,
+        dto: SessionUpdateDto,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ) {
+        viewModelScope.launch {
+            workSessionRepository.update(token, sessionId, dto)
+                .collect { result ->
+                    result.fold(
+                        onSuccess = {
+                            report(token, startDate, endDate)
+                        },
+                        onFailure = { exception ->
+
+                        }
+                    )
+                }
+        }
+    }
+
+    fun delete(
+        token: String,
+        sessionId: Long,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ) {
+        viewModelScope.launch {
+            workSessionRepository.delete(token, sessionId)
+                .collect { result ->
+                    result.fold(
+                        onSuccess = {
+                            report(token, startDate, endDate)
+                        },
+                        onFailure = { exception ->
+
+                        }
+                    )
+                }
+        }
+    }
+
+
 }
 
-sealed class WorkSessionsState {
-    object Loading : WorkSessionsState()
-    data class Success(val workSessions: List<WorkSession>) : WorkSessionsState()
-    data class Error(val message: String) : WorkSessionsState()
+sealed class SessionsState {
+    data object Loading : SessionsState()
+    data class Success(val sessions: List<WorkSession>) : SessionsState()
+    data class Error(val message: String) : SessionsState()
 }
 
-sealed class StatisticsState {
-    object Loading : StatisticsState()
-    data class Success(val statistics: StatisticsResponse) : StatisticsState()
-    data class Error(val message: String) : StatisticsState()
-} 
+sealed class SessionState {
+    data object Loading : SessionState()
+    data class Success(val session: WorkSession?) : SessionState()
+    data class Error(val message: String) : SessionState()
+}

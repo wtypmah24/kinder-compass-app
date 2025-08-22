@@ -40,6 +40,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.school_companion.data.api.NoteRequestDto
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.Note
+import com.example.school_companion.ui.card.child.ChildNoteCard
 import com.example.school_companion.ui.dialog.note.AddNoteDialog
 import com.example.school_companion.ui.dialog.note.EditNoteDialog
 import com.example.school_companion.ui.viewmodel.NotesState
@@ -121,88 +122,6 @@ fun NotesTab(
                     selectedChild.id
                 )
                 showAddDialog = false
-            }
-        )
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-fun ChildNoteCard(note: Note, notesViewModel: NotesViewModel, childId: Long, token: String) {
-    var showEditDialog by remember { mutableStateOf(false) }
-    var showDeleteConfirm by remember { mutableStateOf(false) }
-    Box(modifier = Modifier.fillMaxWidth()) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = note.content,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-        Row(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(8.dp)
-        ) {
-            IconButton(onClick = { showEditDialog = true }) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit Note",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-            IconButton(onClick = { showDeleteConfirm = true }) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete Note",
-                    tint = MaterialTheme.colorScheme.error
-                )
-            }
-        }
-    }
-    if (showEditDialog) {
-        EditNoteDialog(
-            note = note,
-            onDismiss = { showEditDialog = false },
-            onSave = { updatedNoteRequestDto ->
-                notesViewModel.updateNote(
-                    token = token,
-                    noteId = note.id,
-                    note = updatedNoteRequestDto,
-                    childId = childId,
-                )
-                showEditDialog = false
-            }
-        )
-    }
-
-    if (showDeleteConfirm) {
-        AlertDialog(
-            onDismissRequest = { showDeleteConfirm = false },
-            title = { Text("Delete Note?") },
-            text = { Text("Are you sure you want to delete «${note.content}»?") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        notesViewModel.deleteNote(token, note.id, childId)
-                        showDeleteConfirm = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Delete", color = Color.White)
-                }
-            },
-            dismissButton = {
-                Button(onClick = { showDeleteConfirm = false }) {
-                    Text("Cancel")
-                }
             }
         )
     }

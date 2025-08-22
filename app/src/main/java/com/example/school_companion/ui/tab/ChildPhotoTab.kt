@@ -146,7 +146,8 @@ fun ChildPhotoCard(
             Column {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data("http://10.0.2.2:8080/${photo.id}")
+//                        .data("http://10.0.2.2:8080/${photo.id}")
+                        .data("https://wtypmah.duckdns.org/api/${photo.id}")
                         .crossfade(true)
                         .build(),
                     contentDescription = photo.description,
@@ -213,5 +214,4 @@ fun ChildPhotoCard(
             }
         )
     }
-
 }

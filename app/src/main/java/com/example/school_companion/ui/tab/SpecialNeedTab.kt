@@ -43,6 +43,7 @@ import com.example.school_companion.data.api.NoteRequestDto
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.SpecialNeed
 import com.example.school_companion.data.repository.SessionManager.token
+import com.example.school_companion.ui.card.child.ChildSpecialNeedsCard
 import com.example.school_companion.ui.dialog.need.AddNeedDialog
 import com.example.school_companion.ui.dialog.need.EditNeedDialog
 import com.example.school_companion.ui.dialog.note.AddNoteDialog
@@ -123,110 +124,3 @@ fun SpecialNeedsTab(selectedChild: Child, needsViewModel: NeedsViewModel, token:
         )
     }
 }
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-fun ChildSpecialNeedsCard(
-    need: SpecialNeed,
-    needsViewModel: NeedsViewModel,
-    child: Child,
-    token: String
-) {
-    var showEditDialog by remember { mutableStateOf(false) }
-    var showDeleteConfirm by remember { mutableStateOf(false) }
-    Box(modifier = Modifier.fillMaxWidth()) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-
-                Text(
-                    text = need.type,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                if (need.description.isNotBlank()) {
-                    Text(
-                        text = need.description,
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 6.dp)
-                    )
-                } else {
-                    Text(
-                        text = "Keine Beschreibung",
-                        fontSize = 14.sp,
-                        fontStyle = FontStyle.Italic,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        modifier = Modifier.padding(top = 6.dp)
-                    )
-                }
-            }
-        }
-        Row(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(8.dp)
-        ) {
-            IconButton(onClick = { showEditDialog = true }) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit Special Need",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-            IconButton(onClick = { showDeleteConfirm = true }) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete Special Need",
-                    tint = MaterialTheme.colorScheme.error
-                )
-            }
-        }
-    }
-    if (showEditDialog) {
-        EditNeedDialog(
-            need = need,
-            onDismiss = { showEditDialog = false },
-            onSave = { updatedNeedRequestDto ->
-                needsViewModel.updateNeed(
-                    token = token,
-                    needId = need.id,
-                    need = updatedNeedRequestDto,
-                    childId = child.id,
-                )
-                showEditDialog = false
-            }
-        )
-    }
-
-    if (showDeleteConfirm) {
-        AlertDialog(
-            onDismissRequest = { showDeleteConfirm = false },
-            title = { Text("Delete Special Need?") },
-            text = { Text("Are you sure you want to delete «${need.type}»?") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        needsViewModel.deleteNeed(token, need.id, child.id)
-                        showDeleteConfirm = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Delete", color = Color.White)
-                }
-            },
-            dismissButton = {
-                Button(onClick = { showDeleteConfirm = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
-}
-

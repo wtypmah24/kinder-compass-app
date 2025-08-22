@@ -1,18 +1,15 @@
 package com.example.school_companion.ui.navigation
 
 sealed class Screen(val route: String) {
-    // Auth screens
-    object Login : Screen("login")
-    object Register : Screen("register")
-    
-    // Main screens
-    object Dashboard : Screen("dashboard")
-    object Children : Screen("children")
-    object ChildDetail : Screen("child_detail")
-    object Events : Screen("events")
-    object Monitoring : Screen("monitoring")
-    object Statistics : Screen("statistics")
-    object Profile : Screen("profile")
-    object Settings : Screen("settings")
-    object Assistant : Screen("assistant")
+    data object Login : Screen("login")
+    data object Register : Screen("register")
+    data object Dashboard : Screen("dashboard")
+    data object Children : Screen("children")
+    data object ChildDetail : Screen("child_detail")
+    data object Events : Screen("events")
+    data object Monitoring : Screen("monitoring")
+    data object Statistics : Screen("statistics")
+    data object Profile : Screen("profile")
+    data object Settings : Screen("settings")
+    data object Assistant : Screen("assistant")
 }

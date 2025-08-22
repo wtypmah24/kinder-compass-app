@@ -41,6 +41,7 @@ import com.example.school_companion.data.api.GoalRequestDto
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.Goal
 import com.example.school_companion.data.repository.SessionManager.token
+import com.example.school_companion.ui.card.child.ChildGoalsCard
 import com.example.school_companion.ui.dialog.goal.AddGoalDialog
 import com.example.school_companion.ui.dialog.goal.EditGoalDialog
 import com.example.school_companion.ui.dialog.note.EditNoteDialog
@@ -121,86 +122,3 @@ fun GoalsTab(child: Child, goalsViewModel: GoalsViewModel, token: String) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-fun ChildGoalsCard(goal: Goal, goalsViewModel: GoalsViewModel, child: Child, token: String) {
-    var showEditDialog by remember { mutableStateOf(false) }
-    var showDeleteConfirm by remember { mutableStateOf(false) }
-    Box(modifier = Modifier.fillMaxWidth()) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-
-                Text(
-                    text = goal.description,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-        Row(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(8.dp)
-        ) {
-            IconButton(onClick = { showEditDialog = true }) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit Special Need",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-            IconButton(onClick = { showDeleteConfirm = true }) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete Special Need",
-                    tint = MaterialTheme.colorScheme.error
-                )
-            }
-        }
-    }
-    if (showEditDialog) {
-        EditGoalDialog(
-            goal = goal,
-            onDismiss = { showEditDialog = false },
-            onSave = { updatedGoalRequestDto ->
-                goalsViewModel.updateGoal(
-                    token = token,
-                    goalId = goal.id,
-                    goal = updatedGoalRequestDto,
-                    childId = child.id,
-                )
-                showEditDialog = false
-            }
-        )
-    }
-
-    if (showDeleteConfirm) {
-        AlertDialog(
-            onDismissRequest = { showDeleteConfirm = false },
-            title = { Text("Delete Goal?") },
-            text = { Text("Are you sure you want to delete «${goal.description}»?") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        goalsViewModel.deleteGoal(token, goal.id, child.id)
-                        showDeleteConfirm = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Delete", color = Color.White)
-                }
-            },
-            dismissButton = {
-                Button(onClick = { showDeleteConfirm = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
-}

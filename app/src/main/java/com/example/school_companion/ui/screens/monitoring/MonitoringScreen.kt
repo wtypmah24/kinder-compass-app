@@ -64,6 +64,7 @@ import com.example.school_companion.ui.dialog.entry.AddEntryDialog
 import com.example.school_companion.ui.dialog.param.AddParamDialog
 import com.example.school_companion.ui.dialog.entry.EditEntryDialog
 import com.example.school_companion.ui.dialog.param.EditParamDialog
+import com.example.school_companion.ui.dropdown.DropdownMenuWrapper
 import com.example.school_companion.ui.viewmodel.AuthViewModel
 import com.example.school_companion.ui.viewmodel.ChildrenState
 import com.example.school_companion.ui.viewmodel.ChildrenViewModel
@@ -265,63 +266,6 @@ fun MonitoringScreen(
                     )
                 }
             )
-        }
-    }
-}
-
-@Composable
-fun <T> DropdownMenuWrapper(
-    items: List<T>,
-    selectedItem: T?,
-    onItemSelected: (T) -> Unit,
-    itemToString: (T) -> String,
-    placeholder: String,
-    customItemContent: (@Composable (T) -> Unit)? = null
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val displayText = selectedItem?.let { itemToString(it) } ?: placeholder
-
-    Box {
-        OutlinedTextField(
-            value = displayText,
-            onValueChange = {},
-            readOnly = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { expanded = true },
-            trailingIcon = {
-                Icon(
-                    imageVector = if (expanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown,
-                    contentDescription = null
-                )
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-                disabledTextColor = LocalContentColor.current.copy(alpha = ContentAlpha.disabled),
-                disabledBorderColor = MaterialTheme.colorScheme.primary,
-                disabledTrailingIconColor = MaterialTheme.colorScheme.primary,
-                disabledLabelColor = MaterialTheme.colorScheme.primary,
-            ),
-            enabled = false
-        )
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            items.forEach { item ->
-                DropdownMenuItem(
-                    onClick = {
-                        onItemSelected(item)
-                        expanded = false
-                    },
-                    text = {
-                        if (customItemContent != null) {
-                            customItemContent(item)
-                        } else {
-                            Text(itemToString(item))
-                        }
-                    }
-                )
-            }
         }
     }
 }
