@@ -26,7 +26,7 @@ import com.example.school_companion.ui.dropdown.DropdownMenuWrapper
 fun ThreadSelector(
     threads: List<String>,
     selectedThread: String?,
-    onSelect: (String) -> Unit,
+    onSelect: (String?) -> Unit,
     onDelete: (String) -> Unit
 ) {
     var threadToDelete by remember { mutableStateOf<String?>(null) }
@@ -42,7 +42,9 @@ fun ThreadSelector(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(tid, modifier = Modifier.weight(1f))
+                if (tid != null) {
+                    Text(tid, modifier = Modifier.weight(1f))
+                }
                 IconButton(onClick = { threadToDelete = tid }) {
                     Icon(
                         imageVector = Icons.Default.Delete,

@@ -6,7 +6,9 @@ import com.example.school_companion.ui.dropdown.DropdownMenuWrapper
 
 @Composable
 fun ChildSelector(
-    children: List<Child>, selectedChild: Child?, onSelect: (Child) -> Unit
+    children: List<Child>,
+    selectedChild: Child?,
+    onSelect: (Child?) -> Unit
 ) {
     DropdownMenuWrapper(
         items = children,

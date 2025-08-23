@@ -40,6 +40,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.school_companion.data.model.Child
+import com.example.school_companion.ui.bar.dashboard.DashBoardBottomBar
 import com.example.school_companion.ui.header.child.ChildHeaderCard
 import com.example.school_companion.ui.tab.ChildTabContent
 import com.example.school_companion.ui.tab.ChildTabs
@@ -74,6 +75,7 @@ fun ChildDetailScreen(
     val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
     val selectedChild by childrenViewModel.selectedChild.collectAsStateWithLifecycle()
     var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(authToken, childId) {
         authToken?.let { token ->
@@ -102,6 +104,13 @@ fun ChildDetailScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 }
+            )
+        },
+        bottomBar = {
+            DashBoardBottomBar(
+                navController = navController,
+                selectedTabIndex = selectedBottomTabIndex,
+                onTabSelected = { selectedBottomTabIndex = it }
             )
         }
     ) { paddingValues ->

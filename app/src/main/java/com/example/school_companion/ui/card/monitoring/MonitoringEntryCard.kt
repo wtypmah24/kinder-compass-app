@@ -1,25 +1,20 @@
-package com.example.school_companion.ui.card.child
+package com.example.school_companion.ui.card.monitoring
 
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,19 +29,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.school_companion.data.model.Child
-import com.example.school_companion.ui.dialog.child.EditChildDialog
+import com.example.school_companion.data.model.MonitoringEntry
 import com.example.school_companion.ui.dialog.entry.EditEntryDialog
-import com.example.school_companion.ui.viewmodel.ChildrenViewModel
+import com.example.school_companion.ui.viewmodel.MonitoringEntryViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChildCard(
-    childrenViewModel: ChildrenViewModel,
+fun MonitoringEntryCard(
+    entry: MonitoringEntry,
     child: Child,
-    onClick: () -> Unit
+    entriesViewModel: MonitoringEntryViewModel,
+    token: String
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
@@ -54,55 +48,15 @@ fun ChildCard(
     Box(modifier = Modifier.fillMaxWidth()) {
         Card(
             modifier = Modifier.fillMaxWidth(),
-            onClick = onClick
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Placeholder for child photo
-                Card(
-                    modifier = Modifier.size(56.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                }
-
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 16.dp)
-                ) {
-                    Text(
-                        text = "${child.name} ${child.surname}",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = "Geboren: ${child.dateOfBirth}",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Icon(
-                    Icons.Default.ChevronRight,
-                    contentDescription = "View details",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(entry.parameterName, fontWeight = FontWeight.Bold)
+                Text("Value: ${entry.value}")
+                Text("Child: ${child.name} ${child.surname}")
+                Text("Notes: ${entry.notes}")
+                Text("Type: ${entry.type}")
+                Text("Created at: ${entry.createdAt}")
             }
         }
         Row(
@@ -113,24 +67,30 @@ fun ChildCard(
             IconButton(onClick = { showEditDialog = true }) {
                 Icon(
                     imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit Child Info",
+                    contentDescription = "Edit Monitoring Entry",
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
             IconButton(onClick = { showDeleteConfirm = true }) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete Child",
+                    contentDescription = "Delete Monitoring Entry",
                     tint = MaterialTheme.colorScheme.error
                 )
             }
         }
         if (showEditDialog) {
-            EditChildDialog(
-                child = child,
+            EditEntryDialog(
+                entry = entry,
                 onDismiss = { showEditDialog = false },
-                onSave = { childRequestDto ->
-                    //childrenViewModel.add(token, entry.id, child.id)
+                onSave = { updateEntryRequestDto ->
+                    entriesViewModel.updateMonitoringEntry(
+                        token = token,
+                        entry = updateEntryRequestDto,
+                        childId = child.id,
+                        paramId = entry.parameterId
+                    )
+                    showEditDialog = false
                 }
             )
         }
@@ -138,12 +98,12 @@ fun ChildCard(
         if (showDeleteConfirm) {
             AlertDialog(
                 onDismissRequest = { showDeleteConfirm = false },
-                title = { Text("Delete Child?") },
-                text = { Text("Are you sure you want to delete «${child.name}: ${child.surname}»?") },
+                title = { Text("Delete Monitoring Entry?") },
+                text = { Text("Are you sure you want to delete «${entry.type}: ${entry.value}»?") },
                 confirmButton = {
                     Button(
                         onClick = {
-//                            childrenViewModel.delete(token, entry.id, child.id)
+                            entriesViewModel.deleteMonitoringEntry(token, entry.id, child.id)
                             showDeleteConfirm = false
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
@@ -159,5 +119,4 @@ fun ChildCard(
             )
         }
     }
-
 }

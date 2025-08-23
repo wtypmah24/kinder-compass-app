@@ -1,4 +1,4 @@
-package com.example.school_companion.ui.field.auth
+package com.example.school_companion.ui.field
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions

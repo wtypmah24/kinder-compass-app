@@ -24,6 +24,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -37,6 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.school_companion.data.model.AssistantAnswer
 import com.example.school_companion.data.model.Child
+import com.example.school_companion.ui.bar.dashboard.DashBoardBottomBar
 import com.example.school_companion.ui.card.chat.MessageInputCard
 import com.example.school_companion.ui.list.MessagesList
 import com.example.school_companion.ui.selector.ChildSelector
@@ -66,6 +68,8 @@ fun AssistantScreen(
     val listState = rememberLazyListState()
     val coroutine = rememberCoroutineScope()
     val context = LocalContext.current
+
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     val messages by chatViewModel.messages.collectAsStateWithLifecycle()
 
@@ -110,6 +114,10 @@ fun AssistantScreen(
                 Icon(Icons.Filled.Message, contentDescription = "New chat")
             }
         })
+    }, bottomBar = {
+        DashBoardBottomBar(navController = navController,
+            selectedTabIndex = selectedTabIndex,
+            onTabSelected = { selectedTabIndex = it })
     }) { paddingValues ->
         Column(
             modifier = Modifier
@@ -135,7 +143,11 @@ fun AssistantScreen(
                     onSelect = { tid ->
                         selectedThread = tid
                         selectedChild = null
-                        authToken?.let { chatViewModel.getChatByThreadId(it, tid) }
+                        authToken?.let {
+                            if (tid != null) {
+                                chatViewModel.getChatByThreadId(it, tid)
+                            }
+                        }
                     },
                     onDelete = { tid ->
                         authToken?.let {
@@ -174,8 +186,7 @@ fun AssistantScreen(
                         )
                         messageText = ""
                     }
-                }
-            )
+                })
         }
     }
 }

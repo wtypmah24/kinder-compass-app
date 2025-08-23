@@ -26,13 +26,16 @@ import androidx.wear.compose.material.ContentAlpha
 fun <T> DropdownMenuWrapper(
     items: List<T>,
     selectedItem: T?,
-    onItemSelected: (T) -> Unit,
+    onItemSelected: (T?) -> Unit,
     itemToString: (T) -> String,
-    placeholder: String,
-    customItemContent: (@Composable (T) -> Unit)? = null
+    placeholder: String = "Select",
+    extraItem: T? = null,
+    extraItemText: String = "All",
+    customItemContent: (@Composable (T?) -> Unit)? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val displayText = selectedItem?.let { itemToString(it) } ?: placeholder
+    val displayText = selectedItem?.let { itemToString(it) }
+        ?: if (selectedItem == null && extraItem != null) extraItemText else placeholder
 
     Box {
         OutlinedTextField(
@@ -48,18 +51,32 @@ fun <T> DropdownMenuWrapper(
                     contentDescription = null
                 )
             },
+            enabled = false,
             colors = OutlinedTextFieldDefaults.colors(
                 disabledTextColor = LocalContentColor.current.copy(alpha = ContentAlpha.disabled),
                 disabledBorderColor = MaterialTheme.colorScheme.primary,
                 disabledTrailingIconColor = MaterialTheme.colorScheme.primary,
-                disabledLabelColor = MaterialTheme.colorScheme.primary,
-            ),
-            enabled = false
+                disabledLabelColor = MaterialTheme.colorScheme.primary
+            )
         )
+
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
+            if (extraItem != null) {
+                DropdownMenuItem(
+                    onClick = {
+                        onItemSelected(null)
+                        expanded = false
+                    },
+                    text = {
+                        if (customItemContent != null) customItemContent(null)
+                        else Text(extraItemText)
+                    }
+                )
+            }
+
             items.forEach { item ->
                 DropdownMenuItem(
                     onClick = {
@@ -67,11 +84,8 @@ fun <T> DropdownMenuWrapper(
                         expanded = false
                     },
                     text = {
-                        if (customItemContent != null) {
-                            customItemContent(item)
-                        } else {
-                            Text(itemToString(item))
-                        }
+                        if (customItemContent != null) customItemContent(item)
+                        else Text(itemToString(item))
                     }
                 )
             }

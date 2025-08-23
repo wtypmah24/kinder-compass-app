@@ -44,6 +44,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -58,6 +59,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.school_companion.data.model.WorkSession
+import com.example.school_companion.ui.bar.dashboard.DashBoardBottomBar
+import com.example.school_companion.ui.bar.profile.ProfileTopBar
 import com.example.school_companion.ui.card.profile.AvatarCard
 import com.example.school_companion.ui.card.profile.UserInfoCard
 import com.example.school_companion.ui.card.profile.WorkSessionCard
@@ -86,16 +89,17 @@ fun ProfileScreen(
     val currentUser by authViewModel.currentCompanion.collectAsStateWithLifecycle()
     val currentSession by workSessionViewModel.session.collectAsStateWithLifecycle()
     val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
+    var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
 
     val context = LocalContext.current
 
-    val pickImageLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri: Uri? ->
-            uri?.let {
-                Toast.makeText(context, "Chosen: $uri", Toast.LENGTH_SHORT).show()
-            }
-        })
+    val pickImageLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent(),
+            onResult = { uri: Uri? ->
+                uri?.let {
+                    Toast.makeText(context, "Chosen: $uri", Toast.LENGTH_SHORT).show()
+                }
+            })
 
     LaunchedEffect(authToken) {
         authToken?.let { token ->
@@ -104,19 +108,11 @@ fun ProfileScreen(
     }
 
     Scaffold(topBar = {
-        TopAppBar(title = {
-            Text(
-                text = "Profile", fontWeight = FontWeight.Bold
-            )
-        }, navigationIcon = {
-            IconButton(onClick = { navController.navigateUp() }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-            }
-        }, actions = {
-            IconButton(onClick = { navController.navigate(Screen.Login.route) }) {
-                Icon(Icons.Default.Logout, contentDescription = "Logout")
-            }
-        })
+        ProfileTopBar(navController)
+    }, bottomBar = {
+        DashBoardBottomBar(navController = navController,
+            selectedTabIndex = selectedBottomTabIndex,
+            onTabSelected = { selectedBottomTabIndex = it })
     }) { paddingValues ->
         LazyColumn(
             modifier = Modifier

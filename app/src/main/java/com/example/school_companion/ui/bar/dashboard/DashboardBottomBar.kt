@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.People
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -41,9 +42,9 @@ fun DashBoardBottomBar(
     val threshold = 600.dp
 
     if (screenWidth > threshold) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
+        TabRow(
+            selectedTabIndex = selectedTabIndex,
+            modifier = Modifier.fillMaxWidth()
         ) {
             tabs.forEachIndexed { index, pair ->
                 val (screen, icon) = pair
@@ -51,7 +52,10 @@ fun DashBoardBottomBar(
                     selected = selectedTabIndex == index,
                     onClick = {
                         onTabSelected(index)
-                        navController.navigate(screen.route)
+                        navController.navigate(screen.route) {
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     },
                     icon = { Icon(icon, contentDescription = screen.route) },
                     text = { Text(screen.route) }

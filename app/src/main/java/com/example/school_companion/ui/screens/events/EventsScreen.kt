@@ -7,16 +7,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -28,20 +23,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.school_companion.data.api.EventRequestDto
 import com.example.school_companion.data.model.Child
+import com.example.school_companion.ui.bar.dashboard.DashBoardBottomBar
 import com.example.school_companion.ui.bar.event.EventTopBar
 import com.example.school_companion.ui.dialog.event.AddEventDialog
-import com.example.school_companion.ui.dialog.event.EditEventDialog
-import com.example.school_companion.ui.navigation.Screen
+import com.example.school_companion.ui.dropdown.DropdownMenuWrapper
 import com.example.school_companion.ui.section.event.EventWithChildSection
-import com.example.school_companion.ui.viewmodel.AuthState
 import com.example.school_companion.ui.viewmodel.AuthViewModel
 import com.example.school_companion.ui.viewmodel.ChildrenState
 import com.example.school_companion.ui.viewmodel.ChildrenViewModel
 import com.example.school_companion.ui.viewmodel.EventsViewModel
-import com.example.school_companion.ui.viewmodel.EventsWithChildrenState
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventsScreen(
     navController: NavController,
@@ -55,8 +47,8 @@ fun EventsScreen(
 
     val showAddEventDialog = remember { mutableStateOf(false) }
     var selectedChild: Child? by remember { mutableStateOf(null) }
-    var expanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(authToken) {
         authToken?.let { token ->
@@ -73,6 +65,13 @@ fun EventsScreen(
                 context = context,
                 showAddEventDialog = showAddEventDialog
             )
+        },
+        bottomBar = {
+            DashBoardBottomBar(
+                navController = navController,
+                selectedTabIndex = selectedBottomTabIndex,
+                onTabSelected = { selectedBottomTabIndex = it }
+            )
         }
     ) { paddingValues ->
 
@@ -82,45 +81,15 @@ fun EventsScreen(
                 .padding(paddingValues)
         ) {
             //Child Filter Dropdown
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded }
-            ) {
-                OutlinedTextField(
-                    readOnly = true,
-                    value = selectedChild?.let { "${it.name} ${it.surname}" } ?: "All",
-                    onValueChange = {},
-                    label = { Text("Filter by Child") },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                    },
-                    modifier = Modifier.menuAnchor()
-                )
-
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("All") },
-                        onClick = {
-                            selectedChild = null
-                            expanded = false
-                        }
-                    )
-                    if (childrenState is ChildrenState.Success) {
-                        (childrenState as ChildrenState.Success).children.forEach { child ->
-                            DropdownMenuItem(
-                                text = { Text("${child.name} ${child.surname}") },
-                                onClick = {
-                                    selectedChild = child
-                                    expanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
+            DropdownMenuWrapper(
+                items = if (childrenState is ChildrenState.Success) (childrenState as ChildrenState.Success).children else emptyList(),
+                selectedItem = selectedChild,
+                onItemSelected = { selectedChild = it },
+                itemToString = { "${it.name} ${it.surname}" },
+                placeholder = "All",
+                extraItem = null,
+                extraItemText = "All"
+            )
 
             Spacer(Modifier.height(16.dp))
 

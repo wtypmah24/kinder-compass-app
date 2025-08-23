@@ -14,8 +14,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.school_companion.ui.button.auth.RegisterButton
-import com.example.school_companion.ui.field.auth.EmailField
-import com.example.school_companion.ui.field.auth.PasswordField
+import com.example.school_companion.ui.field.EmailField
+import com.example.school_companion.ui.field.PasswordField
 import com.example.school_companion.ui.link.LoginLink
 import com.example.school_companion.ui.message.ErrorMessage
 import com.example.school_companion.ui.viewmodel.AuthState

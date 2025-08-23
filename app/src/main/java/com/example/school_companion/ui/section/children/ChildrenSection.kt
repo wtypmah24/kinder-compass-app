@@ -1,5 +1,7 @@
 package com.example.school_companion.ui.section.children
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,10 +27,13 @@ import androidx.navigation.NavController
 import com.example.school_companion.ui.card.child.ChildCard
 import com.example.school_companion.ui.navigation.Screen
 import com.example.school_companion.ui.viewmodel.ChildrenState
+import com.example.school_companion.ui.viewmodel.ChildrenViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ChildrenSection(
     childrenState: ChildrenState,
+    childrenViewModel: ChildrenViewModel,
     navController: NavController,
     maxItems: Int = 3,
     onShowAllClick: (() -> Unit)? = null,
@@ -84,6 +89,7 @@ fun ChildrenSection(
                 } else {
                     children.take(maxItems).forEach { child ->
                         ChildCard(
+                            childrenViewModel = childrenViewModel,
                             child = child,
                             onClick = {
                                 navController.navigate("${Screen.ChildDetail.route}/${child.id}")
