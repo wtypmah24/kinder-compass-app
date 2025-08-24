@@ -35,17 +35,16 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.school_companion.data.api.EventRequestDto
 import com.example.school_companion.data.model.Event
 import com.example.school_companion.ui.dialog.event.EditEventDialog
-import com.example.school_companion.ui.viewmodel.EventsViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ChildEventCard(
     event: Event,
-    token: String,
-    childId: Long,
-    eventsViewModel: EventsViewModel,
+    onEdit: (EventRequestDto) -> Unit,
+    onDelete: () -> Unit
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
@@ -127,13 +126,8 @@ fun ChildEventCard(
         EditEventDialog(
             event = event,
             onDismiss = { showEditDialog = false },
-            onSave = { updatedEventRequestDto ->
-                eventsViewModel.updateEvent(
-                    token = token,
-                    childId = childId,
-                    eventId = event.id,
-                    event = updatedEventRequestDto
-                )
+            onSave = { updatedDto ->
+                onEdit(updatedDto)
                 showEditDialog = false
             }
         )
@@ -147,7 +141,7 @@ fun ChildEventCard(
             confirmButton = {
                 Button(
                     onClick = {
-                        eventsViewModel.deleteEvent(token, event.id, childId)
+                        onDelete()
                         showDeleteConfirm = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)

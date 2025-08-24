@@ -2,10 +2,12 @@ package com.example.school_companion.ui.card.auth
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -21,17 +23,7 @@ import com.example.school_companion.ui.message.ErrorMessage
 import com.example.school_companion.ui.viewmodel.AuthState
 
 @Composable
-fun LoginCard(
-    email: String,
-    onEmailChange: (String) -> Unit,
-    password: String,
-    onPasswordChange: (String) -> Unit,
-    passwordVisible: Boolean,
-    onPasswordVisibilityChange: (Boolean) -> Unit,
-    authState: AuthState,
-    onLoginClick: () -> Unit,
-    onRegisterClick: () -> Unit
-) {
+fun LoginCard(content: @Composable ColumnScope.() -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -40,30 +32,8 @@ fun LoginCard(
     ) {
         Column(
             modifier = Modifier.padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(
-                text = "Anmelden",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            EmailField(email, onEmailChange)
-            PasswordField(password, onPasswordChange, passwordVisible, onPasswordVisibilityChange)
-
-            if (authState is AuthState.Error) {
-                ErrorMessage(authState.message)
-            }
-
-            LoginButton(
-                enabled = authState !is AuthState.Loading && email.isNotBlank() && password.isNotBlank(),
-                loading = authState is AuthState.Loading,
-                onClick = onLoginClick
-            )
-
-            RegisterLink(onRegisterClick)
-        }
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            content = content
+        )
     }
 }

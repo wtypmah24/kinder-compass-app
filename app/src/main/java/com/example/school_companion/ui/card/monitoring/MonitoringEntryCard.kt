@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.MonitoringEntry
 import com.example.school_companion.ui.dialog.entry.EditEntryDialog
+import com.example.school_companion.ui.viewmodel.ChildDetailViewModel
 import com.example.school_companion.ui.viewmodel.MonitoringEntryViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -39,7 +40,7 @@ import com.example.school_companion.ui.viewmodel.MonitoringEntryViewModel
 fun MonitoringEntryCard(
     entry: MonitoringEntry,
     child: Child,
-    entriesViewModel: MonitoringEntryViewModel,
+    entriesViewModel: ChildDetailViewModel,
     token: String
 ) {
     var showEditDialog by remember { mutableStateOf(false) }

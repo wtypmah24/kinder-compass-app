@@ -14,28 +14,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.school_companion.data.model.Child
+import com.example.school_companion.data.model.EventWithChild
 import com.example.school_companion.ui.box.ErrorBox
 import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.card.event.EventWithChildCard
 import com.example.school_companion.ui.navigation.Screen
-import com.example.school_companion.ui.viewmodel.EventsViewModel
-import com.example.school_companion.ui.viewmodel.EventsWithChildrenState
+import com.example.school_companion.ui.viewmodel.ChildDetailViewModel
+import com.example.school_companion.ui.viewmodel.UiState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun EventWithChildSection(
-    eventsState: EventsWithChildrenState,
+    eventsState: UiState<List<EventWithChild>>,
     selectedChild: Child?,
     authToken: String,
     navController: NavController,
-    eventsViewModel: EventsViewModel
+    eventsViewModel: ChildDetailViewModel
 ) {
     when (eventsState) {
-        is EventsWithChildrenState.Loading -> LoadingBox()
-        is EventsWithChildrenState.Error -> ErrorBox((eventsState).message)
+        is UiState.Loading -> LoadingBox()
+        is UiState.Error -> ErrorBox((eventsState).message)
 
-        is EventsWithChildrenState.Success -> {
-            val events = (eventsState).events
+        is UiState.Success -> {
+            val events = (eventsState).data
             val filteredEvents =
                 if (selectedChild == null) events else events.filter { it.child.id == selectedChild.id }
 

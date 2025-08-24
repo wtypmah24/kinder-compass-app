@@ -1,7 +1,9 @@
 package com.example.school_companion.data.repository
 
+import com.example.school_companion.data.api.ChildRequestDto
 import com.example.school_companion.data.api.ChildrenApi
 import com.example.school_companion.data.api.DeletePhotoRequestDto
+import com.example.school_companion.data.api.EventRequestDto
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.Photo
 import kotlinx.coroutines.flow.Flow
@@ -17,6 +19,55 @@ import javax.inject.Inject
 class ChildrenRepository @Inject constructor(
     private val apiService: ChildrenApi
 ) {
+
+    suspend fun addChild(token: String, child: ChildRequestDto) = flow {
+        try {
+            val response = apiService.addChild("Bearer $token", child)
+            if (response.isSuccessful) {
+                val message = response.body()?.string() ?: "Child added successfully"
+                emit(Result.success(message))
+            } else {
+                emit(Result.failure(Exception("Failed to create child: ${response.code()}")))
+            }
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
+    }
+
+    suspend fun updateChild(
+        token: String,
+        childId: Long,
+        child: ChildRequestDto
+    ) = flow {
+        try {
+            val response = apiService.updateChild("Bearer $token", child, childId)
+            if (response.isSuccessful) {
+                val message = response.body()?.string() ?: "Child updated successfully"
+                emit(Result.success(message))
+            } else {
+                emit(Result.failure(Exception("Failed to update child: ${response.code()}")))
+            }
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
+    }
+
+    suspend fun deleteChild(
+        token: String,
+        childId: Long
+    ) = flow {
+        try {
+            val response = apiService.delete("Bearer $token", childId)
+            if (response.isSuccessful) {
+                val message = response.body()?.string() ?: "Child deleted successfully"
+                emit(Result.success(message))
+            } else {
+                emit(Result.failure(Exception("Failed to delete child: ${response.code()}")))
+            }
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
+    }
 
     suspend fun getChildren(token: String): Flow<Result<List<Child>>> = flow {
         try {

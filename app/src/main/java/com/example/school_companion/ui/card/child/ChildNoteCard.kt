@@ -31,62 +31,46 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.school_companion.data.api.NoteRequestDto
 import com.example.school_companion.data.model.Note
 import com.example.school_companion.ui.dialog.note.EditNoteDialog
-import com.example.school_companion.ui.viewmodel.NotesViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ChildNoteCard(note: Note, notesViewModel: NotesViewModel, childId: Long, token: String) {
+fun ChildNoteCard(
+    note: Note,
+    onEdit: (NoteRequestDto) -> Unit,
+    onDelete: () -> Unit
+) {
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+
     Box(modifier = Modifier.fillMaxWidth()) {
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
+            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = note.content,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Text(text = note.content, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
         }
-        Row(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(8.dp)
-        ) {
+
+        Row(modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)) {
             IconButton(onClick = { showEditDialog = true }) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit Note",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                Icon(Icons.Default.Edit, contentDescription = "Edit Note", tint = MaterialTheme.colorScheme.primary)
             }
             IconButton(onClick = { showDeleteConfirm = true }) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete Note",
-                    tint = MaterialTheme.colorScheme.error
-                )
+                Icon(Icons.Default.Delete, contentDescription = "Delete Note", tint = MaterialTheme.colorScheme.error)
             }
         }
     }
+
     if (showEditDialog) {
         EditNoteDialog(
             note = note,
             onDismiss = { showEditDialog = false },
-            onSave = { updatedNoteRequestDto ->
-                notesViewModel.updateNote(
-                    token = token,
-                    noteId = note.id,
-                    note = updatedNoteRequestDto,
-                    childId = childId,
-                )
+            onSave = { dto ->
+                onEdit(dto)
                 showEditDialog = false
             }
         )
@@ -100,18 +84,14 @@ fun ChildNoteCard(note: Note, notesViewModel: NotesViewModel, childId: Long, tok
             confirmButton = {
                 Button(
                     onClick = {
-                        notesViewModel.deleteNote(token, note.id, childId)
+                        onDelete()
                         showDeleteConfirm = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Delete", color = Color.White)
-                }
+                ) { Text("Delete", color = Color.White) }
             },
             dismissButton = {
-                Button(onClick = { showDeleteConfirm = false }) {
-                    Text("Cancel")
-                }
+                Button(onClick = { showDeleteConfirm = false }) { Text("Cancel") }
             }
         )
     }

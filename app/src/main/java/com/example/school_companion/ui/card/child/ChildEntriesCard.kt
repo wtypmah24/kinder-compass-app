@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.school_companion.data.api.EntryRequestDto
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.MonitoringEntry
 import com.example.school_companion.ui.dialog.entry.EditEntryDialog
@@ -41,9 +42,8 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ChildEntriesCard(
     entry: MonitoringEntry,
-    entryViewModel: MonitoringEntryViewModel,
-    child: Child,
-    token: String
+    onEdit: (Long, EntryRequestDto) -> Unit,
+    onDelete: () -> Unit
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
@@ -57,71 +57,33 @@ fun ChildEntriesCard(
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-
-                Text(
-                    text = entry.parameterName,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Text(
-                    text = "Wert: ${entry.value}",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-
-                if (entry.notes.isNotBlank()) {
-                    Text(
-                        text = entry.notes,
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-
-                Text(
-                    text = "Erstellt am: ${entry.createdAt.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))}",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
+                Text(entry.parameterName, fontWeight = FontWeight.Bold)
+                Text("Wert: ${entry.value}")
+                if (entry.notes.isNotBlank()) Text(entry.notes)
+                Text("Erstellt am: ${entry.createdAt.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))}")
             }
         }
+
         Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(8.dp)
         ) {
             IconButton(onClick = { showEditDialog = true }) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit Monitoring Entry",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                Icon(Icons.Default.Edit, contentDescription = "Edit")
             }
             IconButton(onClick = { showDeleteConfirm = true }) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete Monitoring Entry",
-                    tint = MaterialTheme.colorScheme.error
-                )
+                Icon(Icons.Default.Delete, contentDescription = "Delete")
             }
         }
     }
+
     if (showEditDialog) {
         EditEntryDialog(
             entry = entry,
             onDismiss = { showEditDialog = false },
-            onSave = { updateEntryRequestDto ->
-                entryViewModel.updateMonitoringEntry(
-                    token = token,
-                    entry = updateEntryRequestDto,
-                    childId = child.id,
-                    paramId = entry.parameterId
-                )
+            onSave = { dto ->
+                onEdit(entry.id, dto)
                 showEditDialog = false
             }
         )
@@ -131,24 +93,16 @@ fun ChildEntriesCard(
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
             title = { Text("Delete Monitoring Entry?") },
-            text = { Text("Are you sure you want to delete «${entry.type}: ${entry.value}»?") },
+            text = { Text("Are you sure?") },
             confirmButton = {
-                Button(
-                    onClick = {
-                        entryViewModel.deleteMonitoringEntry(token, entry.id, child.id)
-                        showDeleteConfirm = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Delete", color = Color.White)
-                }
+                Button(onClick = {
+                    onDelete()
+                    showDeleteConfirm = false
+                }) { Text("Delete") }
             },
             dismissButton = {
-                Button(onClick = { showDeleteConfirm = false }) {
-                    Text("Cancel")
-                }
+                Button(onClick = { showDeleteConfirm = false }) { Text("Cancel") }
             }
         )
     }
 }
-

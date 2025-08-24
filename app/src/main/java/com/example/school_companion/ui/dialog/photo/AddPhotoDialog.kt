@@ -24,15 +24,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.school_companion.data.api.GoalRequestDto
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 import java.io.FileOutputStream
 
@@ -58,7 +52,6 @@ fun AddPhotoDialog(
         title = { Text("New Photo") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-
                 Button(onClick = { pickImageLauncher.launch("image/*") }) {
                     Text("Select Photo")
                 }

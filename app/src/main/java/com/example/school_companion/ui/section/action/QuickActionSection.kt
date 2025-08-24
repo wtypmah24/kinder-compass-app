@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.People
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,10 +26,8 @@ import com.example.school_companion.ui.card.dashboard.QuickActionCard
 import com.example.school_companion.ui.navigation.Screen
 
 @Composable
-fun QuickActionSection(navController: NavController){
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+fun QuickActionSection(actions: List<QuickAction>) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "Schnellzugriff",
             fontSize = 20.sp,
@@ -36,58 +35,29 @@ fun QuickActionSection(navController: NavController){
             modifier = Modifier.padding(vertical = 8.dp)
         )
         Spacer(modifier = Modifier.height(12.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            QuickActionCard(
-                title = "Monitoring",
-                icon = Icons.Default.Assessment,
-                onClick = { navController.navigate(Screen.Monitoring.route) },
-                modifier = Modifier.weight(1f)
-            )
-            QuickActionCard(
-                title = "Termine",
-                icon = Icons.Default.Event,
-                onClick = { navController.navigate(Screen.Events.route) },
-                modifier = Modifier.weight(1f)
-            )
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            QuickActionCard(
-                title = "Kinder",
-                icon = Icons.Default.People,
-                onClick = { navController.navigate(Screen.Children.route) },
-                modifier = Modifier.weight(1f)
-            )
-            QuickActionCard(
-                title = "Statistiken",
-                icon = Icons.Default.BarChart,
-                onClick = { navController.navigate(Screen.Statistics.route) },
-                modifier = Modifier.weight(1f)
-            )
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            QuickActionCard(
-                title = "AI Assistant",
-                icon = Icons.Default.Assistant,
-                onClick = { navController.navigate(Screen.Assistant.route) },
-                modifier = Modifier.weight(1f)
-            )
-            QuickActionCard(
-                title = "Planner",
-                icon = Icons.Default.EditCalendar,
-                onClick = { /* TODO */ },
-                modifier = Modifier.weight(1f)
-            )
+
+        actions.chunked(2).forEach { rowActions ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                rowActions.forEach { action ->
+                    QuickActionCard(
+                        title = action.title,
+                        icon = action.icon,
+                        onClick = action.onClick,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                if (rowActions.size < 2) Spacer(modifier = Modifier.weight(1f))
+            }
+            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
+
+data class QuickAction(
+    val title: String,
+    val icon: ImageVector,
+    val onClick: () -> Unit
+)

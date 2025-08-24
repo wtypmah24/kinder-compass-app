@@ -35,18 +35,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.school_companion.data.api.ChildRequestDto
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.ui.dialog.child.EditChildDialog
-import com.example.school_companion.ui.dialog.entry.EditEntryDialog
-import com.example.school_companion.ui.viewmodel.ChildrenViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChildCard(
-    childrenViewModel: ChildrenViewModel,
     child: Child,
-    onClick: () -> Unit
+    onAction: (Child, ChildAction) -> Unit
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
@@ -54,7 +52,7 @@ fun ChildCard(
     Box(modifier = Modifier.fillMaxWidth()) {
         Card(
             modifier = Modifier.fillMaxWidth(),
-            onClick = onClick
+            onClick = { onAction(child, ChildAction.ViewDetails) }
         ) {
             Row(
                 modifier = Modifier
@@ -129,8 +127,9 @@ fun ChildCard(
             EditChildDialog(
                 child = child,
                 onDismiss = { showEditDialog = false },
-                onSave = { childRequestDto ->
-                    //childrenViewModel.add(token, entry.id, child.id)
+                onSave = { updated ->
+                    onAction(child, ChildAction.Edit(updated))
+                    showEditDialog = false
                 }
             )
         }
@@ -143,7 +142,7 @@ fun ChildCard(
                 confirmButton = {
                     Button(
                         onClick = {
-//                            childrenViewModel.delete(token, entry.id, child.id)
+                            onAction(child, ChildAction.Delete)
                             showDeleteConfirm = false
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
@@ -159,5 +158,10 @@ fun ChildCard(
             )
         }
     }
+}
 
+sealed class ChildAction {
+    data object ViewDetails : ChildAction()
+    data class Edit(val updatedChild: ChildRequestDto) : ChildAction()
+    data object Delete : ChildAction()
 }

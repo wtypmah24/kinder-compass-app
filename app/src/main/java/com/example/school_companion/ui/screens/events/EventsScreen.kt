@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.example.school_companion.data.api.EventRequestDto
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.ui.bar.dashboard.DashBoardBottomBar
 import com.example.school_companion.ui.bar.event.EventTopBar
@@ -29,21 +28,19 @@ import com.example.school_companion.ui.dialog.event.AddEventDialog
 import com.example.school_companion.ui.dropdown.DropdownMenuWrapper
 import com.example.school_companion.ui.section.event.EventWithChildSection
 import com.example.school_companion.ui.viewmodel.AuthViewModel
-import com.example.school_companion.ui.viewmodel.ChildrenState
-import com.example.school_companion.ui.viewmodel.ChildrenViewModel
-import com.example.school_companion.ui.viewmodel.EventsViewModel
+import com.example.school_companion.ui.viewmodel.ChildDetailViewModel
+import com.example.school_companion.ui.viewmodel.UiState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun EventsScreen(
     navController: NavController,
     authViewModel: AuthViewModel,
-    eventsViewModel: EventsViewModel = hiltViewModel(),
-    childrenViewModel: ChildrenViewModel = hiltViewModel()
+    viewModel: ChildDetailViewModel = hiltViewModel(),
 ) {
     val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
-    val eventsState by eventsViewModel.eventsWithChildrenState.collectAsStateWithLifecycle()
-    val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
+    val eventsState by viewModel.eventsWithChildren.collectAsStateWithLifecycle()
+    val childrenState by viewModel.children.collectAsStateWithLifecycle()
 
     val showAddEventDialog = remember { mutableStateOf(false) }
     var selectedChild: Child? by remember { mutableStateOf(null) }
@@ -52,8 +49,8 @@ fun EventsScreen(
 
     LaunchedEffect(authToken) {
         authToken?.let { token ->
-            eventsViewModel.loadEventsWithChildren(token)
-            childrenViewModel.loadChildren(token)
+            viewModel.loadEventsWithChildren(token)
+            viewModel.loadChildren(token)
         }
     }
 
@@ -68,9 +65,14 @@ fun EventsScreen(
         },
         bottomBar = {
             DashBoardBottomBar(
-                navController = navController,
                 selectedTabIndex = selectedBottomTabIndex,
-                onTabSelected = { selectedBottomTabIndex = it }
+                onTabSelected = { selectedBottomTabIndex = it },
+                onTabNavigate = { screen ->
+                    navController.navigate(screen.route) {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             )
         }
     ) { paddingValues ->
@@ -82,7 +84,7 @@ fun EventsScreen(
         ) {
             //Child Filter Dropdown
             DropdownMenuWrapper(
-                items = if (childrenState is ChildrenState.Success) (childrenState as ChildrenState.Success).children else emptyList(),
+                items = if (childrenState is UiState.Success) (childrenState as UiState.Success).data else emptyList(),
                 selectedItem = selectedChild,
                 onItemSelected = { selectedChild = it },
                 itemToString = { "${it.name} ${it.surname}" },
@@ -100,7 +102,7 @@ fun EventsScreen(
                     selectedChild = selectedChild,
                     authToken = token,
                     navController = navController,
-                    eventsViewModel = eventsViewModel
+                    eventsViewModel = viewModel
                 )
             }
         }
@@ -110,17 +112,11 @@ fun EventsScreen(
     if (showAddEventDialog.value && selectedChild != null && authToken != null) {
         AddEventDialog(
             onDismiss = { showAddEventDialog.value = false },
-            onSave = { title, description, start, end, location ->
-                eventsViewModel.createEvent(
+            onSave = { dto ->
+                viewModel.createEvent(
                     authToken!!,
                     selectedChild!!.id,
-                    EventRequestDto(
-                        title = title,
-                        description = description,
-                        startDateTime = start.toString(),
-                        endDateTime = end.toString(),
-                        location = location
-                    )
+                    dto
                 )
                 showAddEventDialog.value = false
             }

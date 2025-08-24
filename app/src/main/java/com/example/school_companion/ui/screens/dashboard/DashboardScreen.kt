@@ -22,13 +22,14 @@ import androidx.navigation.NavController
 import com.example.school_companion.ui.bar.dashboard.DashBoardBottomBar
 import com.example.school_companion.ui.bar.dashboard.DashboardTopBar
 import com.example.school_companion.ui.card.dashboard.WelcomeCompanionCard
+import com.example.school_companion.ui.constant.QuickActionsData
 import com.example.school_companion.ui.navigation.Screen
 import com.example.school_companion.ui.section.action.QuickActionSection
 import com.example.school_companion.ui.section.children.ChildrenSection
 import com.example.school_companion.ui.section.event.EventsSection
+import com.example.school_companion.ui.util.ChildActionHandler
 import com.example.school_companion.ui.viewmodel.AuthViewModel
-import com.example.school_companion.ui.viewmodel.ChildrenViewModel
-import com.example.school_companion.ui.viewmodel.EventsViewModel
+import com.example.school_companion.ui.viewmodel.ChildDetailViewModel
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -36,33 +37,42 @@ import com.example.school_companion.ui.viewmodel.EventsViewModel
 fun DashboardScreen(
     navController: NavController,
     authViewModel: AuthViewModel,
-    childrenViewModel: ChildrenViewModel = hiltViewModel(),
-    eventsViewModel: EventsViewModel = hiltViewModel()
+    viewModel: ChildDetailViewModel = hiltViewModel(),
 ) {
     val currentUser by authViewModel.currentCompanion.collectAsStateWithLifecycle()
     val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
-    val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
-    val eventsState by eventsViewModel.eventsState.collectAsStateWithLifecycle()
+    val childrenState by viewModel.children.collectAsStateWithLifecycle()
+    val eventsState by viewModel.events.collectAsStateWithLifecycle()
+    val quickActions = QuickActionsData.getQuickActions(navController)
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(authToken) {
         if (!authToken.isNullOrBlank()) {
-            childrenViewModel.loadChildren(authToken!!)
-            eventsViewModel.loadEventsByCompanion(authToken!!)
+            viewModel.loadChildren(authToken!!)
+            viewModel.loadEventsByCompanion(authToken!!)
         }
     }
 
     Scaffold(
-        topBar = { DashboardTopBar(navController) },
+        topBar = {
+            DashboardTopBar(
+                onProfileClick = { navController.navigate(Screen.Profile.route) },
+                onSettingsClick = { navController.navigate(Screen.Settings.route) }
+            )
+        },
         bottomBar = {
             DashBoardBottomBar(
-                navController = navController,
                 selectedTabIndex = selectedTabIndex,
-                onTabSelected = { selectedTabIndex = it }
+                onTabSelected = { selectedTabIndex = it },
+                onTabNavigate = { screen ->
+                    navController.navigate(screen.route) {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             )
         }
-
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -78,17 +88,26 @@ fun DashboardScreen(
 
             // Quick Actions
             item {
-                QuickActionSection(navController = navController)
+                QuickActionSection(actions = quickActions)
             }
 
             // Assigned Children
             item {
                 ChildrenSection(
                     childrenState = childrenState,
-                    childrenViewModel = childrenViewModel,
-                    navController = navController,
                     maxItems = 3,
-                    onShowAllClick = { navController.navigate(Screen.Children.route) },
+                    onChildAction = { child, action ->
+                        ChildActionHandler.handle(
+                            authToken!!,
+                            child,
+                            action,
+                            navController,
+                            viewModel
+                        )
+                    },
+                    onShowAllClick = {
+                        navController.navigate(Screen.Children.route)
+                    },
                     modifier = Modifier.fillMaxWidth()
                 )
             }

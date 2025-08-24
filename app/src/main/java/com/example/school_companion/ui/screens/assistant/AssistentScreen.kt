@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.example.school_companion.data.model.AssistantAnswer
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.ui.bar.dashboard.DashBoardBottomBar
 import com.example.school_companion.ui.card.chat.MessageInputCard
@@ -45,8 +44,8 @@ import com.example.school_companion.ui.selector.ChildSelector
 import com.example.school_companion.ui.selector.ThreadSelector
 import com.example.school_companion.ui.viewmodel.AuthViewModel
 import com.example.school_companion.ui.viewmodel.ChatViewModel
-import com.example.school_companion.ui.viewmodel.ChildrenState
-import com.example.school_companion.ui.viewmodel.ChildrenViewModel
+import com.example.school_companion.ui.viewmodel.ChildDetailViewModel
+import com.example.school_companion.ui.viewmodel.UiState
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -55,11 +54,11 @@ import kotlinx.coroutines.launch
 fun AssistantScreen(
     navController: NavController,
     authViewModel: AuthViewModel,
-    childrenViewModel: ChildrenViewModel = hiltViewModel(),
+    childrenViewModel: ChildDetailViewModel = hiltViewModel(),
     chatViewModel: ChatViewModel = hiltViewModel(),
 ) {
     val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
-    val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
+    val childrenState by childrenViewModel.children.collectAsStateWithLifecycle()
     val chatIdsState by chatViewModel.chatIdsState.collectAsStateWithLifecycle()
 
     var selectedChild by remember { mutableStateOf<Child?>(null) }
@@ -115,9 +114,16 @@ fun AssistantScreen(
             }
         })
     }, bottomBar = {
-        DashBoardBottomBar(navController = navController,
+        DashBoardBottomBar(
             selectedTabIndex = selectedTabIndex,
-            onTabSelected = { selectedTabIndex = it })
+            onTabSelected = { selectedTabIndex = it },
+            onTabNavigate = { screen ->
+                navController.navigate(screen.route) {
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }
+        )
     }) { paddingValues ->
         Column(
             modifier = Modifier
@@ -126,8 +132,8 @@ fun AssistantScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            if (childrenState is ChildrenState.Success) {
-                ChildSelector(children = (childrenState as ChildrenState.Success).children,
+            if (childrenState is UiState.Success) {
+                ChildSelector(children = (childrenState as UiState.Success).data,
                     selectedChild = selectedChild,
                     onSelect = {
                         selectedChild = it

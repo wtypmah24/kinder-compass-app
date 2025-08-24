@@ -18,8 +18,6 @@ import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.MonitoringParam
 import com.example.school_companion.ui.selector.ChildSelector
 import com.example.school_companion.ui.selector.ParamSelector
-import com.example.school_companion.ui.viewmodel.ChildrenState
-import com.example.school_companion.ui.viewmodel.ParamsState
 
 @Composable
 fun MonitoringSelectorCard(

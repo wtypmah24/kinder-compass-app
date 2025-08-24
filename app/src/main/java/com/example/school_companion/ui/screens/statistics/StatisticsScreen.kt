@@ -34,12 +34,10 @@ import com.example.school_companion.ui.card.statistic.StatisticsSelectorCard
 import com.example.school_companion.ui.card.statistic.StatisticsSummaryCard
 import com.example.school_companion.ui.tab.StatisticsTabs
 import com.example.school_companion.ui.viewmodel.AuthViewModel
-import com.example.school_companion.ui.viewmodel.ChildrenState
-import com.example.school_companion.ui.viewmodel.ChildrenViewModel
-import com.example.school_companion.ui.viewmodel.EntriesState
-import com.example.school_companion.ui.viewmodel.MonitoringEntryViewModel
+import com.example.school_companion.ui.viewmodel.ChildDetailViewModel
 import com.example.school_companion.ui.viewmodel.MonitoringParamViewModel
 import com.example.school_companion.ui.viewmodel.ParamsState
+import com.example.school_companion.ui.viewmodel.UiState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,13 +46,12 @@ fun StatisticsScreen(
     navController: NavController,
     authViewModel: AuthViewModel,
     paramsViewModel: MonitoringParamViewModel = hiltViewModel(),
-    entriesViewModel: MonitoringEntryViewModel = hiltViewModel(),
-    childrenViewModel: ChildrenViewModel = hiltViewModel()
+    viewModel: ChildDetailViewModel = hiltViewModel()
 ) {
     val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
     val paramsState by paramsViewModel.paramsState.collectAsStateWithLifecycle()
-    val entriesState by entriesViewModel.entriesState.collectAsStateWithLifecycle()
-    val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
+    val entriesState by viewModel.entries.collectAsStateWithLifecycle()
+    val childrenState by viewModel.children.collectAsStateWithLifecycle()
 
     var selectedChild by remember { mutableStateOf<Child?>(null) }
     var selectedParam by remember { mutableStateOf<MonitoringParam?>(null) }
@@ -67,8 +64,8 @@ fun StatisticsScreen(
     LaunchedEffect(authToken) {
         authToken?.let { token ->
             paramsViewModel.loadMonitoringParamData(token)
-            entriesViewModel.loadMonitoringEntryByCompanion(token)
-            childrenViewModel.loadChildren(token)
+            viewModel.loadMonitoringEntryByCompanion(token)
+            viewModel.loadChildren(token)
         }
     }
 
@@ -88,9 +85,14 @@ fun StatisticsScreen(
         },
         bottomBar = {
             DashBoardBottomBar(
-                navController = navController,
                 selectedTabIndex = selectedBottomTabIndex,
-                onTabSelected = { selectedBottomTabIndex = it }
+                onTabSelected = { selectedBottomTabIndex = it },
+                onTabNavigate = { screen ->
+                    navController.navigate(screen.route) {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             )
         }
     ) { paddingValues ->
@@ -101,9 +103,9 @@ fun StatisticsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            if (childrenState is ChildrenState.Success && paramsState is ParamsState.Success) {
+            if (childrenState is UiState.Success && paramsState is ParamsState.Success) {
                 StatisticsSelectorCard(
-                    children = (childrenState as ChildrenState.Success).children,
+                    children = (childrenState as UiState.Success).data,
                     selectedChild = selectedChild,
                     onChildSelected = { selectedChild = it },
                     params = (paramsState as ParamsState.Success).paramData,
@@ -115,8 +117,8 @@ fun StatisticsScreen(
                 )
             }
 
-            if (entriesState is EntriesState.Success) {
-                val entries = (entriesState as EntriesState.Success).entryData
+            if (entriesState is UiState.Success) {
+                val entries = (entriesState as UiState.Success).data
                 StatisticsSummaryCard(entries)
             }
 

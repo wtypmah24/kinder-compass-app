@@ -27,15 +27,15 @@ interface ChildrenApi {
     @PATCH("child/{childId}")
     suspend fun updateChild(
         @Header("Authorization") token: String,
-        @Body childUpdateDto: ChildUpdateDto,
+        @Body childUpdateDto: ChildRequestDto,
         @Path("childId") childId: Long
-    )
+    ): Response<ResponseBody>
 
     @DELETE("child/{childId}")
     suspend fun delete(
         @Header("Authorization") token: String,
         @Path("childId") childId: Long
-    )
+    ): Response<ResponseBody>
 
     @GET("child")
     suspend fun getChildren(@Header("Authorization") token: String): Response<List<Child>>

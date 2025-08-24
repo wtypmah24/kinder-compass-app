@@ -32,21 +32,20 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.school_companion.data.model.Child
+import com.example.school_companion.data.api.NeedRequestDto
 import com.example.school_companion.data.model.SpecialNeed
 import com.example.school_companion.ui.dialog.need.EditNeedDialog
-import com.example.school_companion.ui.viewmodel.NeedsViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ChildSpecialNeedsCard(
     need: SpecialNeed,
-    needsViewModel: NeedsViewModel,
-    child: Child,
-    token: String
+    onEdit: (NeedRequestDto) -> Unit,
+    onDelete: () -> Unit
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+
     Box(modifier = Modifier.fillMaxWidth()) {
         Card(
             modifier = Modifier
@@ -55,32 +54,22 @@ fun ChildSpecialNeedsCard(
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-
                 Text(
                     text = need.type,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
-
-                if (need.description.isNotBlank()) {
-                    Text(
-                        text = need.description,
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 6.dp)
-                    )
-                } else {
-                    Text(
-                        text = "Keine Beschreibung",
-                        fontSize = 14.sp,
-                        fontStyle = FontStyle.Italic,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        modifier = Modifier.padding(top = 6.dp)
-                    )
-                }
+                Text(
+                    text = need.description.ifBlank { "Keine Beschreibung" },
+                    fontSize = 14.sp,
+                    fontStyle = if (need.description.isBlank()) FontStyle.Italic else FontStyle.Normal,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 6.dp)
+                )
             }
         }
+
         Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -88,31 +77,27 @@ fun ChildSpecialNeedsCard(
         ) {
             IconButton(onClick = { showEditDialog = true }) {
                 Icon(
-                    imageVector = Icons.Default.Edit,
+                    Icons.Default.Edit,
                     contentDescription = "Edit Special Need",
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
             IconButton(onClick = { showDeleteConfirm = true }) {
                 Icon(
-                    imageVector = Icons.Default.Delete,
+                    Icons.Default.Delete,
                     contentDescription = "Delete Special Need",
                     tint = MaterialTheme.colorScheme.error
                 )
             }
         }
     }
+
     if (showEditDialog) {
         EditNeedDialog(
             need = need,
             onDismiss = { showEditDialog = false },
-            onSave = { updatedNeedRequestDto ->
-                needsViewModel.updateNeed(
-                    token = token,
-                    needId = need.id,
-                    need = updatedNeedRequestDto,
-                    childId = child.id,
-                )
+            onSave = {
+                onEdit(it)
                 showEditDialog = false
             }
         )
@@ -126,7 +111,7 @@ fun ChildSpecialNeedsCard(
             confirmButton = {
                 Button(
                     onClick = {
-                        needsViewModel.deleteNeed(token, need.id, child.id)
+                        onDelete()
                         showDeleteConfirm = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
@@ -142,4 +127,3 @@ fun ChildSpecialNeedsCard(
         )
     }
 }
-

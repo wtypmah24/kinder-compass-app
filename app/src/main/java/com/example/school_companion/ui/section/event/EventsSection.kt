@@ -1,15 +1,12 @@
 package com.example.school_companion.ui.section.event
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,15 +19,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.school_companion.data.model.Event
 import com.example.school_companion.ui.box.ErrorBox
 import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.card.event.EventCard
 import com.example.school_companion.ui.navigation.Screen
-import com.example.school_companion.ui.viewmodel.EventsState
+import com.example.school_companion.ui.viewmodel.UiState
 
 @Composable
 fun EventsSection(
-    eventsState: EventsState,
+    eventsState: UiState<List<Event>>,
     navController: NavController
 ) {
     Column {
@@ -42,12 +40,12 @@ fun EventsSection(
         )
 
         when (eventsState) {
-            is EventsState.Loading -> LoadingBox()
-            is EventsState.Error -> ErrorBox(eventsState.message)
+            is UiState.Loading -> LoadingBox()
+            is UiState.Error -> ErrorBox(eventsState.message)
 
-            is EventsState.Success -> {
+            is UiState.Success -> {
                 val events =
-                    (eventsState).events
+                    (eventsState).data
                 if (events.isEmpty()) {
                     Card(
                         modifier = Modifier.fillMaxWidth()

@@ -2,16 +2,13 @@ package com.example.school_companion.ui.section.children
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,19 +20,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
+import com.example.school_companion.data.model.Child
+import com.example.school_companion.ui.box.ErrorBox
+import com.example.school_companion.ui.box.LoadingBox
+import com.example.school_companion.ui.card.child.ChildAction
 import com.example.school_companion.ui.card.child.ChildCard
-import com.example.school_companion.ui.navigation.Screen
-import com.example.school_companion.ui.viewmodel.ChildrenState
-import com.example.school_companion.ui.viewmodel.ChildrenViewModel
+import com.example.school_companion.ui.viewmodel.UiState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ChildrenSection(
-    childrenState: ChildrenState,
-    childrenViewModel: ChildrenViewModel,
-    navController: NavController,
+    childrenState: UiState<List<Child>>,
     maxItems: Int = 3,
+    onChildAction: (Child, ChildAction) -> Unit,
     onShowAllClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
@@ -48,21 +45,11 @@ fun ChildrenSection(
         )
 
         when (childrenState) {
-            is ChildrenState.Loading -> {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
-            }
+            is UiState.Loading -> LoadingBox()
+            is UiState.Error -> ErrorBox(childrenState.message)
 
-            is ChildrenState.Success -> {
-                val children = childrenState.children
+            is UiState.Success -> {
+                val children = childrenState.data
                 if (children.isEmpty()) {
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Column(
@@ -89,11 +76,8 @@ fun ChildrenSection(
                 } else {
                     children.take(maxItems).forEach { child ->
                         ChildCard(
-                            childrenViewModel = childrenViewModel,
                             child = child,
-                            onClick = {
-                                navController.navigate("${Screen.ChildDetail.route}/${child.id}")
-                            }
+                            onAction = onChildAction
                         )
                     }
 
@@ -104,31 +88,6 @@ fun ChildrenSection(
                         ) {
                             Text("Alle ${children.size} Kinder anzeigen")
                         }
-                    }
-                }
-            }
-
-            is ChildrenState.Error -> {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            Icons.Default.Error,
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                        Text(
-                            text = childrenState.message,
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.error,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
                     }
                 }
             }

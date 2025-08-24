@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -39,22 +38,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.school_companion.data.api.DeletePhotoRequestDto
-import com.example.school_companion.data.api.EventRequestDto
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.Photo
-import com.example.school_companion.ui.dialog.event.AddEventDialog
 import com.example.school_companion.ui.dialog.photo.AddPhotoDialog
-import com.example.school_companion.ui.viewmodel.ChildrenViewModel
-import com.example.school_companion.ui.viewmodel.PhotosState
+import com.example.school_companion.ui.viewmodel.UiState
+import java.io.File
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun PhotosTab(child: Child, childrenViewModel: ChildrenViewModel, token: String) {
-    val photosState by childrenViewModel.photosState.collectAsStateWithLifecycle()
+fun PhotosTab(
+    child: Child,
+    photosState: UiState<List<Photo>>,
+    onAddPhoto: (file: File, description: String) -> Unit,
+    onDeletePhoto: (Photo) -> Unit
+) {
     var showAddDialog by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -66,33 +65,27 @@ fun PhotosTab(child: Child, childrenViewModel: ChildrenViewModel, token: String)
         ) {
             Text("Add new photo")
         }
+
         when (photosState) {
-            is PhotosState.Loading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+            is UiState.Loading -> Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
             }
 
-            is PhotosState.Error -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Fehler: ${(photosState as PhotosState.Error).message}")
-                }
+            is UiState.Error -> Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Fehler: ${(photosState).message}")
             }
 
-            is PhotosState.Success -> {
-                val photos = (photosState as PhotosState.Success).photos
+            is UiState.Success -> {
+                val photos = (photosState).data
 
                 if (photos.isEmpty()) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text("Keine photos für ${child.name}")
                     }
                 } else {
@@ -103,23 +96,22 @@ fun PhotosTab(child: Child, childrenViewModel: ChildrenViewModel, token: String)
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(photos) { photo ->
-                            ChildPhotoCard(photo, childrenViewModel, token, child.id)
+                            ChildPhotoCard(
+                                photo = photo,
+                                onDelete = { onDeletePhoto(photo) }
+                            )
                         }
                     }
                 }
             }
         }
     }
+
     if (showAddDialog) {
         AddPhotoDialog(
             onDismiss = { showAddDialog = false },
-            onSave = { filePart, description ->
-                childrenViewModel.addChildPhotos(
-                    token,
-                    child.id,
-                    filePart,
-                    description
-                )
+            onSave = { file, description ->
+                onAddPhoto(file, description)
                 showAddDialog = false
             }
         )
@@ -129,9 +121,7 @@ fun PhotosTab(child: Child, childrenViewModel: ChildrenViewModel, token: String)
 @Composable
 fun ChildPhotoCard(
     photo: Photo,
-    childrenViewModel: ChildrenViewModel,
-    token: String,
-    childId: Long
+    onDelete: () -> Unit
 ) {
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
@@ -146,7 +136,6 @@ fun ChildPhotoCard(
             Column {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-//                        .data("http://10.0.2.2:8080/${photo.id}")
                         .data("https://wtypmah.duckdns.org/api/${photo.id}")
                         .crossfade(true)
                         .build(),
@@ -173,6 +162,7 @@ fun ChildPhotoCard(
                 }
             }
         }
+
         Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -181,12 +171,13 @@ fun ChildPhotoCard(
             IconButton(onClick = { showDeleteConfirm = true }) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete Event",
+                    contentDescription = "Delete Photo",
                     tint = MaterialTheme.colorScheme.error
                 )
             }
         }
     }
+
     if (showDeleteConfirm) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
@@ -195,11 +186,7 @@ fun ChildPhotoCard(
             confirmButton = {
                 Button(
                     onClick = {
-                        childrenViewModel.deleteChildPhotos(
-                            token,
-                            DeletePhotoRequestDto(photoId = photo.id),
-                            childId
-                        )
+                        onDelete()
                         showDeleteConfirm = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)

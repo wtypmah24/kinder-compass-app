@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.example.school_companion.data.api.EventRequestDto
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -27,7 +28,7 @@ import java.time.ZoneId
 @Composable
 fun AddEventDialog(
     onDismiss: () -> Unit,
-    onSave: (String, String, Instant, Instant, String) -> Unit
+    onSave: (EventRequestDto) -> Unit
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -45,9 +46,18 @@ fun AddEventDialog(
         title = { Text("New Event") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Title") })
-                OutlinedTextField(value = description, onValueChange = { description = it }, label = { Text("Description") })
-                OutlinedTextField(value = location, onValueChange = { location = it }, label = { Text("Location") })
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Title") })
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Description") })
+                OutlinedTextField(
+                    value = location,
+                    onValueChange = { location = it },
+                    label = { Text("Location") })
 
                 // Start Date
                 Button(onClick = {
@@ -115,7 +125,15 @@ fun AddEventDialog(
                     .atZone(ZoneId.systemDefault())
                     .toInstant()
 
-                onSave(title, description, startInstant, endInstant, location)
+                onSave(
+                    EventRequestDto(
+                        title,
+                        description,
+                        startDateTime = startInstant.toString(),
+                        endDateTime = endInstant.toString(),
+                        location
+                    )
+                )
             }) {
                 Text("Save")
             }

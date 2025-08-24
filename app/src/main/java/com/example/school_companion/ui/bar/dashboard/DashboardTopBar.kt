@@ -15,7 +15,10 @@ import com.example.school_companion.ui.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardTopBar(navController: NavController) {
+fun DashboardTopBar(
+    onProfileClick: () -> Unit,
+    onSettingsClick: () -> Unit
+) {
     TopAppBar(
         title = {
             Text(
@@ -24,10 +27,10 @@ fun DashboardTopBar(navController: NavController) {
             )
         },
         actions = {
-            IconButton(onClick = { navController.navigate(Screen.Profile.route) }) {
+            IconButton(onClick = onProfileClick) {
                 Icon(Icons.Default.Person, contentDescription = "Profile")
             }
-            IconButton(onClick = { navController.navigate(Screen.Settings.route) }) {
+            IconButton(onClick = onSettingsClick) {
                 Icon(Icons.Default.Settings, contentDescription = "Settings")
             }
         }

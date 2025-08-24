@@ -24,9 +24,9 @@ import com.example.school_companion.ui.navigation.Screen
 
 @Composable
 fun DashBoardBottomBar(
-    navController: NavController,
     selectedTabIndex: Int,
-    onTabSelected: (Int) -> Unit
+    onTabSelected: (Int) -> Unit,
+    onTabNavigate: (Screen) -> Unit
 ) {
     val tabs = listOf(
         Screen.Dashboard to Icons.Default.Dashboard,
@@ -41,40 +41,30 @@ fun DashBoardBottomBar(
     val screenWidth = configuration.screenWidthDp.dp
     val threshold = 600.dp
 
+    val tabClick: (Int, Screen) -> Unit = { index, screen ->
+        onTabSelected(index)
+        onTabNavigate(screen)
+    }
+
     if (screenWidth > threshold) {
-        TabRow(
-            selectedTabIndex = selectedTabIndex,
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        TabRow(selectedTabIndex = selectedTabIndex, modifier = Modifier.fillMaxWidth()) {
             tabs.forEachIndexed { index, pair ->
                 val (screen, icon) = pair
                 Tab(
                     selected = selectedTabIndex == index,
-                    onClick = {
-                        onTabSelected(index)
-                        navController.navigate(screen.route) {
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
+                    onClick = { tabClick(index, screen) },
                     icon = { Icon(icon, contentDescription = screen.route) },
                     text = { Text(screen.route) }
                 )
             }
         }
     } else {
-        ScrollableTabRow(
-            selectedTabIndex = selectedTabIndex,
-            edgePadding = 8.dp
-        ) {
+        ScrollableTabRow(selectedTabIndex = selectedTabIndex, edgePadding = 8.dp) {
             tabs.forEachIndexed { index, pair ->
                 val (screen, icon) = pair
                 Tab(
                     selected = selectedTabIndex == index,
-                    onClick = {
-                        onTabSelected(index)
-                        navController.navigate(screen.route)
-                    },
+                    onClick = { tabClick(index, screen) },
                     icon = { Icon(icon, contentDescription = screen.route) },
                     text = { Text(screen.route) }
                 )

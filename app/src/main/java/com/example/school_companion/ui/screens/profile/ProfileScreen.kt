@@ -110,9 +110,16 @@ fun ProfileScreen(
     Scaffold(topBar = {
         ProfileTopBar(navController)
     }, bottomBar = {
-        DashBoardBottomBar(navController = navController,
+        DashBoardBottomBar(
             selectedTabIndex = selectedBottomTabIndex,
-            onTabSelected = { selectedBottomTabIndex = it })
+            onTabSelected = { selectedBottomTabIndex = it },
+            onTabNavigate = { screen ->
+                navController.navigate(screen.route) {
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }
+        )
     }) { paddingValues ->
         LazyColumn(
             modifier = Modifier

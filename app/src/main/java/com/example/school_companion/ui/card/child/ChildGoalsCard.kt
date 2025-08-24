@@ -31,16 +31,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.school_companion.data.model.Child
+import com.example.school_companion.data.api.GoalRequestDto
 import com.example.school_companion.data.model.Goal
 import com.example.school_companion.ui.dialog.goal.EditGoalDialog
-import com.example.school_companion.ui.viewmodel.GoalsViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ChildGoalsCard(goal: Goal, goalsViewModel: GoalsViewModel, child: Child, token: String) {
+fun ChildGoalsCard(
+    goal: Goal,
+    onEdit: (GoalRequestDto) -> Unit,
+    onDelete: () -> Unit
+) {
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+
     Box(modifier = Modifier.fillMaxWidth()) {
         Card(
             modifier = Modifier
@@ -49,7 +53,6 @@ fun ChildGoalsCard(goal: Goal, goalsViewModel: GoalsViewModel, child: Child, tok
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-
                 Text(
                     text = goal.description,
                     fontSize = 18.sp,
@@ -58,6 +61,7 @@ fun ChildGoalsCard(goal: Goal, goalsViewModel: GoalsViewModel, child: Child, tok
                 )
             }
         }
+
         Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -65,31 +69,27 @@ fun ChildGoalsCard(goal: Goal, goalsViewModel: GoalsViewModel, child: Child, tok
         ) {
             IconButton(onClick = { showEditDialog = true }) {
                 Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit Special Need",
+                    Icons.Default.Edit,
+                    contentDescription = "Edit Goal",
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
             IconButton(onClick = { showDeleteConfirm = true }) {
                 Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete Special Need",
+                    Icons.Default.Delete,
+                    contentDescription = "Delete Goal",
                     tint = MaterialTheme.colorScheme.error
                 )
             }
         }
     }
+
     if (showEditDialog) {
         EditGoalDialog(
             goal = goal,
             onDismiss = { showEditDialog = false },
-            onSave = { updatedGoalRequestDto ->
-                goalsViewModel.updateGoal(
-                    token = token,
-                    goalId = goal.id,
-                    goal = updatedGoalRequestDto,
-                    childId = child.id,
-                )
+            onSave = {
+                onEdit(it)
                 showEditDialog = false
             }
         )
@@ -103,7 +103,7 @@ fun ChildGoalsCard(goal: Goal, goalsViewModel: GoalsViewModel, child: Child, tok
             confirmButton = {
                 Button(
                     onClick = {
-                        goalsViewModel.deleteGoal(token, goal.id, child.id)
+                        onDelete()
                         showDeleteConfirm = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
