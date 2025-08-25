@@ -23,8 +23,6 @@ import com.example.school_companion.data.model.MonitoringParam
 import com.example.school_companion.ui.card.monitoring.MonitoringEntryCard
 import com.example.school_companion.ui.card.monitoring.MonitoringParamCard
 import com.example.school_companion.ui.viewmodel.ChildDetailViewModel
-import com.example.school_companion.ui.viewmodel.EntriesState
-import com.example.school_companion.ui.viewmodel.MonitoringEntryViewModel
 import com.example.school_companion.ui.viewmodel.MonitoringParamViewModel
 import com.example.school_companion.ui.viewmodel.ParamsState
 import com.example.school_companion.ui.viewmodel.UiState
