@@ -21,13 +21,13 @@ interface ChildrenApi {
     @POST("child")
     suspend fun addChild(
         @Header("Authorization") token: String,
-        @Body childRequestDto: ChildRequestDto,
+        @Body childDto: ChildDto,
     ): Response<ResponseBody>
 
     @PATCH("child/{childId}")
     suspend fun updateChild(
         @Header("Authorization") token: String,
-        @Body childUpdateDto: ChildRequestDto,
+        @Body childUpdateDto: ChildDto,
         @Path("childId") childId: Long
     ): Response<ResponseBody>
 
@@ -68,20 +68,12 @@ interface ChildrenApi {
     ): Response<ResponseBody>
 }
 
-data class ChildRequestDto(
+data class ChildDto(
     val name: String,
     val surname: String,
     val phoneNumber: String,
     val email: String,
     val dateOfBirth: LocalDate
-)
-
-data class ChildUpdateDto(
-    val name: String,
-    val surname: String,
-    val phoneNumber: String,
-    val dateOfBirth: LocalDate,
-    val active: Boolean,
 )
 
 data class DeletePhotoRequestDto(

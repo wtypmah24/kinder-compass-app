@@ -18,8 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.school_companion.data.api.ChildRequestDto
-import com.example.school_companion.data.api.GoalRequestDto
+import com.example.school_companion.data.api.ChildDto
 import java.time.LocalDate
 import java.util.Calendar
 
@@ -27,7 +26,7 @@ import java.util.Calendar
 @Composable
 fun AddChildDialog(
     onDismiss: () -> Unit,
-    onSave: (ChildRequestDto) -> Unit
+    onSave: (ChildDto) -> Unit
 ) {
     var name by remember { mutableStateOf("") }
     var surname by remember { mutableStateOf("") }
@@ -89,7 +88,7 @@ fun AddChildDialog(
                 onClick = {
                     if (dateOfBirth != null) {
                         onSave(
-                            ChildRequestDto(
+                            ChildDto(
                                 name = name,
                                 surname = surname,
                                 dateOfBirth = dateOfBirth!!,

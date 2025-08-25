@@ -20,7 +20,6 @@ import javax.inject.Inject
 class CompanionRepository @Inject constructor(
     private val apiService: CompanionApi
 ) {
-
     suspend fun updateCompanion(
         token: String,
         dto: CompanionUpdateDto

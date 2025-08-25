@@ -19,12 +19,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.school_companion.data.api.ChildRequestDto
-import com.example.school_companion.data.api.GoalRequestDto
-import com.example.school_companion.data.api.NoteRequestDto
+import com.example.school_companion.data.api.ChildDto
 import com.example.school_companion.data.model.Child
-import com.example.school_companion.data.model.Goal
-import com.example.school_companion.data.model.Note
 import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -32,7 +28,7 @@ import java.time.LocalDate
 fun EditChildDialog(
     child: Child,
     onDismiss: () -> Unit,
-    onSave: (ChildRequestDto) -> Unit
+    onSave: (ChildDto) -> Unit
 ) {
     var name by remember { mutableStateOf(child.name) }
     var surname by remember { mutableStateOf(child.surname) }
@@ -104,7 +100,7 @@ fun EditChildDialog(
                 onClick = {
                     if (dateOfBirth != null) {
                         onSave(
-                            ChildRequestDto(
+                            ChildDto(
                                 name = name,
                                 surname = surname,
                                 dateOfBirth = dateOfBirth!!,

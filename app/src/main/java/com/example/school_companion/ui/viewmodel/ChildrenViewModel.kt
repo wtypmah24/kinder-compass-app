@@ -2,7 +2,7 @@ package com.example.school_companion.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.school_companion.data.api.ChildRequestDto
+import com.example.school_companion.data.api.ChildDto
 import com.example.school_companion.data.api.DeletePhotoRequestDto
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.Photo
@@ -46,7 +46,7 @@ class ChildrenViewModel @Inject constructor(
         }
     }
 
-    fun addChild(child: ChildRequestDto, token: String) {
+    fun addChild(child: ChildDto, token: String) {
         viewModelScope.launch {
             childrenRepository.addChild(token, child).collect { result ->
                 result.fold(
@@ -92,7 +92,7 @@ class ChildrenViewModel @Inject constructor(
         }
     }
 
-    fun updateChild(token: String, childId: Long, child: ChildRequestDto) {
+    fun updateChild(token: String, childId: Long, child: ChildDto) {
         viewModelScope.launch {
             childrenRepository.updateChild(token, childId, child).collect { result ->
                 result.fold(

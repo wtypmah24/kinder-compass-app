@@ -35,7 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.school_companion.data.api.ChildRequestDto
+import com.example.school_companion.data.api.ChildDto
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.ui.dialog.child.EditChildDialog
 
@@ -162,6 +162,6 @@ fun ChildCard(
 
 sealed class ChildAction {
     data object ViewDetails : ChildAction()
-    data class Edit(val updatedChild: ChildRequestDto) : ChildAction()
+    data class Edit(val updatedChild: ChildDto) : ChildAction()
     data object Delete : ChildAction()
 }

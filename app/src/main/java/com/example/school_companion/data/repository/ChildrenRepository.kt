@@ -1,9 +1,8 @@
 package com.example.school_companion.data.repository
 
-import com.example.school_companion.data.api.ChildRequestDto
+import com.example.school_companion.data.api.ChildDto
 import com.example.school_companion.data.api.ChildrenApi
 import com.example.school_companion.data.api.DeletePhotoRequestDto
-import com.example.school_companion.data.api.EventRequestDto
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.Photo
 import kotlinx.coroutines.flow.Flow
@@ -19,8 +18,7 @@ import javax.inject.Inject
 class ChildrenRepository @Inject constructor(
     private val apiService: ChildrenApi
 ) {
-
-    suspend fun addChild(token: String, child: ChildRequestDto) = flow {
+    suspend fun addChild(token: String, child: ChildDto) = flow {
         try {
             val response = apiService.addChild("Bearer $token", child)
             if (response.isSuccessful) {
@@ -37,7 +35,7 @@ class ChildrenRepository @Inject constructor(
     suspend fun updateChild(
         token: String,
         childId: Long,
-        child: ChildRequestDto
+        child: ChildDto
     ) = flow {
         try {
             val response = apiService.updateChild("Bearer $token", child, childId)
