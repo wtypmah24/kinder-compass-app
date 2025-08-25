@@ -29,6 +29,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.ui.bar.dashboard.DashBoardBottomBar
+import com.example.school_companion.ui.box.ErrorBox
+import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.header.child.ChildHeaderCard
 import com.example.school_companion.ui.tab.ChildTabContent
 import com.example.school_companion.ui.tab.ChildTabs
@@ -121,27 +123,8 @@ fun ChildDetailScreen(
                 }
             }
 
-            is UiState.Loading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-
-            is UiState.Error -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Error loading child data")
-                }
-            }
+            is UiState.Loading -> LoadingBox()
+            is UiState.Error -> ErrorBox(message = (selectedChild as UiState.Error).message)
         }
     }
 }
