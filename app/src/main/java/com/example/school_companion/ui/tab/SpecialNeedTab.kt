@@ -2,18 +2,16 @@ package com.example.school_companion.ui.tab
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,22 +19,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.school_companion.data.api.NeedRequestDto
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.school_companion.data.model.Child
-import com.example.school_companion.data.model.SpecialNeed
+import com.example.school_companion.ui.box.ErrorBox
+import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.card.child.ChildSpecialNeedsCard
 import com.example.school_companion.ui.dialog.need.AddNeedDialog
-import com.example.school_companion.ui.viewmodel.UiState
+import com.example.school_companion.ui.viewmodel.NeedsState
+import com.example.school_companion.ui.viewmodel.NeedsViewModel
+import androidx.compose.foundation.lazy.items
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun SpecialNeedsTab(
-    selectedChild: Child,
-    needsState: UiState<List<SpecialNeed>>,
-    onAddNeed: (NeedRequestDto) -> Unit,
-    onEditNeed: (SpecialNeed, NeedRequestDto) -> Unit,
-    onDeleteNeed: (SpecialNeed) -> Unit
+    child: Child,
+    token: String,
+    viewModel: NeedsViewModel = hiltViewModel(),
 ) {
+    val needsState by viewModel.needsState.collectAsStateWithLifecycle()
+    LaunchedEffect(token, child) {
+        viewModel.loadNeeds(token, child.id)
+    }
+
     var showAddDialog by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -50,37 +56,29 @@ fun SpecialNeedsTab(
         }
 
         when (needsState) {
-            is UiState.Loading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            }
-
-            is UiState.Error -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Fehler: ${(needsState).message}")
-                }
-            }
-
-            is UiState.Success -> {
-                val needs = (needsState).data
+            is NeedsState.Loading -> LoadingBox()
+            is NeedsState.Error -> ErrorBox(message = (needsState as NeedsState.Error).message)
+            is NeedsState.Success -> {
+                val needs = (needsState as NeedsState.Success).needs
 
                 if (needs.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Keine Special needs für ${selectedChild.name}")
+                        Text("Keine Special needs für ${child.name}")
                     }
                 } else {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
+                    LazyColumn {
                         items(needs) { need ->
                             ChildSpecialNeedsCard(
                                 need = need,
-                                onEdit = { dto -> onEditNeed(need, dto) },
-                                onDelete = { onDeleteNeed(need) }
+                                onEdit = { dto ->
+                                    viewModel.updateNeed(
+                                        token,
+                                        need.id,
+                                        dto,
+                                        child.id
+                                    )
+                                },
+                                onDelete = { viewModel.deleteNeed(token, need.id, child.id) }
                             )
                         }
                     }
@@ -93,7 +91,7 @@ fun SpecialNeedsTab(
         AddNeedDialog(
             onDismiss = { showAddDialog = false },
             onSave = {
-                onAddNeed(it)
+                viewModel.createNeed(token, it, child.id)
                 showAddDialog = false
             }
         )

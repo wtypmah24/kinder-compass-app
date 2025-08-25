@@ -19,16 +19,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.school_companion.data.model.Event
 import com.example.school_companion.ui.box.ErrorBox
 import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.card.event.EventCard
 import com.example.school_companion.ui.navigation.Screen
-import com.example.school_companion.ui.viewmodel.UiState
+import com.example.school_companion.ui.viewmodel.EventsState
 
 @Composable
 fun EventsSection(
-    eventsState: UiState<List<Event>>,
+    eventsState: EventsState,
     navController: NavController
 ) {
     Column {
@@ -40,12 +39,12 @@ fun EventsSection(
         )
 
         when (eventsState) {
-            is UiState.Loading -> LoadingBox()
-            is UiState.Error -> ErrorBox(eventsState.message)
+            is EventsState.Loading -> LoadingBox()
+            is EventsState.Error -> ErrorBox(eventsState.message)
 
-            is UiState.Success -> {
+            is EventsState.Success -> {
                 val events =
-                    (eventsState).data
+                    (eventsState).events
                 if (events.isEmpty()) {
                     Card(
                         modifier = Modifier.fillMaxWidth()

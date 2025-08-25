@@ -32,14 +32,14 @@ import androidx.compose.ui.unit.dp
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.MonitoringEntry
 import com.example.school_companion.ui.dialog.entry.EditEntryDialog
-import com.example.school_companion.ui.viewmodel.ChildDetailViewModel
+import com.example.school_companion.ui.viewmodel.MonitoringEntryViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MonitoringEntryCard(
     entry: MonitoringEntry,
     child: Child,
-    entriesViewModel: ChildDetailViewModel,
+    entriesViewModel: MonitoringEntryViewModel,
     token: String
 ) {
     var showEditDialog by remember { mutableStateOf(false) }

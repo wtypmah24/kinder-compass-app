@@ -17,6 +17,8 @@ import com.example.school_companion.data.model.MonitoringEntry
 import com.example.school_companion.data.model.MonitoringParam
 import com.example.school_companion.ui.section.statistic.ViewByChild
 import com.example.school_companion.ui.section.statistic.ViewByParameter
+import com.example.school_companion.ui.viewmodel.ChildrenState
+import com.example.school_companion.ui.viewmodel.EntriesState
 import com.example.school_companion.ui.viewmodel.UiState
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -27,8 +29,8 @@ fun StatisticsTabs(
     selectedChild: Child?,
     selectedParam: MonitoringParam?,
     selectedRange: String,
-    childrenState: UiState<List<Child>>,
-    entriesState: UiState<List<MonitoringEntry>>
+    childrenState: ChildrenState,
+    entriesState: EntriesState
 ) {
     val tabs = listOf("View by Parameter", "View by Child")
     TabRow(
@@ -50,14 +52,14 @@ fun StatisticsTabs(
         0 -> { // View by Parameter
             if (selectedParam == null) {
                 Text("Please select a parameter to see statistics charts")
-            } else if (childrenState !is UiState.Success || entriesState !is UiState.Success) {
+            } else if (childrenState !is ChildrenState.Success || entriesState !is EntriesState.Success) {
                 Text("Something went wrong. Try again later.")
             } else {
-                val filteredEntries = (entriesState).data
+                val filteredEntries = (entriesState).entryData
                     .filter { e -> e.parameterId == selectedParam.id }
                 ViewByParameter(
                     filteredEntries,
-                    (childrenState).data,
+                    (childrenState).children,
                     selectedRange
                 )
             }
@@ -66,10 +68,10 @@ fun StatisticsTabs(
         1 -> { // View by Child
             if (selectedChild == null) {
                 Text("Please select a child to see statistics charts")
-            } else if (childrenState !is UiState.Success || entriesState !is UiState.Success) {
+            } else if (childrenState !is ChildrenState.Success || entriesState !is EntriesState.Success) {
                 Text("Something went wrong. Try again later.")
             } else {
-                val filteredEntries = (entriesState).data
+                val filteredEntries = (entriesState).entryData
                     .filter { e -> e.childId == selectedChild.id }
                 ViewByChild(filteredEntries, selectedChild, selectedRange)
             }

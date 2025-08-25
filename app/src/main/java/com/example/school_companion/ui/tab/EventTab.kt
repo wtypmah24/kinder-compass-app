@@ -11,29 +11,41 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import com.example.school_companion.data.api.EventRequestDto
+import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.Event
 import com.example.school_companion.ui.box.ErrorBox
 import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.card.child.ChildEventCard
 import com.example.school_companion.ui.dialog.event.AddEventDialog
+import com.example.school_companion.ui.viewmodel.AuthViewModel
+import com.example.school_companion.ui.viewmodel.EventsState
+import com.example.school_companion.ui.viewmodel.EventsViewModel
 import com.example.school_companion.ui.viewmodel.UiState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun EventsTab(
-    eventsState: UiState<List<Event>>,
-    onAddEvent: (EventRequestDto) -> Unit,
-    onEditEvent: (Event, EventRequestDto) -> Unit,
-    onDeleteEvent: (Event) -> Unit
+    child: Child,
+    token: String,
+    viewModel: EventsViewModel = hiltViewModel()
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
+    val eventsState by viewModel.eventsState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(token, child) {
+        viewModel.loadEventsByChild(token, child.id)
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Button(
@@ -44,19 +56,26 @@ fun EventsTab(
         ) { Text("Add Event") }
 
         when (eventsState) {
-            is UiState.Loading -> LoadingBox()
-            is UiState.Error -> ErrorBox(eventsState.message)
-            is UiState.Success -> {
-                val events = eventsState.data
+            is EventsState.Loading -> LoadingBox()
+            is EventsState.Error -> ErrorBox((eventsState as EventsState.Error).message)
+            is EventsState.Success -> {
+                val events = (eventsState as EventsState.Success).events
                 if (events.isEmpty()) {
-                    Text("Keine Events für Child")
+                    Text("Keine Events für Child ${child.name} ${child.surname}")
                 } else {
                     LazyColumn {
                         items(events) { event ->
                             ChildEventCard(
                                 event = event,
-                                onEdit = { dto -> onEditEvent(event, dto) },
-                                onDelete = { onDeleteEvent(event) }
+                                onEdit = { dto ->
+                                    viewModel.updateEvent(
+                                        token,
+                                        child.id,
+                                        event.id,
+                                        dto
+                                    )
+                                },
+                                onDelete = { viewModel.deleteEvent(token, event.id, child.id) }
                             )
                         }
                     }
@@ -69,7 +88,7 @@ fun EventsTab(
         AddEventDialog(
             onDismiss = { showAddDialog = false },
             onSave = { eventDto ->
-                onAddEvent(eventDto)
+                viewModel.createEvent(token, child.id, eventDto)
                 showAddDialog = false
             }
         )

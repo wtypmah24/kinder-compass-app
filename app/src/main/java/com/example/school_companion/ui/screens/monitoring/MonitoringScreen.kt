@@ -26,10 +26,11 @@ import com.example.school_companion.ui.dialog.entry.AddEntryDialog
 import com.example.school_companion.ui.dialog.param.AddParamDialog
 import com.example.school_companion.ui.tab.MonitoringTabs
 import com.example.school_companion.ui.viewmodel.AuthViewModel
-import com.example.school_companion.ui.viewmodel.ChildDetailViewModel
+import com.example.school_companion.ui.viewmodel.ChildrenState
+import com.example.school_companion.ui.viewmodel.ChildrenViewModel
+import com.example.school_companion.ui.viewmodel.MonitoringEntryViewModel
 import com.example.school_companion.ui.viewmodel.MonitoringParamViewModel
 import com.example.school_companion.ui.viewmodel.ParamsState
-import com.example.school_companion.ui.viewmodel.UiState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -37,12 +38,13 @@ fun MonitoringScreen(
     navController: NavController,
     authViewModel: AuthViewModel,
     paramsViewModel: MonitoringParamViewModel = hiltViewModel(),
-    viewModel: ChildDetailViewModel = hiltViewModel()
+    childrenViewModel: ChildrenViewModel = hiltViewModel(),
+    entriesViewModel: MonitoringEntryViewModel = hiltViewModel()
 ) {
     val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
     val paramsState by paramsViewModel.paramsState.collectAsStateWithLifecycle()
-    val entriesState by viewModel.entries.collectAsStateWithLifecycle()
-    val childrenState by viewModel.children.collectAsStateWithLifecycle()
+    val entriesState by entriesViewModel.entriesState.collectAsStateWithLifecycle()
+    val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
 
     var selectedChild: Child? by remember { mutableStateOf(null) }
     var selectedParam: MonitoringParam? by remember { mutableStateOf(null) }
@@ -55,8 +57,8 @@ fun MonitoringScreen(
     LaunchedEffect(authToken) {
         authToken?.let { token ->
             paramsViewModel.loadMonitoringParamData(token)
-            viewModel.loadMonitoringEntryByCompanion(token)
-            viewModel.loadChildren(token)
+            entriesViewModel.loadMonitoringEntryByCompanion(token)
+            childrenViewModel.loadChildren(token)
         }
     }
 
@@ -83,9 +85,9 @@ fun MonitoringScreen(
         }
     ) { paddingValues ->
 
-        if (childrenState is UiState.Success && paramsState is ParamsState.Success) {
+        if (childrenState is ChildrenState.Success && paramsState is ParamsState.Success) {
             MonitoringSelectorCard(
-                children = (childrenState as UiState.Success).data,
+                children = (childrenState as ChildrenState.Success).children,
                 selectedChild = selectedChild,
                 onChildSelected = { selectedChild = it },
                 params = (paramsState as ParamsState.Success).paramData,
@@ -102,10 +104,10 @@ fun MonitoringScreen(
             onTabSelected = { selectedTabIndex = it },
             paramsState = paramsState,
             entriesState = entriesState,
-            children = (childrenState as? UiState.Success)?.data.orEmpty(),
+            children = (childrenState as? ChildrenState.Success)?.children.orEmpty(),
             authToken = authToken,
             paramsViewModel = paramsViewModel,
-            entriesViewModel = viewModel,
+            entriesViewModel = entriesViewModel,
             selectedChild = selectedChild,
             selectedParam = selectedParam,
             showAddParamDialog = showAddParamDialog,
@@ -130,7 +132,7 @@ fun MonitoringScreen(
             param = selectedParam!!,
             onDismiss = { showAddEntryDialog = false },
             onSave = { entry ->
-                viewModel.createMonitoringEntry(
+                entriesViewModel.createMonitoringEntry(
                     authToken!!,
                     entry,
                     selectedChild!!.id,

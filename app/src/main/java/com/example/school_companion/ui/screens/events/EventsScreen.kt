@@ -28,19 +28,21 @@ import com.example.school_companion.ui.dialog.event.AddEventDialog
 import com.example.school_companion.ui.dropdown.DropdownMenuWrapper
 import com.example.school_companion.ui.section.event.EventWithChildSection
 import com.example.school_companion.ui.viewmodel.AuthViewModel
-import com.example.school_companion.ui.viewmodel.ChildDetailViewModel
-import com.example.school_companion.ui.viewmodel.UiState
+import com.example.school_companion.ui.viewmodel.ChildrenState
+import com.example.school_companion.ui.viewmodel.ChildrenViewModel
+import com.example.school_companion.ui.viewmodel.EventsViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun EventsScreen(
     navController: NavController,
     authViewModel: AuthViewModel,
-    viewModel: ChildDetailViewModel = hiltViewModel(),
+    childrenViewModel: ChildrenViewModel = hiltViewModel(),
+    eventsViewModel: EventsViewModel = hiltViewModel(),
 ) {
     val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
-    val eventsState by viewModel.eventsWithChildren.collectAsStateWithLifecycle()
-    val childrenState by viewModel.children.collectAsStateWithLifecycle()
+    val eventsState by eventsViewModel.eventsWithChildrenState.collectAsStateWithLifecycle()
+    val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
 
     val showAddEventDialog = remember { mutableStateOf(false) }
     var selectedChild: Child? by remember { mutableStateOf(null) }
@@ -49,8 +51,8 @@ fun EventsScreen(
 
     LaunchedEffect(authToken) {
         authToken?.let { token ->
-            viewModel.loadEventsWithChildren(token)
-            viewModel.loadChildren(token)
+            eventsViewModel.loadEventsWithChildren(token)
+            childrenViewModel.loadChildren(token)
         }
     }
 
@@ -84,7 +86,7 @@ fun EventsScreen(
         ) {
             //Child Filter Dropdown
             DropdownMenuWrapper(
-                items = if (childrenState is UiState.Success) (childrenState as UiState.Success).data else emptyList(),
+                items = if (childrenState is ChildrenState.Success) (childrenState as ChildrenState.Success).children else emptyList(),
                 selectedItem = selectedChild,
                 onItemSelected = { selectedChild = it },
                 itemToString = { "${it.name} ${it.surname}" },
@@ -102,7 +104,7 @@ fun EventsScreen(
                     selectedChild = selectedChild,
                     authToken = token,
                     navController = navController,
-                    eventsViewModel = viewModel
+                    eventsViewModel = eventsViewModel
                 )
             }
         }
@@ -113,7 +115,7 @@ fun EventsScreen(
         AddEventDialog(
             onDismiss = { showAddEventDialog.value = false },
             onSave = { dto ->
-                viewModel.createEvent(
+                eventsViewModel.createEvent(
                     authToken!!,
                     selectedChild!!.id,
                     dto

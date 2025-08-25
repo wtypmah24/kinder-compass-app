@@ -4,7 +4,7 @@ import androidx.navigation.NavController
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.ui.card.child.ChildAction
 import com.example.school_companion.ui.navigation.Screen
-import com.example.school_companion.ui.viewmodel.ChildDetailViewModel
+import com.example.school_companion.ui.viewmodel.ChildrenViewModel
 
 object ChildActionHandler {
     fun handle(
@@ -12,7 +12,7 @@ object ChildActionHandler {
         child: Child,
         action: ChildAction,
         navController: NavController,
-        childrenViewModel: ChildDetailViewModel
+        childrenViewModel: ChildrenViewModel
     ) {
         when (action) {
             is ChildAction.ViewDetails -> {

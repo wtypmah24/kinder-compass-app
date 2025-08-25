@@ -25,7 +25,6 @@ class WorkSessionViewModel @Inject constructor(
     private val _sessionState = MutableStateFlow<SessionState>(SessionState.Loading)
     val session: StateFlow<SessionState> = _sessionState.asStateFlow()
 
-
     fun startWorkSession(
         token: String,
     ) {
@@ -149,8 +148,6 @@ class WorkSessionViewModel @Inject constructor(
                 }
         }
     }
-
-
 }
 
 sealed class SessionsState {

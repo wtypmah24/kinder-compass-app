@@ -100,7 +100,6 @@ class CompanionViewModel @Inject constructor(
                 }
         }
     }
-
 }
 
 sealed class NotificationsState {

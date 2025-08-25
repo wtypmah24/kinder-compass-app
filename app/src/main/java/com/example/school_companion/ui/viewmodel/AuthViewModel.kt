@@ -15,20 +15,20 @@ import javax.inject.Inject
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
-    
+
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
-    
+
     private val _currentCompanion = MutableStateFlow<Companion?>(null)
     val currentCompanion: StateFlow<Companion?> = _currentCompanion.asStateFlow()
-    
+
     private val _authToken = MutableStateFlow<String?>(null)
     val authToken: StateFlow<String?> = _authToken.asStateFlow()
-    
+
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
-            
+
             authRepository.login(email, password).collect { result ->
                 result.fold(
                     onSuccess = { (token, user) ->
@@ -45,7 +45,13 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun register(email: String, password: String, firstName: String, lastName: String, role: String) {
+    fun register(
+        email: String,
+        password: String,
+        firstName: String,
+        lastName: String,
+        role: String
+    ) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
 
@@ -55,7 +61,8 @@ class AuthViewModel @Inject constructor(
                         _authState.value = AuthState.RegistrationSuccess
                     },
                     onFailure = { exception ->
-                        _authState.value = AuthState.Error(exception.message ?: "Registration failed")
+                        _authState.value =
+                            AuthState.Error(exception.message ?: "Registration failed")
                     }
                 )
             }
@@ -80,7 +87,7 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
-    
+
     fun getUserProfile() {
         viewModelScope.launch {
             _authToken.value?.let { token ->
@@ -90,16 +97,13 @@ class AuthViewModel @Inject constructor(
                             _currentCompanion.value = user
                         },
                         onFailure = { exception ->
-                            _authState.value = AuthState.Error(exception.message ?: "Failed to get profile")
+                            _authState.value =
+                                AuthState.Error(exception.message ?: "Failed to get profile")
                         }
                     )
                 }
             }
         }
-    }
-    
-    fun clearError() {
-        _authState.value = AuthState.Idle
     }
 }
 

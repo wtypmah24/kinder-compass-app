@@ -44,8 +44,8 @@ import com.example.school_companion.ui.selector.ChildSelector
 import com.example.school_companion.ui.selector.ThreadSelector
 import com.example.school_companion.ui.viewmodel.AuthViewModel
 import com.example.school_companion.ui.viewmodel.ChatViewModel
-import com.example.school_companion.ui.viewmodel.ChildDetailViewModel
-import com.example.school_companion.ui.viewmodel.UiState
+import com.example.school_companion.ui.viewmodel.ChildrenState
+import com.example.school_companion.ui.viewmodel.ChildrenViewModel
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -54,11 +54,11 @@ import kotlinx.coroutines.launch
 fun AssistantScreen(
     navController: NavController,
     authViewModel: AuthViewModel,
-    childrenViewModel: ChildDetailViewModel = hiltViewModel(),
+    childrenViewModel: ChildrenViewModel = hiltViewModel(),
     chatViewModel: ChatViewModel = hiltViewModel(),
 ) {
     val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
-    val childrenState by childrenViewModel.children.collectAsStateWithLifecycle()
+    val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
     val chatIdsState by chatViewModel.chatIdsState.collectAsStateWithLifecycle()
 
     var selectedChild by remember { mutableStateOf<Child?>(null) }
@@ -132,8 +132,8 @@ fun AssistantScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            if (childrenState is UiState.Success) {
-                ChildSelector(children = (childrenState as UiState.Success).data,
+            if (childrenState is ChildrenState.Success) {
+                ChildSelector(children = (childrenState as ChildrenState.Success).children,
                     selectedChild = selectedChild,
                     onSelect = {
                         selectedChild = it

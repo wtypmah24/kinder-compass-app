@@ -18,14 +18,13 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.school_companion.data.model.Child
-import com.example.school_companion.data.model.MonitoringEntry
 import com.example.school_companion.data.model.MonitoringParam
 import com.example.school_companion.ui.card.monitoring.MonitoringEntryCard
 import com.example.school_companion.ui.card.monitoring.MonitoringParamCard
-import com.example.school_companion.ui.viewmodel.ChildDetailViewModel
+import com.example.school_companion.ui.viewmodel.EntriesState
+import com.example.school_companion.ui.viewmodel.MonitoringEntryViewModel
 import com.example.school_companion.ui.viewmodel.MonitoringParamViewModel
 import com.example.school_companion.ui.viewmodel.ParamsState
-import com.example.school_companion.ui.viewmodel.UiState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -33,11 +32,11 @@ fun MonitoringTabs(
     selectedTabIndex: Int,
     onTabSelected: (Int) -> Unit,
     paramsState: ParamsState,
-    entriesState: UiState<List<MonitoringEntry>>,
+    entriesState: EntriesState,
     children: List<Child>,
     authToken: String?,
     paramsViewModel: MonitoringParamViewModel,
-    entriesViewModel: ChildDetailViewModel,
+    entriesViewModel: MonitoringEntryViewModel,
     selectedChild: Child?,
     selectedParam: MonitoringParam?,
     showAddParamDialog: MutableState<Boolean>,
@@ -83,7 +82,7 @@ fun MonitoringTabs(
         }
 
         1 -> {
-            if (entriesState is UiState.Success) {
+            if (entriesState is EntriesState.Success) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Button(
                         onClick = showAddEntryDialog,
@@ -93,7 +92,7 @@ fun MonitoringTabs(
                         Text("Add New Entry")
                     }
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        items(entriesState.data) { entry ->
+                        items(entriesState.entryData) { entry ->
                             val child = children.find { it.id == entry.childId }
                             if (child != null && authToken != null) {
                                 MonitoringEntryCard(entry, child, entriesViewModel, authToken)

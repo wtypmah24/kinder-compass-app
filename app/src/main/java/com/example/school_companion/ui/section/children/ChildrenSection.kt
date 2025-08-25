@@ -25,12 +25,12 @@ import com.example.school_companion.ui.box.ErrorBox
 import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.card.child.ChildAction
 import com.example.school_companion.ui.card.child.ChildCard
-import com.example.school_companion.ui.viewmodel.UiState
+import com.example.school_companion.ui.viewmodel.ChildrenState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ChildrenSection(
-    childrenState: UiState<List<Child>>,
+    childrenState: ChildrenState,
     maxItems: Int = 3,
     onChildAction: (Child, ChildAction) -> Unit,
     onShowAllClick: (() -> Unit)? = null,
@@ -45,11 +45,11 @@ fun ChildrenSection(
         )
 
         when (childrenState) {
-            is UiState.Loading -> LoadingBox()
-            is UiState.Error -> ErrorBox(childrenState.message)
+            is ChildrenState.Loading -> LoadingBox()
+            is ChildrenState.Error -> ErrorBox(childrenState.message)
 
-            is UiState.Success -> {
-                val children = childrenState.data
+            is ChildrenState.Success -> {
+                val children = childrenState.children
                 if (children.isEmpty()) {
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Column(

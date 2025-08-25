@@ -20,10 +20,6 @@ class MonitoringParamViewModel @Inject constructor(
     private val _paramsState = MutableStateFlow<ParamsState>(ParamsState.Loading)
     val paramsState: StateFlow<ParamsState> = _paramsState.asStateFlow()
 
-    private val _selectedMonitoringParam = MutableStateFlow<MonitoringParam?>(null)
-    val selectedMonitoringParam: StateFlow<MonitoringParam?> =
-        _selectedMonitoringParam.asStateFlow()
-
     fun loadMonitoringParamData(
         token: String,
     ) {

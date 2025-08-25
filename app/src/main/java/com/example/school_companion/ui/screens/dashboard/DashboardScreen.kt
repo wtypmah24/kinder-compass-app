@@ -29,7 +29,8 @@ import com.example.school_companion.ui.section.children.ChildrenSection
 import com.example.school_companion.ui.section.event.EventsSection
 import com.example.school_companion.ui.util.ChildActionHandler
 import com.example.school_companion.ui.viewmodel.AuthViewModel
-import com.example.school_companion.ui.viewmodel.ChildDetailViewModel
+import com.example.school_companion.ui.viewmodel.ChildrenViewModel
+import com.example.school_companion.ui.viewmodel.EventsViewModel
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -37,20 +38,21 @@ import com.example.school_companion.ui.viewmodel.ChildDetailViewModel
 fun DashboardScreen(
     navController: NavController,
     authViewModel: AuthViewModel,
-    viewModel: ChildDetailViewModel = hiltViewModel(),
+    childrenViewModel: ChildrenViewModel = hiltViewModel(),
+    eventsViewModel: EventsViewModel = hiltViewModel(),
 ) {
     val currentUser by authViewModel.currentCompanion.collectAsStateWithLifecycle()
     val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
-    val childrenState by viewModel.children.collectAsStateWithLifecycle()
-    val eventsState by viewModel.events.collectAsStateWithLifecycle()
+    val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
+    val eventsState by eventsViewModel.eventsState.collectAsStateWithLifecycle()
     val quickActions = QuickActionsData.getQuickActions(navController)
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(authToken) {
         if (!authToken.isNullOrBlank()) {
-            viewModel.loadChildren(authToken!!)
-            viewModel.loadEventsByCompanion(authToken!!)
+            childrenViewModel.loadChildren(authToken!!)
+            eventsViewModel.loadEventsByCompanion(authToken!!)
         }
     }
 
@@ -102,7 +104,7 @@ fun DashboardScreen(
                             child,
                             action,
                             navController,
-                            viewModel
+                            childrenViewModel
                         )
                     },
                     onShowAllClick = {

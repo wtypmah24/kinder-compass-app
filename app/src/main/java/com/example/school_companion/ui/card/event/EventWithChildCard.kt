@@ -40,7 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.school_companion.data.model.EventWithChild
 import com.example.school_companion.ui.dialog.event.EditEventDialog
-import com.example.school_companion.ui.viewmodel.ChildDetailViewModel
+import com.example.school_companion.ui.viewmodel.EventsViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,7 +49,7 @@ fun EventWithChildCard(
     event: EventWithChild,
     onClick: () -> Unit,
     token: String,
-    eventsViewModel: ChildDetailViewModel
+    eventsViewModel: EventsViewModel
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
