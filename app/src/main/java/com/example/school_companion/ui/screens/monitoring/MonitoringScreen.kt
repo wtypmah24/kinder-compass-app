@@ -25,7 +25,6 @@ import com.example.school_companion.ui.card.monitoring.MonitoringSelectorCard
 import com.example.school_companion.ui.dialog.entry.AddEntryDialog
 import com.example.school_companion.ui.dialog.param.AddParamDialog
 import com.example.school_companion.ui.tab.MonitoringTabs
-import com.example.school_companion.ui.viewmodel.AuthViewModel
 import com.example.school_companion.ui.viewmodel.ChildrenState
 import com.example.school_companion.ui.viewmodel.ChildrenViewModel
 import com.example.school_companion.ui.viewmodel.MonitoringEntryViewModel
@@ -36,12 +35,10 @@ import com.example.school_companion.ui.viewmodel.ParamsState
 @Composable
 fun MonitoringScreen(
     navController: NavController,
-    authViewModel: AuthViewModel,
     paramsViewModel: MonitoringParamViewModel = hiltViewModel(),
     childrenViewModel: ChildrenViewModel = hiltViewModel(),
     entriesViewModel: MonitoringEntryViewModel = hiltViewModel()
 ) {
-    val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
     val paramsState by paramsViewModel.paramsState.collectAsStateWithLifecycle()
     val entriesState by entriesViewModel.entriesState.collectAsStateWithLifecycle()
     val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
@@ -54,12 +51,10 @@ fun MonitoringScreen(
     var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
 
 
-    LaunchedEffect(authToken) {
-        authToken?.let { token ->
-            paramsViewModel.loadMonitoringParamData(token)
-            entriesViewModel.loadMonitoringEntryByCompanion(token)
-            childrenViewModel.loadChildren(token)
-        }
+    LaunchedEffect(Unit) {
+        paramsViewModel.loadMonitoringParamData()
+        entriesViewModel.loadMonitoringEntryByCompanion()
+        childrenViewModel.loadChildren()
     }
 
     Scaffold(
@@ -105,7 +100,6 @@ fun MonitoringScreen(
             paramsState = paramsState,
             entriesState = entriesState,
             children = (childrenState as? ChildrenState.Success)?.children.orEmpty(),
-            authToken = authToken,
             paramsViewModel = paramsViewModel,
             entriesViewModel = entriesViewModel,
             selectedChild = selectedChild,
@@ -116,24 +110,22 @@ fun MonitoringScreen(
 
     }
 
-    if (showAddParamDialog.value && authToken != null) {
+    if (showAddParamDialog.value) {
         AddParamDialog(
             onDismiss = { showAddParamDialog.value = false },
             onSave = { param ->
                 paramsViewModel.createMonitoringParam(
-                    authToken!!,
                     param
                 )
             }
         )
     }
-    if (showAddEntryDialog && authToken != null && selectedParam != null && selectedChild != null) {
+    if (showAddEntryDialog && selectedParam != null && selectedChild != null) {
         AddEntryDialog(
             param = selectedParam!!,
             onDismiss = { showAddEntryDialog = false },
             onSave = { entry ->
                 entriesViewModel.createMonitoringEntry(
-                    authToken!!,
                     entry,
                     selectedChild!!.id,
                     selectedParam!!.id
@@ -142,4 +134,3 @@ fun MonitoringScreen(
         )
     }
 }
-

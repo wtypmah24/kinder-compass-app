@@ -9,7 +9,6 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
-import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.POST
@@ -20,42 +19,36 @@ import java.time.LocalDate
 interface ChildrenApi {
     @POST("child")
     suspend fun addChild(
-        @Header("Authorization") token: String,
         @Body childDto: ChildDto,
     ): Response<ResponseBody>
 
     @PATCH("child/{childId}")
     suspend fun updateChild(
-        @Header("Authorization") token: String,
         @Body childUpdateDto: ChildDto,
         @Path("childId") childId: Long
     ): Response<ResponseBody>
 
     @DELETE("child/{childId}")
     suspend fun delete(
-        @Header("Authorization") token: String,
         @Path("childId") childId: Long
     ): Response<ResponseBody>
 
     @GET("child")
-    suspend fun getChildren(@Header("Authorization") token: String): Response<List<Child>>
+    suspend fun getChildren(): Response<List<Child>>
 
     @GET("child/{childId}")
     suspend fun getChild(
-        @Header("Authorization") token: String,
         @Path("childId") childId: Long
     ): Response<Child>
 
     @GET("child/{childId}/photos")
     suspend fun getChildPhotos(
-        @Header("Authorization") token: String,
         @Path("childId") childId: Long
     ): Response<List<Photo>>
 
     @Multipart
     @POST("child/{childId}/upload")
     suspend fun addChildPhoto(
-        @Header("Authorization") token: String,
         @Path("childId") childId: Long,
         @Part file: MultipartBody.Part,
         @Part("description") description: RequestBody
@@ -63,7 +56,6 @@ interface ChildrenApi {
 
     @DELETE("child/photo")
     suspend fun deleteChildPhoto(
-        @Header("Authorization") token: String,
         @Body deletePhotoRequestDto: DeletePhotoRequestDto
     ): Response<ResponseBody>
 }

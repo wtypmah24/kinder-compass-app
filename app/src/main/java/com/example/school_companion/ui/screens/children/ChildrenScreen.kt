@@ -38,19 +38,15 @@ import com.example.school_companion.ui.viewmodel.ChildrenViewModel
 @Composable
 fun ChildrenScreen(
     navController: NavController,
-    authViewModel: AuthViewModel = hiltViewModel(),
     childrenViewModel: ChildrenViewModel = hiltViewModel()
 ) {
-    val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
     val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
     var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
 
     var showAddDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(authToken) {
-        authToken?.let { token ->
-            childrenViewModel.loadChildren(token)
-        }
+    LaunchedEffect(Unit) {
+        childrenViewModel.loadChildren()
     }
 
     Scaffold(
@@ -91,7 +87,6 @@ fun ChildrenScreen(
             childrenState = childrenState,
             onChildAction = { child, action ->
                 ChildActionHandler.handle(
-                    authToken!!,
                     child,
                     action,
                     navController,
@@ -109,6 +104,6 @@ fun ChildrenScreen(
     if (showAddDialog) {
         AddChildDialog(
             onDismiss = { showAddDialog = false },
-            onSave = { dto -> childrenViewModel.addChild(dto, authToken!!) })
+            onSave = { dto -> childrenViewModel.addChild(dto) })
     }
 }

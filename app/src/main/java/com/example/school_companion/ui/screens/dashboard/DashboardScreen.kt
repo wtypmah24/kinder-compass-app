@@ -42,18 +42,16 @@ fun DashboardScreen(
     eventsViewModel: EventsViewModel = hiltViewModel(),
 ) {
     val currentUser by authViewModel.currentCompanion.collectAsStateWithLifecycle()
-    val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
     val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
     val eventsState by eventsViewModel.eventsState.collectAsStateWithLifecycle()
     val quickActions = QuickActionsData.getQuickActions(navController)
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(authToken) {
-        if (!authToken.isNullOrBlank()) {
-            childrenViewModel.loadChildren(authToken!!)
-            eventsViewModel.loadEventsByCompanion(authToken!!)
-        }
+    LaunchedEffect(Unit) {
+
+        childrenViewModel.loadChildren()
+        eventsViewModel.loadEventsByCompanion()
     }
 
     Scaffold(
@@ -100,7 +98,6 @@ fun DashboardScreen(
                     maxItems = 3,
                     onChildAction = { child, action ->
                         ChildActionHandler.handle(
-                            authToken!!,
                             child,
                             action,
                             navController,

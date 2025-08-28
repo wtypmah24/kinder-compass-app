@@ -48,7 +48,6 @@ import com.example.school_companion.ui.viewmodel.EventsViewModel
 fun EventWithChildCard(
     event: EventWithChild,
     onClick: () -> Unit,
-    token: String,
     eventsViewModel: EventsViewModel
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
@@ -158,7 +157,6 @@ fun EventWithChildCard(
             onDismiss = { showEditDialog = false },
             onSave = { updatedEventRequestDto ->
                 eventsViewModel.updateEvent(
-                    token = token,
                     childId = event.child.id,
                     eventId = event.event.id,
                     event = updatedEventRequestDto
@@ -176,7 +174,7 @@ fun EventWithChildCard(
             confirmButton = {
                 Button(
                     onClick = {
-                        eventsViewModel.deleteEvent(token, event.event.id, event.child.id)
+                        eventsViewModel.deleteEvent(event.event.id, event.child.id)
                         showDeleteConfirm = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
@@ -192,4 +190,3 @@ fun EventWithChildCard(
         )
     }
 }
-

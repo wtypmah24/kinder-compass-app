@@ -31,14 +31,13 @@ import com.example.school_companion.ui.viewmodel.MonitoringEntryViewModel
 @Composable
 fun MonitoringEntryTab(
     child: Child,
-    token: String,
     viewModel: MonitoringEntryViewModel = hiltViewModel(),
     onAddEntry: () -> Unit,
 ) {
     val entriesState by viewModel.entriesState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(token, child) {
-        viewModel.loadMonitoringEntryData(token, child.id)
+    LaunchedEffect(child) {
+        viewModel.loadMonitoringEntryData(child.id)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -76,7 +75,6 @@ fun MonitoringEntryTab(
                                 entry = entry,
                                 onEdit = { id, dto ->
                                     viewModel.updateMonitoringEntry(
-                                        token,
                                         dto,
                                         child.id,
                                         id
@@ -84,7 +82,6 @@ fun MonitoringEntryTab(
                                 },
                                 onDelete = {
                                     viewModel.deleteMonitoringEntry(
-                                        token,
                                         entry.id,
                                         child.id
                                     )

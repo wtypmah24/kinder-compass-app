@@ -18,107 +18,92 @@ import javax.inject.Inject
 class ChildrenRepository @Inject constructor(
     private val apiService: ChildrenApi
 ) {
-    suspend fun addChild(token: String, child: ChildDto) = flow {
-        try {
-            val response = apiService.addChild("Bearer $token", child)
+    suspend fun addChild(child: ChildDto): Result<String> {
+        return try {
+            val response = apiService.addChild(child)
             if (response.isSuccessful) {
                 val message = response.body()?.string() ?: "Child added successfully"
-                emit(Result.success(message))
+                Result.success(message)
             } else {
-                emit(Result.failure(Exception("Failed to create child: ${response.code()}")))
+                Result.failure(Exception("Failed to create child: ${response.code()}"))
             }
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
         }
     }
 
-    suspend fun updateChild(
-        token: String,
-        childId: Long,
-        child: ChildDto
-    ) = flow {
-        try {
-            val response = apiService.updateChild("Bearer $token", child, childId)
+    suspend fun updateChild(childId: Long, child: ChildDto): Result<String> {
+        return try {
+            val response = apiService.updateChild(child, childId)
             if (response.isSuccessful) {
                 val message = response.body()?.string() ?: "Child updated successfully"
-                emit(Result.success(message))
+                Result.success(message)
             } else {
-                emit(Result.failure(Exception("Failed to update child: ${response.code()}")))
+                Result.failure(Exception("Failed to update child: ${response.code()}"))
             }
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
         }
     }
 
-    suspend fun deleteChild(
-        token: String,
-        childId: Long
-    ) = flow {
-        try {
-            val response = apiService.delete("Bearer $token", childId)
+    suspend fun deleteChild(childId: Long): Result<String> {
+        return try {
+            val response = apiService.delete(childId)
             if (response.isSuccessful) {
                 val message = response.body()?.string() ?: "Child deleted successfully"
-                emit(Result.success(message))
+                Result.success(message)
             } else {
-                emit(Result.failure(Exception("Failed to delete child: ${response.code()}")))
+                Result.failure(Exception("Failed to delete child: ${response.code()}"))
             }
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
         }
     }
 
-    suspend fun getChildren(token: String): Flow<Result<List<Child>>> = flow {
-        try {
-            val response = apiService.getChildren("Bearer $token")
+    suspend fun getChildren(): Result<List<Child>> {
+        return try {
+            val response = apiService.getChildren()
             if (response.isSuccessful) {
-                response.body()?.let { children ->
-                    emit(Result.success(children))
-                } ?: emit(Result.failure(Exception("Empty response")))
+                response.body()?.let { Result.success(it) }
+                    ?: Result.failure(Exception("Empty response"))
             } else {
-                emit(Result.failure(Exception("Failed to get children: ${response.code()}")))
+                Result.failure(Exception("Failed to get children: ${response.code()}"))
             }
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
         }
     }
 
-    suspend fun getChild(token: String, childId: Long): Flow<Result<Child>> = flow {
-        val response = apiService.getChild("Bearer $token", childId)
-        if (response.isSuccessful) {
-            response.body()?.let { child ->
-                emit(Result.success(child))
-            } ?: emit(Result.failure(Exception("Empty response")))
-        } else {
-            emit(Result.failure(Exception("Failed to get child: ${response.code()}")))
-        }
-    }.catch { e ->
-        emit(Result.failure(e))
-    }
-
-
-    suspend fun getChildPhotos(token: String, childId: Long): Flow<Result<List<Photo>>> = flow {
-        try {
-            val response = apiService.getChildPhotos("Bearer $token", childId)
+    suspend fun getChild(childId: Long): Result<Child> {
+        return try {
+            val response = apiService.getChild(childId)
             if (response.isSuccessful) {
-                response.body()?.let { photos ->
-                    emit(Result.success(photos))
-                } ?: emit(Result.failure(Exception("Empty response")))
+                response.body()?.let { Result.success(it) }
+                    ?: Result.failure(Exception("Empty response"))
             } else {
-                emit(Result.failure(Exception("Failed to get child photos: ${response.code()}")))
+                Result.failure(Exception("Failed to get child: ${response.code()}"))
             }
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
         }
     }
 
-    suspend fun addChildPhotos(
-        token: String,
-        childId: Long,
-        file: File,
-        descriptionText: String
-    ) = flow {
+    suspend fun getChildPhotos(childId: Long): Result<List<Photo>> {
+        return try {
+            val response = apiService.getChildPhotos(childId)
+            if (response.isSuccessful) {
+                response.body()?.let { Result.success(it) }
+                    ?: Result.failure(Exception("Empty response"))
+            } else {
+                Result.failure(Exception("Failed to get child photos: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun addChildPhotos(childId: Long, file: File, descriptionText: String): Result<String> {
         val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
-
         val filePart = MultipartBody.Part.createFormData(
             name = "file",
             filename = file.name,
@@ -126,32 +111,30 @@ class ChildrenRepository @Inject constructor(
         )
         val descriptionPart = descriptionText.toRequestBody("text/plain".toMediaTypeOrNull())
 
-        try {
-            val response =
-                apiService.addChildPhoto("Bearer $token", childId, filePart, descriptionPart)
+        return try {
+            val response = apiService.addChildPhoto(childId, filePart, descriptionPart)
             if (response.isSuccessful) {
                 val message = response.body()?.string() ?: "Photo added successfully"
-                emit(Result.success(message))
+                Result.success(message)
             } else {
-                emit(Result.failure(Exception("Failed to add child photo: ${response.code()}")))
+                Result.failure(Exception("Failed to add child photo: ${response.code()}"))
             }
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
         }
     }
 
-    suspend fun deleteChildPhoto(token: String, deletePhotoRequestDto: DeletePhotoRequestDto) =
-        flow {
-            try {
-                val response = apiService.deleteChildPhoto("Bearer $token", deletePhotoRequestDto)
-                if (response.isSuccessful) {
-                    val message = response.body()?.string() ?: "Photo deleted successfully"
-                    emit(Result.success(message))
-                } else {
-                    emit(Result.failure(Exception("Failed to delete child photo: ${response.code()}")))
-                }
-            } catch (e: Exception) {
-                emit(Result.failure(e))
+    suspend fun deleteChildPhoto(deletePhotoRequestDto: DeletePhotoRequestDto): Result<String> {
+        return try {
+            val response = apiService.deleteChildPhoto(deletePhotoRequestDto)
+            if (response.isSuccessful) {
+                val message = response.body()?.string() ?: "Photo deleted successfully"
+                Result.success(message)
+            } else {
+                Result.failure(Exception("Failed to delete child photo: ${response.code()}"))
             }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
-} 
+    }
+}

@@ -36,12 +36,11 @@ import com.example.school_companion.ui.viewmodel.PhotosState
 @Composable
 fun PhotosTab(
     child: Child,
-    token: String,
     viewModel: ChildrenViewModel = hiltViewModel(),
 ) {
     val photosState by viewModel.photosState.collectAsStateWithLifecycle()
-    LaunchedEffect(token, child) {
-        viewModel.loadChildPhotos(token, child.id)
+    LaunchedEffect(child) {
+        viewModel.loadChildPhotos(child.id)
     }
     var showAddDialog by remember { mutableStateOf(false) }
 
@@ -79,7 +78,6 @@ fun PhotosTab(
                                 photo = photo,
                                 onDelete = {
                                     viewModel.deleteChildPhotos(
-                                        token,
                                         DeletePhotoRequestDto(photo.id),
                                         child.id
                                     )
@@ -96,7 +94,7 @@ fun PhotosTab(
         AddPhotoDialog(
             onDismiss = { showAddDialog = false },
             onSave = { file, description ->
-                viewModel.addChildPhotos(token, child.id, file, description)
+                viewModel.addChildPhotos(child.id, file, description)
                 showAddDialog = false
             }
         )

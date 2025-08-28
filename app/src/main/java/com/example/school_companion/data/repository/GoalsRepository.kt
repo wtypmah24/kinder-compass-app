@@ -3,71 +3,61 @@ package com.example.school_companion.data.repository
 import com.example.school_companion.data.api.GoalApi
 import com.example.school_companion.data.api.GoalRequestDto
 import com.example.school_companion.data.model.Goal
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class GoalsRepository @Inject constructor(
     private val apiService: GoalApi
 ) {
-    suspend fun getGoals(
-        token: String,
-        childId: Long
-    ): Flow<Result<List<Goal>>> = flow {
-        try {
-            val response = apiService.getGoalsByChild("Bearer $token", childId)
+    suspend fun getGoals(childId: Long): Result<List<Goal>> {
+        return try {
+            val response = apiService.getGoalsByChild(childId)
             if (response.isSuccessful) {
-                response.body()?.let { goals ->
-                    emit(Result.success(goals))
-                } ?: emit(Result.failure(Exception("Empty response")))
+                response.body()?.let { Result.success(it) }
+                    ?: Result.failure(Exception("Empty response"))
             } else {
-                emit(Result.failure(Exception("Failed to get notes: ${response.code()}")))
+                Result.failure(Exception("Failed to get goals: ${response.code()}"))
             }
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
         }
     }
 
-    suspend fun createGoal(token: String, goal: GoalRequestDto, childId: Long) = flow {
-        try {
-            val response = apiService.addGoal("Bearer $token", goal, childId)
+    suspend fun createGoal(goal: GoalRequestDto, childId: Long): Result<String> {
+        return try {
+            val response = apiService.addGoal(goal, childId)
             if (response.isSuccessful) {
-                val message = "Goal added successfully."
-                emit(Result.success(message))
+                Result.success("Goal added successfully.")
             } else {
-                emit(Result.failure(Exception("Failed to create goal: ${response.code()}")))
+                Result.failure(Exception("Failed to create goal: ${response.code()}"))
             }
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
         }
     }
 
-    suspend fun updateGoal(token: String, goalId: Long, goal: GoalRequestDto, childId: Long) =
-        flow {
-            try {
-                val response = apiService.updateGoal("Bearer $token", goal, childId, goalId)
-                if (response.isSuccessful) {
-                    val message = "Goal updated successfully."
-                    emit(Result.success(message))
-                } else {
-                    emit(Result.failure(Exception("Failed to update goal: ${response.code()}")))
-                }
-            } catch (e: Exception) {
-                emit(Result.failure(e))
-            }
-        }
-
-    suspend fun deleteGoal(token: String, goalId: Long) = flow {
-        try {
-            val response = apiService.delete("Bearer $token", goalId)
+    suspend fun updateGoal(goalId: Long, goal: GoalRequestDto, childId: Long): Result<String> {
+        return try {
+            val response = apiService.updateGoal(goal, childId, goalId)
             if (response.isSuccessful) {
-                val message = "Goal deleted successfully."
-                emit(Result.success(message))
+                Result.success("Goal updated successfully.")
             } else {
-                emit(Result.failure(Exception("Failed to delete note: ${response.code()}")))
+                Result.failure(Exception("Failed to update goal: ${response.code()}"))
             }
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
         }
     }
-} 
+
+    suspend fun deleteGoal(goalId: Long): Result<String> {
+        return try {
+            val response = apiService.delete(goalId)
+            if (response.isSuccessful) {
+                Result.success("Goal deleted successfully.")
+            } else {
+                Result.failure(Exception("Failed to delete goal: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+}

@@ -20,89 +20,72 @@ class MonitoringParamViewModel @Inject constructor(
     private val _paramsState = MutableStateFlow<ParamsState>(ParamsState.Loading)
     val paramsState: StateFlow<ParamsState> = _paramsState.asStateFlow()
 
-    fun loadMonitoringParamData(
-        token: String,
-    ) {
+    fun loadMonitoringParamData() {
         viewModelScope.launch {
             _paramsState.value = ParamsState.Loading
-
-            monitoringParamRepository.getMonitoringParamData(token).collect { result ->
-                result.fold(
-                    onSuccess = { monitoringData ->
-                        _paramsState.value = ParamsState.Success(monitoringData)
-                    },
-                    onFailure = { exception ->
-                        _paramsState.value =
-                            ParamsState.Error(
-                                exception.message ?: "Failed to load monitoring params data"
-                            )
-                    }
-                )
-            }
+            val result = monitoringParamRepository.getMonitoringParamData()
+            result.fold(
+                onSuccess = { monitoringData ->
+                    _paramsState.value = ParamsState.Success(monitoringData)
+                },
+                onFailure = { exception ->
+                    _paramsState.value =
+                        ParamsState.Error(
+                            exception.message ?: "Failed to load monitoring params data"
+                        )
+                }
+            )
         }
     }
 
-    fun createMonitoringParam(
-        token: String,
-        param: ParamRequestDto,
-    ) {
+    fun createMonitoringParam(param: ParamRequestDto) {
         viewModelScope.launch {
-            monitoringParamRepository.createMonitoringParam(token, param)
-                .collect { result ->
-                    result.fold(
-                        onSuccess = {
-                            loadMonitoringParamData(token)
-                        },
-                        onFailure = { exception ->
-                            _paramsState.value = ParamsState.Error(
-                                exception.message ?: "Failed to create monitoring param data"
-                            )
-                        }
-                    )
+            val result = monitoringParamRepository.createMonitoringParam(param)
+            result.fold(
+                onSuccess = {
+                    loadMonitoringParamData()
+                },
+                onFailure = { exception ->
+                    _paramsState.value =
+                        ParamsState.Error(
+                            exception.message ?: "Failed to create monitoring param data"
+                        )
                 }
+            )
         }
     }
 
-    fun updateMonitoringParam(
-        token: String,
-        param: ParamRequestDto,
-        paramId: Long
-    ) {
+    fun updateMonitoringParam(param: ParamRequestDto, paramId: Long) {
         viewModelScope.launch {
-            monitoringParamRepository.updateMonitoringParam(token, param, paramId)
-                .collect { result ->
-                    result.fold(
-                        onSuccess = {
-                            loadMonitoringParamData(token)
-                        },
-                        onFailure = { exception ->
-                            _paramsState.value = ParamsState.Error(
-                                exception.message ?: "Failed to update monitoring param data"
-                            )
-                        }
-                    )
+            val result = monitoringParamRepository.updateMonitoringParam(param, paramId)
+            result.fold(
+                onSuccess = {
+                    loadMonitoringParamData()
+                },
+                onFailure = { exception ->
+                    _paramsState.value =
+                        ParamsState.Error(
+                            exception.message ?: "Failed to update monitoring param data"
+                        )
                 }
+            )
         }
     }
 
-    fun deleteMonitoringParam(
-        token: String,
-        paramId: Long,
-    ) {
+    fun deleteMonitoringParam(paramId: Long) {
         viewModelScope.launch {
-            monitoringParamRepository.deleteMonitoringParam(token, paramId)
-                .collect { result ->
-                    result.fold(
-                        onSuccess = {
-                            loadMonitoringParamData(token)
-                        },
-                        onFailure = { exception ->
-                            _paramsState.value = ParamsState.Error(
-                                exception.message ?: "Failed to delete monitoring param data"
-                            )
-                        }
-                    )
+            val result = monitoringParamRepository.deleteMonitoringParam(paramId)
+            result.fold(
+                onSuccess = {
+                    loadMonitoringParamData()
+                },
+                onFailure = { exception ->
+                    _paramsState.value =
+                        ParamsState.Error(
+                            exception.message ?: "Failed to delete monitoring param data"
+                        )
                 }
+            )
         }
     }
 }
@@ -111,4 +94,4 @@ sealed class ParamsState {
     data object Loading : ParamsState()
     data class Success(val paramData: List<MonitoringParam>) : ParamsState()
     data class Error(val message: String) : ParamsState()
-} 
+}

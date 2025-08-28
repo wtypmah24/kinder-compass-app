@@ -33,7 +33,7 @@ import java.time.LocalDate
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun WorkSessionReportCard(
-    authToken: String?, workSessionViewModel: WorkSessionViewModel
+    workSessionViewModel: WorkSessionViewModel
 ) {
     var startDate by remember { mutableStateOf<LocalDate?>(LocalDate.now()) }
     var endDate by remember { mutableStateOf<LocalDate?>(LocalDate.now()) }
@@ -77,8 +77,8 @@ fun WorkSessionReportCard(
 
             Button(
                 onClick = {
-                    if (authToken != null && startDate != null && endDate != null) {
-                        workSessionViewModel.report(authToken, startDate!!, endDate!!)
+                    if (startDate != null && endDate != null) {
+                        workSessionViewModel.report(startDate!!, endDate!!)
                     }
                 }, enabled = startDate != null && endDate != null
             ) {
@@ -98,17 +98,15 @@ fun WorkSessionReportCard(
                     val sessions = (sessionsState as SessionsState.Success).sessions
                     Column {
                         sessions.forEach { session ->
-                            if (authToken != null) {
-                                startDate?.let {
-                                    endDate?.let { it1 ->
-                                        WorkSessionItemCard(
-                                            session,
-                                            workSessionViewModel,
-                                            authToken,
-                                            it,
-                                            it1
-                                        )
-                                    }
+
+                            startDate?.let {
+                                endDate?.let { it1 ->
+                                    WorkSessionItemCard(
+                                        session,
+                                        workSessionViewModel,
+                                        it,
+                                        it1
+                                    )
                                 }
                             }
                         }

@@ -1,13 +1,11 @@
 package com.example.school_companion.data.api
 
-import com.example.school_companion.data.model.Note
 import com.example.school_companion.data.model.SpecialNeed
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
-import retrofit2.http.Header
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -15,14 +13,12 @@ import retrofit2.http.Path
 interface SpecialNeedApi {
     @POST("note/child/{childId}")
     suspend fun addNeed(
-        @Header("Authorization") token: String,
         @Body needRequestDto: NeedRequestDto,
         @Path("childId") childId: Long
     ): Response<ResponseBody>
 
     @PATCH("need/{needId}/child/{childId}")
     suspend fun updateNeed(
-        @Header("Authorization") token: String,
         @Body needUpdateDto: NeedRequestDto,
         @Path("childId") childId: Long,
         @Path("needId") needId: Long
@@ -30,24 +26,20 @@ interface SpecialNeedApi {
 
     @DELETE("need/{needId}")
     suspend fun delete(
-        @Header("Authorization") token: String,
         @Path("needId") needId: Long
     ): Response<ResponseBody>
 
     @GET("need/{needId}")
     suspend fun getNeedById(
-        @Header("Authorization") token: String,
         @Path("needId") noteId: Long
     ): Response<SpecialNeed>
 
     @GET("need")
     suspend fun getNeedsByCompanion(
-        @Header("Authorization") token: String,
     ): Response<List<SpecialNeed>>
 
     @GET("need/child/{childId}")
     suspend fun getNeedsByChild(
-        @Header("Authorization") token: String,
         @Path("childId") childId: Long
     ): Response<List<SpecialNeed>>
 }
@@ -56,5 +48,3 @@ data class NeedRequestDto(
     val type: String,
     val description: String
 )
-
-

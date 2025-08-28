@@ -24,84 +24,80 @@ class ChatViewModel @Inject constructor(
     val chatIdsState: StateFlow<ChatIdsState> = _chatIdsState.asStateFlow()
 
     private val _selectedThreadId = MutableStateFlow<String?>(null)
+    val selectedThreadId: StateFlow<String?> = _selectedThreadId.asStateFlow()
 
-    private fun askNewChat(token: String, prompt: ChatRequest, childId: Long) {
+    private fun askNewChat(prompt: ChatRequest, childId: Long) {
         viewModelScope.launch {
-            chatRepository.askNewChat(token, prompt, childId).collect { result ->
-                result.fold(
-                    onSuccess = { answers ->
-                        _messages.value = answers
-                        if (answers.isNotEmpty()) {
-                            _selectedThreadId.value = answers.first().thread_id
-                            getChatIds(token)
-                        }
-                    },
-                    onFailure = { exception ->
+            val result = chatRepository.askNewChat(prompt, childId)
+            result.fold(
+                onSuccess = { answers ->
+                    _messages.value = answers
+                    if (answers.isNotEmpty()) {
+                        _selectedThreadId.value = answers.first().thread_id
+                        getChatIds()
                     }
-                )
-            }
+                },
+                onFailure = { exception ->
+                }
+            )
         }
     }
 
-    private fun ask(token: String, childId: Long, prompt: ChatRequest, threadId: String) {
+    private fun ask(childId: Long, prompt: ChatRequest, threadId: String) {
         viewModelScope.launch {
-            chatRepository.ask(token, childId, prompt, threadId).collect { result ->
-                result.fold(
-                    onSuccess = { answers ->
-                        _messages.value = answers
-                    },
-                    onFailure = { exception ->
-                    }
-                )
-            }
+            val result = chatRepository.ask(childId, prompt, threadId)
+            result.fold(
+                onSuccess = { answers ->
+                    _messages.value = answers
+                },
+                onFailure = { exception ->
+                }
+            )
         }
     }
 
-    fun getChatIds(token: String) {
+    fun getChatIds() {
         viewModelScope.launch {
-            chatRepository.getChatIds(token).collect { result ->
-                result.fold(
-                    onSuccess = { ids ->
-                        _chatIdsState.value = ChatIdsState.Success(ids)
-                    },
-                    onFailure = { exception ->
-                        _chatIdsState.value =
-                            ChatIdsState.Error(exception.message ?: "Failed to get chat ids")
-                    }
-                )
-            }
+            val result = chatRepository.getChatIds()
+            result.fold(
+                onSuccess = { ids ->
+                    _chatIdsState.value = ChatIdsState.Success(ids)
+                },
+                onFailure = { exception ->
+                    _chatIdsState.value =
+                        ChatIdsState.Error(exception.message ?: "Failed to get chat ids")
+                }
+            )
         }
     }
 
-    fun getChatByThreadId(token: String, threadId: String) {
+    fun getChatByThreadId(threadId: String) {
         viewModelScope.launch {
-            chatRepository.getChatByThreadId(token, threadId).collect { result ->
-                result.fold(
-                    onSuccess = { answers ->
-                        _messages.value = answers
-                    },
-                    onFailure = { exception ->
-                    }
-                )
-            }
+            val result = chatRepository.getChatByThreadId(threadId)
+            result.fold(
+                onSuccess = { answers ->
+                    _messages.value = answers
+                },
+                onFailure = { exception ->
+                }
+            )
         }
     }
 
-    fun removeChatByThreadId(token: String, threadId: String) {
+    fun removeChatByThreadId(threadId: String) {
         viewModelScope.launch {
-            chatRepository.removeChatByThreadId(token, threadId).collect { result ->
-                result.fold(
-                    onSuccess = {
-                        if (_selectedThreadId.value == threadId) {
-                            _messages.value = emptyList()
-                            _selectedThreadId.value = null
-                        }
-                        getChatIds(token)
-                    },
-                    onFailure = { exception ->
+            val result = chatRepository.removeChatByThreadId(threadId)
+            result.fold(
+                onSuccess = {
+                    if (_selectedThreadId.value == threadId) {
+                        _messages.value = emptyList()
+                        _selectedThreadId.value = null
                     }
-                )
-            }
+                    getChatIds()
+                },
+                onFailure = { exception ->
+                }
+            )
         }
     }
 
@@ -114,7 +110,6 @@ class ChatViewModel @Inject constructor(
     }
 
     fun sendMessage(
-        token: String,
         messageText: String,
         selectedChildId: Long?,
         selectedThread: String?
@@ -141,13 +136,12 @@ class ChatViewModel @Inject constructor(
 
         if (selectedThread == null) {
             selectedChildId?.let { childId ->
-                askNewChat(token, ChatRequest(messageText), childId)
+                askNewChat(ChatRequest(messageText), childId)
             }
         } else {
-            ask(token, selectedChildId ?: 0L, ChatRequest(messageText), selectedThread)
+            ask(selectedChildId ?: 0L, ChatRequest(messageText), selectedThread)
         }
     }
-
 
     sealed class ChatIdsState {
         data object Loading : ChatIdsState()

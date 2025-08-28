@@ -19,72 +19,69 @@ class GoalsViewModel @Inject constructor(
 
     private val _goalsState = MutableStateFlow<GoalsState>(GoalsState.Loading)
     val goalsState: StateFlow<GoalsState> = _goalsState.asStateFlow()
-    fun loadGoals(token: String, childId: Long) {
+
+    fun loadGoals(childId: Long) {
         viewModelScope.launch {
             _goalsState.value = GoalsState.Loading
-
-            goalsRepository.getGoals(token, childId).collect { result ->
-                result.fold(
-                    onSuccess = { notes ->
-                        _goalsState.value = GoalsState.Success(notes)
-                    },
-                    onFailure = { exception ->
-                        _goalsState.value =
-                            GoalsState.Error(exception.message ?: "Failed to load notes")
-                    }
-                )
-            }
+            val result = goalsRepository.getGoals(childId)
+            result.fold(
+                onSuccess = { goals ->
+                    _goalsState.value = GoalsState.Success(goals)
+                },
+                onFailure = { exception ->
+                    _goalsState.value =
+                        GoalsState.Error(exception.message ?: "Failed to load goals")
+                }
+            )
         }
     }
 
-    fun createGoal(token: String, goal: GoalRequestDto, childId: Long) {
+    fun createGoal(goal: GoalRequestDto, childId: Long) {
         viewModelScope.launch {
-            goalsRepository.createGoal(token, goal, childId).collect { result ->
-                result.fold(
-                    onSuccess = {
-                        loadGoals(token, childId)
-                    },
-                    onFailure = { exception ->
-                        _goalsState.value =
-                            GoalsState.Error(exception.message ?: "Failed to create goal")
-                    }
-                )
-            }
+            val result = goalsRepository.createGoal(goal, childId)
+            result.fold(
+                onSuccess = {
+                    loadGoals(childId)
+                },
+                onFailure = { exception ->
+                    _goalsState.value =
+                        GoalsState.Error(exception.message ?: "Failed to create goal")
+                }
+            )
         }
     }
 
-    fun updateGoal(token: String, goalId: Long, goal: GoalRequestDto, childId: Long) {
+    fun updateGoal(goalId: Long, goal: GoalRequestDto, childId: Long) {
         viewModelScope.launch {
-            goalsRepository.updateGoal(token, goalId, goal, childId).collect { result ->
-                result.fold(
-                    onSuccess = {
-                        loadGoals(token, childId)
-                    },
-                    onFailure = { exception ->
-                        _goalsState.value =
-                            GoalsState.Error(exception.message ?: "Failed to update goal")
-                    }
-                )
-            }
+            val result = goalsRepository.updateGoal(goalId, goal, childId)
+            result.fold(
+                onSuccess = {
+                    loadGoals(childId)
+                },
+                onFailure = { exception ->
+                    _goalsState.value =
+                        GoalsState.Error(exception.message ?: "Failed to update goal")
+                }
+            )
         }
     }
 
-    fun deleteGoal(token: String, goalId: Long, childId: Long) {
+    fun deleteGoal(goalId: Long, childId: Long) {
         viewModelScope.launch {
-            goalsRepository.deleteGoal(token, goalId).collect { result ->
-                result.fold(
-                    onSuccess = {
-                        loadGoals(token, childId)
-                    },
-                    onFailure = { exception ->
-                        _goalsState.value =
-                            GoalsState.Error(exception.message ?: "Failed to delete goal")
-                    }
-                )
-            }
+            val result = goalsRepository.deleteGoal(goalId)
+            result.fold(
+                onSuccess = {
+                    loadGoals(childId)
+                },
+                onFailure = { exception ->
+                    _goalsState.value =
+                        GoalsState.Error(exception.message ?: "Failed to delete goal")
+                }
+            )
         }
     }
 }
+
 sealed class GoalsState {
     object Loading : GoalsState()
     data class Success(val goals: List<Goal>) : GoalsState()

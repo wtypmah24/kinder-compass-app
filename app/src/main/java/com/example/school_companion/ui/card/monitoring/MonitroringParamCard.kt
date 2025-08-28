@@ -38,7 +38,6 @@ import com.example.school_companion.ui.viewmodel.MonitoringParamViewModel
 fun MonitoringParamCard(
     param: MonitoringParam,
     paramsViewModel: MonitoringParamViewModel,
-    token: String
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
@@ -82,7 +81,6 @@ fun MonitoringParamCard(
                 onDismiss = { showEditDialog = false },
                 onSave = { updateParamRequestDto ->
                     paramsViewModel.updateMonitoringParam(
-                        token = token,
                         param = updateParamRequestDto,
                         paramId = param.id
                     )
@@ -99,7 +97,7 @@ fun MonitoringParamCard(
                 confirmButton = {
                     Button(
                         onClick = {
-                            paramsViewModel.deleteMonitoringParam(token, param.id)
+                            paramsViewModel.deleteMonitoringParam(param.id)
                             showDeleteConfirm = false
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)

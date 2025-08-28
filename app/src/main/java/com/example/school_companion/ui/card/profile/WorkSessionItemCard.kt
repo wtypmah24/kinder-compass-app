@@ -38,7 +38,6 @@ import java.time.LocalDate
 fun WorkSessionItemCard(
     session: WorkSession,
     sessionViewModel: WorkSessionViewModel,
-    token: String,
     startDate: LocalDate,
     endDate: LocalDate
 ) {
@@ -87,7 +86,6 @@ fun WorkSessionItemCard(
             onDismiss = { showEditDialog = false },
             onSave = { dto ->
                 sessionViewModel.update(
-                    token = token,
                     sessionId = session.id,
                     dto = dto,
                     startDate,
@@ -104,7 +102,7 @@ fun WorkSessionItemCard(
             confirmButton = {
                 Button(
                     onClick = {
-                        sessionViewModel.delete(token, session.id, startDate, endDate)
+                        sessionViewModel.delete(session.id, startDate, endDate)
                         showDeleteConfirm = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)

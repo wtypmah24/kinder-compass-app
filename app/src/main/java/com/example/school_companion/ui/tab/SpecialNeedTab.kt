@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,19 +29,17 @@ import com.example.school_companion.ui.card.child.ChildSpecialNeedsCard
 import com.example.school_companion.ui.dialog.need.AddNeedDialog
 import com.example.school_companion.ui.viewmodel.NeedsState
 import com.example.school_companion.ui.viewmodel.NeedsViewModel
-import androidx.compose.foundation.lazy.items
 
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun SpecialNeedsTab(
     child: Child,
-    token: String,
     viewModel: NeedsViewModel = hiltViewModel(),
 ) {
     val needsState by viewModel.needsState.collectAsStateWithLifecycle()
-    LaunchedEffect(token, child) {
-        viewModel.loadNeeds(token, child.id)
+    LaunchedEffect(child) {
+        viewModel.loadNeeds(child.id)
     }
 
     var showAddDialog by remember { mutableStateOf(false) }
@@ -72,13 +71,12 @@ fun SpecialNeedsTab(
                                 need = need,
                                 onEdit = { dto ->
                                     viewModel.updateNeed(
-                                        token,
                                         need.id,
                                         dto,
                                         child.id
                                     )
                                 },
-                                onDelete = { viewModel.deleteNeed(token, need.id, child.id) }
+                                onDelete = { viewModel.deleteNeed(need.id, child.id) }
                             )
                         }
                     }
@@ -91,7 +89,7 @@ fun SpecialNeedsTab(
         AddNeedDialog(
             onDismiss = { showAddDialog = false },
             onSave = {
-                viewModel.createNeed(token, it, child.id)
+                viewModel.createNeed(it, child.id)
                 showAddDialog = false
             }
         )

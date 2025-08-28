@@ -34,7 +34,6 @@ fun MonitoringTabs(
     paramsState: ParamsState,
     entriesState: EntriesState,
     children: List<Child>,
-    authToken: String?,
     paramsViewModel: MonitoringParamViewModel,
     entriesViewModel: MonitoringEntryViewModel,
     selectedChild: Child?,
@@ -72,9 +71,7 @@ fun MonitoringTabs(
                     }
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         items(paramsState.paramData) { param ->
-                            authToken?.let {
-                                MonitoringParamCard(param, paramsViewModel, it)
-                            }
+                            MonitoringParamCard(param, paramsViewModel)
                         }
                     }
                 }
@@ -94,8 +91,8 @@ fun MonitoringTabs(
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         items(entriesState.entryData) { entry ->
                             val child = children.find { it.id == entry.childId }
-                            if (child != null && authToken != null) {
-                                MonitoringEntryCard(entry, child, entriesViewModel, authToken)
+                            if (child != null) {
+                                MonitoringEntryCard(entry, child, entriesViewModel)
                             }
                         }
                     }

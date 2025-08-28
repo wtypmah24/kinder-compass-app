@@ -3,77 +3,65 @@ package com.example.school_companion.data.repository
 import com.example.school_companion.data.api.NoteApi
 import com.example.school_companion.data.api.NoteRequestDto
 import com.example.school_companion.data.model.Note
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class NotesRepository @Inject constructor(
     private val apiService: NoteApi
 ) {
-
-    suspend fun getNotes(
-        token: String,
-        childId: Long
-    ): Flow<Result<List<Note>>> = flow {
-        try {
-            val response = apiService.getNotesByChild("Bearer $token", childId)
+    suspend fun getNotes(childId: Long): Result<List<Note>> {
+        return try {
+            val response = apiService.getNotesByChild(childId)
             if (response.isSuccessful) {
                 response.body()?.let { notes ->
-                    emit(Result.success(notes))
-                } ?: emit(Result.failure(Exception("Empty response")))
+                    Result.success(notes)
+                } ?: Result.failure(Exception("Empty response"))
             } else {
-                emit(Result.failure(Exception("Failed to get notes: ${response.code()}")))
+                Result.failure(Exception("Failed to get notes: ${response.code()}"))
             }
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
         }
     }
 
-    suspend fun createNote(token: String, note: NoteRequestDto, childId: Long) =
-        flow {
-            try {
-                val response = apiService.addNote("Bearer $token", note, childId)
-                if (response.isSuccessful) {
-                    val message = response.body()?.string() ?: "Note added successfully"
-                    emit(Result.success(message))
-                } else {
-                    emit(Result.failure(Exception("Failed to create note: ${response.code()}")))
-                }
-            } catch (e: Exception) {
-                emit(Result.failure(e))
+    suspend fun createNote(note: NoteRequestDto, childId: Long): Result<String> {
+        return try {
+            val response = apiService.addNote(note, childId)
+            if (response.isSuccessful) {
+                val message = response.body()?.string() ?: "Note added successfully"
+                Result.success(message)
+            } else {
+                Result.failure(Exception("Failed to create note: ${response.code()}"))
             }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
+    }
 
-    suspend fun updateNote(
-        token: String,
-        noteId: Long,
-        note: NoteRequestDto,
-        childId: Long
-    ) = flow {
-        try {
-            val response = apiService.updateNote("Bearer $token", note, childId, noteId)
+    suspend fun updateNote(noteId: Long, note: NoteRequestDto, childId: Long): Result<String> {
+        return try {
+            val response = apiService.updateNote(note, childId, noteId)
             if (response.isSuccessful) {
                 val message = response.body()?.string() ?: "Note updated successfully"
-                emit(Result.success(message))
+                Result.success(message)
             } else {
-                emit(Result.failure(Exception("Failed to update note: ${response.code()}")))
+                Result.failure(Exception("Failed to update note: ${response.code()}"))
             }
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
         }
     }
 
-    suspend fun deleteNote(token: String, noteId: Long) = flow {
-        try {
-            val response = apiService.delete("Bearer $token", noteId)
+    suspend fun deleteNote(noteId: Long): Result<String> {
+        return try {
+            val response = apiService.delete(noteId)
             if (response.isSuccessful) {
                 val message = response.body()?.string() ?: "Note deleted successfully"
-                emit(Result.success(message))
+                Result.success(message)
             } else {
-                emit(Result.failure(Exception("Failed to delete note: ${response.code()}")))
+                Result.failure(Exception("Failed to delete note: ${response.code()}"))
             }
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
         }
     }
-} 
+}

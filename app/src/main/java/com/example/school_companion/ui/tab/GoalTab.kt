@@ -35,12 +35,11 @@ import com.example.school_companion.ui.viewmodel.GoalsViewModel
 @Composable
 fun GoalsTab(
     child: Child,
-    token: String,
     viewModel: GoalsViewModel = hiltViewModel(),
 ) {
     val goalsState by viewModel.goalsState.collectAsStateWithLifecycle()
-    LaunchedEffect(token, child) {
-        viewModel.loadGoals(token, child.id)
+    LaunchedEffect(child) {
+        viewModel.loadGoals(child.id)
     }
 
     var showAddDialog by remember { mutableStateOf(false) }
@@ -78,13 +77,12 @@ fun GoalsTab(
                                 goal = goal,
                                 onEdit = { dto ->
                                     viewModel.updateGoal(
-                                        token,
                                         goal.id,
                                         dto,
                                         child.id
                                     )
                                 },
-                                onDelete = { viewModel.deleteGoal(token, goal.id, child.id) }
+                                onDelete = { viewModel.deleteGoal(goal.id, child.id) }
                             )
                         }
                     }
@@ -97,7 +95,7 @@ fun GoalsTab(
         AddGoalDialog(
             onDismiss = { showAddDialog = false },
             onSave = {
-                viewModel.createGoal(token, it, child.id)
+                viewModel.createGoal(it, child.id)
                 showAddDialog = false
             }
         )

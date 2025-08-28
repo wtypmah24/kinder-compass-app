@@ -20,77 +20,69 @@ import javax.inject.Inject
 class CompanionRepository @Inject constructor(
     private val apiService: CompanionApi
 ) {
-    suspend fun updateCompanion(
-        token: String,
-        dto: CompanionUpdateDto
-    ) = flow {
-        try {
-            val response = apiService.update("Bearer $token", dto)
+    suspend fun updateCompanion(dto: CompanionUpdateDto): Result<String> {
+        return try {
+            val response = apiService.update(dto)
             if (response.isSuccessful) {
-                val message = "Companion updated successfully."
-                emit(Result.success(message))
+                Result.success("Companion updated successfully.")
             } else {
-                emit(Result.failure(Exception("Failed to update companion: ${response.code()}")))
+                Result.failure(Exception("Failed to update companion: ${response.code()}"))
             }
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
         }
     }
 
-    suspend fun deleteCompanion(token: String) = flow {
-        try {
-            val response = apiService.delete("Bearer $token")
+    suspend fun deleteCompanion(): Result<String> {
+        return try {
+            val response = apiService.delete()
             if (response.isSuccessful) {
-                val message = "Companion deleted successfully."
-                emit(Result.success(message))
+                Result.success("Companion deleted successfully.")
             } else {
-                emit(Result.failure(Exception("Failed to delete companion: ${response.code()}")))
+                Result.failure(Exception("Failed to delete companion: ${response.code()}"))
             }
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
         }
     }
 
-    suspend fun getNotificationStatus(token: String): Flow<Result<Boolean>> = flow {
-        try {
-            val response = apiService.getNotificationStatus("Bearer $token")
+    suspend fun getNotificationStatus(): Result<Boolean> {
+        return try {
+            val response = apiService.getNotificationStatus()
             if (response.isSuccessful) {
-                response.body()?.let { enabled ->
-                    emit(Result.success(enabled))
-                } ?: emit(Result.failure(Exception("Empty response")))
+                response.body()?.let { Result.success(it) }
+                    ?: Result.failure(Exception("Empty response"))
             } else {
-                emit(Result.failure(Exception("Failed to delete companion: ${response.code()}")))
+                Result.failure(Exception("Failed to get notification status: ${response.code()}"))
             }
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
         }
     }
 
-    suspend fun updateNotificationStatus(token: String, enabled: Boolean) = flow {
-        try {
-            val response = apiService.updateNotificationStatus("Bearer $token", enabled)
+    suspend fun updateNotificationStatus(enabled: Boolean): Result<String> {
+        return try {
+            val response = apiService.updateNotificationStatus(enabled)
             if (response.isSuccessful) {
-                val message = "Companion notifications status updated successfully."
-                emit(Result.success(message))
+                Result.success("Companion notifications status updated successfully.")
             } else {
-                emit(Result.failure(Exception("Failed to update companion notification status: ${response.code()}")))
+                Result.failure(Exception("Failed to update companion notification status: ${response.code()}"))
             }
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
         }
     }
 
-    suspend fun updatePassword(token: String, dto: PasswordUpdateDto) = flow {
-        try {
-            val response = apiService.updatePassword("Bearer $token", dto)
+    suspend fun updatePassword(dto: PasswordUpdateDto): Result<String> {
+        return try {
+            val response = apiService.updatePassword(dto)
             if (response.isSuccessful) {
-                val message = "Companion password updated successfully."
-                emit(Result.success(message))
+                Result.success("Companion password updated successfully.")
             } else {
-                emit(Result.failure(Exception("Failed to update Companion password: ${response.code()}")))
+                Result.failure(Exception("Failed to update Companion password: ${response.code()}"))
             }
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
         }
     }
-} 
+}

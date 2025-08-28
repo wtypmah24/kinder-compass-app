@@ -20,71 +20,72 @@ class NeedsViewModel @Inject constructor(
     private val _needsState = MutableStateFlow<NeedsState>(NeedsState.Loading)
     val needsState: StateFlow<NeedsState> = _needsState.asStateFlow()
 
-    fun loadNeeds(token: String, childId: Long) {
+    fun loadNeeds(childId: Long) {
         viewModelScope.launch {
             _needsState.value = NeedsState.Loading
 
-            needsRepository.getNeeds(token, childId).collect { result ->
-                result.fold(
-                    onSuccess = { needs ->
-                        _needsState.value = NeedsState.Success(needs)
-                    },
-                    onFailure = { exception ->
-                        _needsState.value =
-                            NeedsState.Error(exception.message ?: "Failed to load notes")
-                    }
-                )
-            }
+            val result = needsRepository.getNeeds(childId)
+
+            result.fold(
+                onSuccess = { needs ->
+                    _needsState.value = NeedsState.Success(needs)
+                },
+                onFailure = { exception ->
+                    _needsState.value =
+                        NeedsState.Error(exception.message ?: "Failed to load notes")
+                }
+            )
         }
     }
 
-    fun createNeed(token: String, need: NeedRequestDto, childId: Long) {
+    fun createNeed(need: NeedRequestDto, childId: Long) {
         viewModelScope.launch {
-            needsRepository.createNeed(token, need, childId).collect { result ->
-                result.fold(
-                    onSuccess = {
-                        loadNeeds(token, childId)
-                    },
-                    onFailure = { exception ->
-                        _needsState.value =
-                            NeedsState.Error(exception.message ?: "Failed to create special need")
-                    }
-                )
-            }
+            val result = needsRepository.createNeed(need, childId)
+
+            result.fold(
+                onSuccess = {
+                    loadNeeds(childId)
+                },
+                onFailure = { exception ->
+                    _needsState.value =
+                        NeedsState.Error(exception.message ?: "Failed to create special need")
+                }
+            )
         }
     }
 
-    fun updateNeed(token: String, needId: Long, need: NeedRequestDto, childId: Long) {
+    fun updateNeed(needId: Long, need: NeedRequestDto, childId: Long) {
         viewModelScope.launch {
-            needsRepository.updateNeed(token, needId, need, childId).collect { result ->
-                result.fold(
-                    onSuccess = {
-                        loadNeeds(token, childId)
-                    },
-                    onFailure = { exception ->
-                        _needsState.value =
-                            NeedsState.Error(exception.message ?: "Failed to update special need")
-                    }
-                )
-            }
+            val result = needsRepository.updateNeed(needId, need, childId)
+
+            result.fold(
+                onSuccess = {
+                    loadNeeds(childId)
+                },
+                onFailure = { exception ->
+                    _needsState.value =
+                        NeedsState.Error(exception.message ?: "Failed to update special need")
+                }
+            )
         }
     }
 
-    fun deleteNeed(token: String, needId: Long, childId: Long) {
+    fun deleteNeed(needId: Long, childId: Long) {
         viewModelScope.launch {
-            needsRepository.deleteNeed(token, needId).collect { result ->
-                result.fold(
-                    onSuccess = {
-                        loadNeeds(token, childId)
-                    },
-                    onFailure = { exception ->
-                        _needsState.value =
-                            NeedsState.Error(exception.message ?: "Failed to delete special need")
-                    }
-                )
-            }
+            val result = needsRepository.deleteNeed(needId)
+
+            result.fold(
+                onSuccess = {
+                    loadNeeds(childId)
+                },
+                onFailure = { exception ->
+                    _needsState.value =
+                        NeedsState.Error(exception.message ?: "Failed to delete special need")
+                }
+            )
         }
     }
+
 }
 
 sealed class NeedsState {

@@ -20,31 +20,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import com.example.school_companion.data.api.EventRequestDto
 import com.example.school_companion.data.model.Child
-import com.example.school_companion.data.model.Event
 import com.example.school_companion.ui.box.ErrorBox
 import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.card.child.ChildEventCard
 import com.example.school_companion.ui.dialog.event.AddEventDialog
-import com.example.school_companion.ui.viewmodel.AuthViewModel
 import com.example.school_companion.ui.viewmodel.EventsState
 import com.example.school_companion.ui.viewmodel.EventsViewModel
-import com.example.school_companion.ui.viewmodel.UiState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun EventsTab(
     child: Child,
-    token: String,
     viewModel: EventsViewModel = hiltViewModel()
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
     val eventsState by viewModel.eventsState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(token, child) {
-        viewModel.loadEventsByChild(token, child.id)
+    LaunchedEffect(child) {
+        viewModel.loadEventsByChild(child.id)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -69,13 +63,12 @@ fun EventsTab(
                                 event = event,
                                 onEdit = { dto ->
                                     viewModel.updateEvent(
-                                        token,
                                         child.id,
                                         event.id,
                                         dto
                                     )
                                 },
-                                onDelete = { viewModel.deleteEvent(token, event.id, child.id) }
+                                onDelete = { viewModel.deleteEvent(event.id, child.id) }
                             )
                         }
                     }
@@ -88,7 +81,7 @@ fun EventsTab(
         AddEventDialog(
             onDismiss = { showAddDialog = false },
             onSave = { eventDto ->
-                viewModel.createEvent(token, child.id, eventDto)
+                viewModel.createEvent(child.id, eventDto)
                 showAddDialog = false
             }
         )

@@ -29,7 +29,6 @@ import com.example.school_companion.ui.viewmodel.WorkSessionViewModel
 @Composable
 fun WorkSessionCard(
     currentSession: SessionState,
-    authToken: String?,
     workSessionViewModel: WorkSessionViewModel
 ) {
     Card(
@@ -71,9 +70,7 @@ fun WorkSessionCard(
                     ) {
                         Button(
                             onClick = {
-                                authToken?.let { token ->
-                                    workSessionViewModel.startWorkSession(token)
-                                }
+                                workSessionViewModel.startWorkSession()
                             },
                             modifier = Modifier.weight(1f),
                             enabled = session == null
@@ -89,9 +86,7 @@ fun WorkSessionCard(
 
                         Button(
                             onClick = {
-                                authToken?.let { token ->
-                                    workSessionViewModel.endWorkSession(token)
-                                }
+                                workSessionViewModel.endWorkSession()
                             },
                             modifier = Modifier.weight(1f),
                             enabled = session != null,

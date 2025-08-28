@@ -37,18 +37,14 @@ import com.example.school_companion.ui.viewmodel.ChildrenViewModel
 fun ChildDetailScreen(
     navController: NavController,
     childId: Long,
-    authViewModel: AuthViewModel,
     viewModel: ChildrenViewModel = hiltViewModel(),
 ) {
-    val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
     val selectedChild by viewModel.selectedChild.collectAsStateWithLifecycle()
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(authToken, childId) {
-        authToken?.let { token ->
-            viewModel.loadChild(token, childId)
-        }
+    LaunchedEffect(childId) {
+        viewModel.loadChild(childId)
     }
 
     Scaffold(
@@ -98,7 +94,6 @@ fun ChildDetailScreen(
                 ChildTabContent(
                     index = selectedTabIndex,
                     child = child,
-                    authToken = authToken,
                     navController = navController,
                 )
             }

@@ -1,5 +1,6 @@
 package com.example.school_companion.di
 
+import com.example.school_companion.config.AuthInterceptor
 import com.example.school_companion.data.api.AuthApi
 import com.example.school_companion.data.api.ChatApi
 import com.example.school_companion.data.api.ChildrenApi
@@ -28,13 +29,14 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
 
         return OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
+            .addInterceptor(authInterceptor)
             .build()
     }
 

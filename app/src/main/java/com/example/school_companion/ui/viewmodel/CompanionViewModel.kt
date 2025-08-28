@@ -21,83 +21,56 @@ class CompanionViewModel @Inject constructor(
         MutableStateFlow<NotificationsState>(NotificationsState.Loading)
     val notificationsEnabled: StateFlow<NotificationsState> = _notificationsState.asStateFlow()
 
-    fun updateCompanion(token: String, dto: CompanionUpdateDto, onSuccess: () -> Unit) {
+    fun updateCompanion(dto: CompanionUpdateDto, onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
-            companionRepository.updateCompanion(token, dto)
-                .collect { result ->
-                    result.fold(
-                        onSuccess = {
-                            onSuccess()
-                        },
-                        onFailure = {
-
-                        }
-                    )
-                }
+            val result = companionRepository.updateCompanion(dto)
+            result.fold(
+                onSuccess = { onSuccess() },
+                onFailure = { }
+            )
         }
     }
 
-    fun deleteCompanion(token: String, onSuccess: () -> Unit) {
+    fun deleteCompanion(onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
-            companionRepository.deleteCompanion(token)
-                .collect { result ->
-                    result.fold(
-                        onSuccess = {
-                            onSuccess()
-                        },
-                        onFailure = {
-
-                        }
-                    )
-                }
+            val result = companionRepository.deleteCompanion()
+            result.fold(
+                onSuccess = { onSuccess() },
+                onFailure = { }
+            )
         }
     }
 
-    fun getNotificationStatus(token: String) {
+    fun getNotificationStatus() {
         viewModelScope.launch {
             _notificationsState.value = NotificationsState.Loading
-            companionRepository.getNotificationStatus(token)
-                .collect { result ->
-                    result.fold(
-                        onSuccess = { e ->
-                            _notificationsState.value = NotificationsState.Success(e)
-                        },
-                        onFailure = {
-
-                        }
-                    )
-                }
+            val result = companionRepository.getNotificationStatus()
+            result.fold(
+                onSuccess = { enabled ->
+                    _notificationsState.value = NotificationsState.Success(enabled)
+                },
+                onFailure = { }
+            )
         }
     }
 
-    fun updateNotificationStatus(token: String, enabled: Boolean) {
+    fun updateNotificationStatus(enabled: Boolean) {
         viewModelScope.launch {
-            companionRepository.updateNotificationStatus(token, enabled)
-                .collect { result ->
-                    result.fold(
-                        onSuccess = {
-                            getNotificationStatus(token)
-                        },
-                        onFailure = {
-
-                        }
-                    )
-                }
+            val result = companionRepository.updateNotificationStatus(enabled)
+            result.fold(
+                onSuccess = { getNotificationStatus() },
+                onFailure = { }
+            )
         }
     }
 
-    fun updatePassword(token: String, dto: PasswordUpdateDto) {
+    fun updatePassword(dto: PasswordUpdateDto) {
         viewModelScope.launch {
-            companionRepository.updatePassword(token, dto)
-                .collect { result ->
-                    result.fold(
-                        onSuccess = {
-                        },
-                        onFailure = {
-
-                        }
-                    )
-                }
+            val result = companionRepository.updatePassword(dto)
+            result.fold(
+                onSuccess = { },
+                onFailure = { }
+            )
         }
     }
 }

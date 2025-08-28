@@ -53,11 +53,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun AssistantScreen(
     navController: NavController,
-    authViewModel: AuthViewModel,
     childrenViewModel: ChildrenViewModel = hiltViewModel(),
     chatViewModel: ChatViewModel = hiltViewModel(),
 ) {
-    val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
     val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
     val chatIdsState by chatViewModel.chatIdsState.collectAsStateWithLifecycle()
 
@@ -72,11 +70,9 @@ fun AssistantScreen(
 
     val messages by chatViewModel.messages.collectAsStateWithLifecycle()
 
-    LaunchedEffect(authToken) {
-        authToken?.let { token ->
-            childrenViewModel.loadChildren(token)
-            chatViewModel.getChatIds(token)
-        }
+    LaunchedEffect(Unit) {
+        childrenViewModel.loadChildren()
+        chatViewModel.getChatIds()
     }
 
     LaunchedEffect(messages) {
@@ -149,17 +145,13 @@ fun AssistantScreen(
                     onSelect = { tid ->
                         selectedThread = tid
                         selectedChild = null
-                        authToken?.let {
-                            if (tid != null) {
-                                chatViewModel.getChatByThreadId(it, tid)
-                            }
+                        if (tid != null) {
+                            chatViewModel.getChatByThreadId(tid)
                         }
                     },
                     onDelete = { tid ->
-                        authToken?.let {
-                            chatViewModel.removeChatByThreadId(it, tid)
-                            chatViewModel.getChatIds(it)
-                        }
+                        chatViewModel.removeChatByThreadId(tid)
+                        chatViewModel.getChatIds()
                         if (tid == selectedThread) chatViewModel.clearMessages()
                         selectedThread = null
                     })
@@ -183,15 +175,12 @@ fun AssistantScreen(
                 onMessageChange = { messageText = it },
                 canSend = (selectedChild != null) || (selectedThread != null),
                 onSend = {
-                    authToken?.let { token ->
-                        chatViewModel.sendMessage(
-                            token = token,
-                            messageText = messageText,
-                            selectedChildId = selectedChild?.id,
-                            selectedThread = selectedThread
-                        )
-                        messageText = ""
-                    }
+                    chatViewModel.sendMessage(
+                        messageText = messageText,
+                        selectedChildId = selectedChild?.id,
+                        selectedThread = selectedThread
+                    )
+                    messageText = ""
                 })
         }
     }

@@ -49,7 +49,7 @@ fun NavGraph(
         }
 
         composable(Screen.Children.route) {
-            ChildrenScreen(navController = navController, authViewModel = authViewModel)
+            ChildrenScreen(navController = navController)
         }
 
         composable(
@@ -64,16 +64,15 @@ fun NavGraph(
             ChildDetailScreen(
                 navController = navController,
                 childId = childId ?: 0L,
-                authViewModel = authViewModel
             )
         }
 
         composable(Screen.Events.route) {
-            EventsScreen(navController = navController, authViewModel = authViewModel)
+            EventsScreen(navController = navController)
         }
 
         composable(Screen.Statistics.route) {
-            StatisticsScreen(navController = navController, authViewModel = authViewModel)
+            StatisticsScreen(navController = navController)
         }
 
         composable(Screen.Profile.route) {
@@ -85,11 +84,11 @@ fun NavGraph(
         }
 
         composable(Screen.Monitoring.route) {
-            MonitoringScreen(navController = navController, authViewModel = authViewModel)
+            MonitoringScreen(navController = navController)
         }
 
         composable(Screen.Assistant.route) {
-            AssistantScreen(navController = navController, authViewModel = authViewModel)
+            AssistantScreen(navController = navController)
         }
     }
 } 

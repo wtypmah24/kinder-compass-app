@@ -17,10 +17,10 @@ interface AuthApi {
     suspend fun register(@Body registerRequest: RegisterRequestDto): Response<AuthResponseDto>
 
     @POST("auth/logout")
-    suspend fun logout(@Header("Authorization") token: String): Response<Unit>
+    suspend fun logout(): Response<Unit>
 
     @GET("auth/me")
-    suspend fun getUserProfile(@Header("Authorization") token: String): Response<Companion>
+    suspend fun getUserProfile(): Response<Companion>
 }
 
 data class RegisterRequestDto(

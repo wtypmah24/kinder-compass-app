@@ -27,7 +27,6 @@ import com.example.school_companion.ui.bar.event.EventTopBar
 import com.example.school_companion.ui.dialog.event.AddEventDialog
 import com.example.school_companion.ui.dropdown.DropdownMenuWrapper
 import com.example.school_companion.ui.section.event.EventWithChildSection
-import com.example.school_companion.ui.viewmodel.AuthViewModel
 import com.example.school_companion.ui.viewmodel.ChildrenState
 import com.example.school_companion.ui.viewmodel.ChildrenViewModel
 import com.example.school_companion.ui.viewmodel.EventsViewModel
@@ -36,11 +35,9 @@ import com.example.school_companion.ui.viewmodel.EventsViewModel
 @Composable
 fun EventsScreen(
     navController: NavController,
-    authViewModel: AuthViewModel,
     childrenViewModel: ChildrenViewModel = hiltViewModel(),
     eventsViewModel: EventsViewModel = hiltViewModel(),
 ) {
-    val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
     val eventsState by eventsViewModel.eventsWithChildrenState.collectAsStateWithLifecycle()
     val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
 
@@ -49,11 +46,9 @@ fun EventsScreen(
     val context = LocalContext.current
     var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(authToken) {
-        authToken?.let { token ->
-            eventsViewModel.loadEventsWithChildren(token)
-            childrenViewModel.loadChildren(token)
-        }
+    LaunchedEffect(Unit) {
+        eventsViewModel.loadEventsWithChildren()
+        childrenViewModel.loadChildren()
     }
 
     Scaffold(
@@ -98,25 +93,21 @@ fun EventsScreen(
             Spacer(Modifier.height(16.dp))
 
             // Events section
-            authToken?.let { token ->
-                EventWithChildSection(
-                    eventsState = eventsState,
-                    selectedChild = selectedChild,
-                    authToken = token,
-                    navController = navController,
-                    eventsViewModel = eventsViewModel
-                )
-            }
+            EventWithChildSection(
+                eventsState = eventsState,
+                selectedChild = selectedChild,
+                navController = navController,
+                eventsViewModel = eventsViewModel
+            )
         }
     }
 
     // Add Event Dialog
-    if (showAddEventDialog.value && selectedChild != null && authToken != null) {
+    if (showAddEventDialog.value && selectedChild != null) {
         AddEventDialog(
             onDismiss = { showAddEventDialog.value = false },
             onSave = { dto ->
                 eventsViewModel.createEvent(
-                    authToken!!,
                     selectedChild!!.id,
                     dto
                 )

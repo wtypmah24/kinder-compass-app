@@ -1,6 +1,5 @@
 package com.example.school_companion.ui.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.school_companion.data.api.SessionApi.SessionUpdateDto
@@ -25,127 +24,84 @@ class WorkSessionViewModel @Inject constructor(
     private val _sessionState = MutableStateFlow<SessionState>(SessionState.Loading)
     val session: StateFlow<SessionState> = _sessionState.asStateFlow()
 
-    fun startWorkSession(
-        token: String,
-    ) {
+    fun startWorkSession() {
         viewModelScope.launch {
-            workSessionRepository.startSession(token)
-                .collect { result ->
-                    result.fold(
-                        onSuccess = {
-                            status(token)
-                        },
-                        onFailure = { exception ->
-
-                        }
-                    )
+            val result = workSessionRepository.startSession()
+            result.fold(
+                onSuccess = { status() },
+                onFailure = { exception ->
+                    _sessionState.value =
+                        SessionState.Error(exception.message ?: "Failed to start session")
                 }
+            )
         }
     }
 
-    fun endWorkSession(
-        token: String,
-    ) {
+    fun endWorkSession() {
         viewModelScope.launch {
-            workSessionRepository.endSession(token)
-                .collect { result ->
-                    result.fold(
-                        onSuccess = {
-                            status(token)
-                        },
-                        onFailure = { exception ->
-
-                        }
-                    )
+            val result = workSessionRepository.endSession()
+            result.fold(
+                onSuccess = { status() },
+                onFailure = { exception ->
+                    _sessionState.value =
+                        SessionState.Error(exception.message ?: "Failed to end session")
                 }
+            )
         }
     }
 
-    fun status(token: String) {
+    fun status() {
         viewModelScope.launch {
-            Log.d("WorkSessionViewModel", "status() called with token=$token")
-            workSessionRepository.status(token).collect { result ->
-                result.fold(
-                    onSuccess = { session ->
-                        Log.d("WorkSessionViewModel", "status success: $session")
-                        _sessionState.value = SessionState.Success(session)
-                    },
-                    onFailure = { exception ->
-                        Log.e(
-                            "WorkSessionViewModel",
-                            "status failed: ${exception.message}",
-                            exception
-                        )
-                        _sessionState.value =
-                            SessionState.Error(exception.message ?: "Failed to load session")
-                    }
-                )
-            }
+            val result = workSessionRepository.status()
+            result.fold(
+                onSuccess = { session ->
+                    _sessionState.value = SessionState.Success(session)
+                },
+                onFailure = { exception ->
+                    _sessionState.value =
+                        SessionState.Error(exception.message ?: "Failed to load session")
+                }
+            )
         }
     }
 
-
-    fun report(
-        token: String,
-        startTime: LocalDate,
-        endTime: LocalDate
-    ) {
+    fun report(startTime: LocalDate, endTime: LocalDate) {
         viewModelScope.launch {
             _sessionsState.value = SessionsState.Loading
-            workSessionRepository.reports(token, startTime, endTime).collect { result ->
-                result.fold(
-                    onSuccess = { s ->
-                        _sessionsState.value = SessionsState.Success(s)
-                    },
-                    onFailure = { exception ->
-                        _sessionsState.value =
-                            SessionsState.Error(exception.message ?: "Failed to load children")
-                    }
-                )
-            }
+            val result = workSessionRepository.reports(startTime, endTime)
+            result.fold(
+                onSuccess = { s -> _sessionsState.value = SessionsState.Success(s) },
+                onFailure = { exception ->
+                    _sessionsState.value =
+                        SessionsState.Error(exception.message ?: "Failed to load sessions")
+                }
+            )
         }
     }
 
-    fun update(
-        token: String,
-        sessionId: Long,
-        dto: SessionUpdateDto,
-        startDate: LocalDate,
-        endDate: LocalDate
-    ) {
+    fun update(sessionId: Long, dto: SessionUpdateDto, startDate: LocalDate, endDate: LocalDate) {
         viewModelScope.launch {
-            workSessionRepository.update(token, sessionId, dto)
-                .collect { result ->
-                    result.fold(
-                        onSuccess = {
-                            report(token, startDate, endDate)
-                        },
-                        onFailure = { exception ->
-
-                        }
-                    )
+            val result = workSessionRepository.update(sessionId, dto)
+            result.fold(
+                onSuccess = { report(startDate, endDate) },
+                onFailure = { exception ->
+                    _sessionsState.value =
+                        SessionsState.Error(exception.message ?: "Failed to update session")
                 }
+            )
         }
     }
 
-    fun delete(
-        token: String,
-        sessionId: Long,
-        startDate: LocalDate,
-        endDate: LocalDate
-    ) {
+    fun delete(sessionId: Long, startDate: LocalDate, endDate: LocalDate) {
         viewModelScope.launch {
-            workSessionRepository.delete(token, sessionId)
-                .collect { result ->
-                    result.fold(
-                        onSuccess = {
-                            report(token, startDate, endDate)
-                        },
-                        onFailure = { exception ->
-
-                        }
-                    )
+            val result = workSessionRepository.delete(sessionId)
+            result.fold(
+                onSuccess = { report(startDate, endDate) },
+                onFailure = { exception ->
+                    _sessionsState.value =
+                        SessionsState.Error(exception.message ?: "Failed to delete session")
                 }
+            )
         }
     }
 }

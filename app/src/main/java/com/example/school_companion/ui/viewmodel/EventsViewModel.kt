@@ -9,12 +9,9 @@ import com.example.school_companion.data.model.EventWithChild
 import com.example.school_companion.data.repository.ChildrenRepository
 import com.example.school_companion.data.repository.EventsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,129 +29,95 @@ class EventsViewModel @Inject constructor(
     val eventsWithChildrenState: StateFlow<EventsWithChildrenState> =
         _eventsWithChildrenState.asStateFlow()
 
-    fun loadEventsByCompanion(token: String) {
+    fun loadEventsByCompanion() {
         viewModelScope.launch {
             _eventsState.value = EventsState.Loading
-
-            eventsRepository.getEventsByCompanion(token).collect { result ->
-                result.fold(
-                    onSuccess = { events ->
-                        _eventsState.value = EventsState.Success(events)
-                    },
-                    onFailure = { exception ->
-                        _eventsState.value =
-                            EventsState.Error(exception.message ?: "Failed to load events")
-                    }
-                )
-            }
+            val result = eventsRepository.getEventsByCompanion()
+            result.fold(
+                onSuccess = { _eventsState.value = EventsState.Success(it) },
+                onFailure = {
+                    _eventsState.value = EventsState.Error(it.message ?: "Failed to load events")
+                }
+            )
         }
     }
 
-    fun loadEventsByChild(token: String, childId: Long) {
+    fun loadEventsByChild(childId: Long) {
         viewModelScope.launch {
             _eventsState.value = EventsState.Loading
-
-            eventsRepository.getEventsByChild(token, childId).collect { result ->
-                result.fold(
-                    onSuccess = { events ->
-                        _eventsState.value = EventsState.Success(events)
-                    },
-                    onFailure = { exception ->
-                        _eventsState.value =
-                            EventsState.Error(exception.message ?: "Failed to load events")
-                    }
-                )
-            }
+            val result = eventsRepository.getEventsByChild(childId)
+            result.fold(
+                onSuccess = { _eventsState.value = EventsState.Success(it) },
+                onFailure = {
+                    _eventsState.value = EventsState.Error(it.message ?: "Failed to load events")
+                }
+            )
         }
     }
 
-    fun createEvent(token: String, childId: Long, event: EventRequestDto) {
+    fun createEvent(childId: Long, event: EventRequestDto) {
         viewModelScope.launch {
-            eventsRepository.createEvent(token, childId, event).collect { result ->
-                result.fold(
-                    onSuccess = {
-                        // Refresh events list
-                        loadEventsByCompanion(token)
-                    },
-                    onFailure = { exception ->
-                        _eventsState.value =
-                            EventsState.Error(exception.message ?: "Failed to create event")
-                        loadEventsByCompanion(token)
-                    }
-                )
-            }
+            val result = eventsRepository.createEvent(childId, event)
+            result.fold(
+                onSuccess = { loadEventsByCompanion() },
+                onFailure = {
+                    _eventsState.value = EventsState.Error(it.message ?: "Failed to create event")
+                    loadEventsByCompanion()
+                }
+            )
         }
     }
 
-    fun updateEvent(token: String, childId: Long, eventId: Long, event: EventRequestDto) {
+    fun updateEvent(childId: Long, eventId: Long, event: EventRequestDto) {
         viewModelScope.launch {
-            eventsRepository.updateEvent(token, childId, eventId, event).collect { result ->
-                result.fold(
-                    onSuccess = {
-                        // Refresh events list
-                        loadEventsByCompanion(token)
-                    },
-                    onFailure = { exception ->
-                        _eventsState.value =
-                            EventsState.Error(exception.message ?: "Failed to create event")
-                        loadEventsByCompanion(token)
-                    }
-                )
-            }
+            val result = eventsRepository.updateEvent(childId, eventId, event)
+            result.fold(
+                onSuccess = { loadEventsByCompanion() },
+                onFailure = {
+                    _eventsState.value = EventsState.Error(it.message ?: "Failed to update event")
+                    loadEventsByCompanion()
+                }
+            )
         }
     }
 
-    fun deleteEvent(token: String, eventId: Long, childId: Long) {
+    fun deleteEvent(eventId: Long, childId: Long) {
         viewModelScope.launch {
-            eventsRepository.deleteEvent(token, eventId, childId).collect { result ->
-                result.fold(
-                    onSuccess = {
-                        // Refresh events list
-                        loadEventsByCompanion(token)
-                    },
-                    onFailure = { exception ->
-                        _eventsState.value =
-                            EventsState.Error(exception.message ?: "Failed to create event")
-                        loadEventsByCompanion(token)
-                    }
-                )
-            }
+            val result = eventsRepository.deleteEvent(eventId, childId)
+            result.fold(
+                onSuccess = { loadEventsByCompanion() },
+                onFailure = {
+                    _eventsState.value = EventsState.Error(it.message ?: "Failed to delete event")
+                    loadEventsByCompanion()
+                }
+            )
         }
     }
 
-    fun loadEventsWithChildren(token: String) {
+    fun loadEventsWithChildren() {
         viewModelScope.launch {
             _eventsWithChildrenState.value = EventsWithChildrenState.Loading
 
             try {
-                val eventsResult = eventsRepository.getEventsByCompanion(token).first()
-
+                val eventsResult = eventsRepository.getEventsByCompanion()
                 if (eventsResult.isFailure) {
-                    val errorMsg =
-                        eventsResult.exceptionOrNull()?.message ?: "Failed to load events"
-                    _eventsWithChildrenState.value = EventsWithChildrenState.Error(errorMsg)
+                    _eventsWithChildrenState.value =
+                        EventsWithChildrenState.Error(
+                            eventsResult.exceptionOrNull()?.message ?: "Failed to load events"
+                        )
                     return@launch
                 }
 
                 val events = eventsResult.getOrThrow()
-
                 if (events.isEmpty()) {
                     _eventsWithChildrenState.value = EventsWithChildrenState.Success(emptyList())
                     return@launch
                 }
 
                 val childIds = events.map { it.childId }.distinct()
-
-                val children = childIds.map { id ->
-                    async {
-                        try {
-                            val childResult = childrenRepository.getChild(token, id).first()
-                            childResult.getOrNull()
-                        } catch (e: Exception) {
-                            null
-                        }
-                    }
-                }.awaitAll().filterNotNull()
+                val children = childIds.mapNotNull { id ->
+                    childrenRepository.getChild(id).getOrNull()
+                }
 
                 val mapped = events.mapNotNull { event ->
                     val child = children.find { it.id == event.childId }
@@ -162,7 +125,6 @@ class EventsViewModel @Inject constructor(
                 }
 
                 _eventsWithChildrenState.value = EventsWithChildrenState.Success(mapped)
-
             } catch (e: Exception) {
                 Log.e("EventsVM", "Exception in loadEventsWithChildren: ${e.message}", e)
                 _eventsWithChildrenState.value =

@@ -35,12 +35,11 @@ import com.example.school_companion.ui.viewmodel.NotesViewModel
 @Composable
 fun NotesTab(
     child: Child,
-    token: String,
     viewModel: NotesViewModel = hiltViewModel(),
 ) {
     val notesState by viewModel.notesState.collectAsStateWithLifecycle()
-    LaunchedEffect(token, child) {
-        viewModel.loadNotes(token, child.id)
+    LaunchedEffect(child) {
+        viewModel.loadNotes(child.id)
     }
 
     var showAddDialog by remember { mutableStateOf(false) }
@@ -72,13 +71,12 @@ fun NotesTab(
                                 note = note,
                                 onEdit = { dto ->
                                     viewModel.updateNote(
-                                        token,
                                         note.id,
                                         dto,
                                         child.id
                                     )
                                 },
-                                onDelete = { viewModel.deleteNote(token, note.id, child.id) }
+                                onDelete = { viewModel.deleteNote(note.id, child.id) }
                             )
                         }
                     }
@@ -91,7 +89,7 @@ fun NotesTab(
         AddNoteDialog(
             onDismiss = { showAddDialog = false },
             onSave = { content ->
-                viewModel.createNote(token, NoteRequestDto(content), child.id)
+                viewModel.createNote(NoteRequestDto(content), child.id)
                 showAddDialog = false
             }
         )

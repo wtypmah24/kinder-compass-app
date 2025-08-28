@@ -20,69 +20,68 @@ class NotesViewModel @Inject constructor(
     private val _notesState = MutableStateFlow<NotesState>(NotesState.Loading)
     val notesState: StateFlow<NotesState> = _notesState.asStateFlow()
 
-    fun loadNotes(token: String, childId: Long) {
+    fun loadNotes(childId: Long) {
         viewModelScope.launch {
             _notesState.value = NotesState.Loading
-
-            notesRepository.getNotes(token, childId).collect { result ->
-                result.fold(
-                    onSuccess = { notes ->
-                        _notesState.value = NotesState.Success(notes)
-                    },
-                    onFailure = { exception ->
-                        _notesState.value =
-                            NotesState.Error(exception.message ?: "Failed to load notes")
-                    }
-                )
-            }
+            val result = notesRepository.getNotes(childId)
+            result.fold(
+                onSuccess = { notes ->
+                    _notesState.value = NotesState.Success(notes)
+                },
+                onFailure = { exception ->
+                    _notesState.value = NotesState.Error(
+                        exception.message ?: "Failed to load notes"
+                    )
+                }
+            )
         }
     }
 
-    fun createNote(token: String, note: NoteRequestDto, childId: Long) {
+    fun createNote(note: NoteRequestDto, childId: Long) {
         viewModelScope.launch {
-            notesRepository.createNote(token, note, childId).collect { result ->
-                result.fold(
-                    onSuccess = {
-                        loadNotes(token, childId)
-                    },
-                    onFailure = { exception ->
-                        _notesState.value =
-                            NotesState.Error(exception.message ?: "Failed to create note")
-                    }
-                )
-            }
+            val result = notesRepository.createNote(note, childId)
+            result.fold(
+                onSuccess = {
+                    loadNotes(childId)
+                },
+                onFailure = { exception ->
+                    _notesState.value = NotesState.Error(
+                        exception.message ?: "Failed to create note"
+                    )
+                }
+            )
         }
     }
 
-    fun updateNote(token: String, noteId: Long, note: NoteRequestDto, childId: Long) {
+    fun updateNote(noteId: Long, note: NoteRequestDto, childId: Long) {
         viewModelScope.launch {
-            notesRepository.updateNote(token, noteId, note, childId).collect { result ->
-                result.fold(
-                    onSuccess = {
-                        loadNotes(token, childId)
-                    },
-                    onFailure = { exception ->
-                        _notesState.value =
-                            NotesState.Error(exception.message ?: "Failed to update note")
-                    }
-                )
-            }
+            val result = notesRepository.updateNote(noteId, note, childId)
+            result.fold(
+                onSuccess = {
+                    loadNotes(childId)
+                },
+                onFailure = { exception ->
+                    _notesState.value = NotesState.Error(
+                        exception.message ?: "Failed to update note"
+                    )
+                }
+            )
         }
     }
 
-    fun deleteNote(token: String, noteId: Long, childId: Long) {
+    fun deleteNote(noteId: Long, childId: Long) {
         viewModelScope.launch {
-            notesRepository.deleteNote(token, noteId).collect { result ->
-                result.fold(
-                    onSuccess = {
-                        loadNotes(token, childId)
-                    },
-                    onFailure = { exception ->
-                        _notesState.value =
-                            NotesState.Error(exception.message ?: "Failed to delete note")
-                    }
-                )
-            }
+            val result = notesRepository.deleteNote(noteId)
+            result.fold(
+                onSuccess = {
+                    loadNotes(childId)
+                },
+                onFailure = { exception ->
+                    _notesState.value = NotesState.Error(
+                        exception.message ?: "Failed to delete note"
+                    )
+                }
+            )
         }
     }
 }
@@ -91,4 +90,4 @@ sealed class NotesState {
     data object Loading : NotesState()
     data class Success(val notes: List<Note>) : NotesState()
     data class Error(val message: String) : NotesState()
-} 
+}

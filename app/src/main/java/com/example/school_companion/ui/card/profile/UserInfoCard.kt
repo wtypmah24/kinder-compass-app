@@ -32,7 +32,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.school_companion.data.model.Companion
-import com.example.school_companion.data.repository.SessionManager.token
 import com.example.school_companion.ui.dialog.companion.EditCompanionDialog
 import com.example.school_companion.ui.dialog.companion.UpdatePasswordDialog
 import com.example.school_companion.ui.viewmodel.AuthViewModel
@@ -44,7 +43,6 @@ fun UserInfoCard(
     currentUser: Companion?,
     pickImageLauncher: ManagedActivityResultLauncher<String, Uri?>,
     companionViewModel: CompanionViewModel,
-    token: String,
     authViewModel: AuthViewModel
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
@@ -148,7 +146,7 @@ fun UserInfoCard(
             confirmButton = {
                 Button(
                     onClick = {
-                        token.let { companionViewModel.deleteCompanion(it) { authViewModel.logout() } }
+                        companionViewModel.deleteCompanion { authViewModel.logout() }
                         showDeleteConfirm = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
@@ -170,7 +168,6 @@ fun UserInfoCard(
                 onDismiss = { showEditDialog = false }
             ) { dto ->
                 companionViewModel.updateCompanion(
-                    token,
                     dto
                 ) { authViewModel.getUserProfile() }
             }
@@ -180,8 +177,7 @@ fun UserInfoCard(
         UpdatePasswordDialog(
             onDismiss = { showUpdatePasswordDialog = false },
             onSave = { dto ->
-                companionViewModel.updatePassword(token, dto)
+                companionViewModel.updatePassword(dto)
             })
     }
-
 }

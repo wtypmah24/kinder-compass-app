@@ -26,7 +26,6 @@ import com.example.school_companion.ui.viewmodel.EventsWithChildrenState
 fun EventWithChildSection(
     eventsState: EventsWithChildrenState,
     selectedChild: Child?,
-    authToken: String,
     navController: NavController,
     eventsViewModel: EventsViewModel
 ) {
@@ -56,7 +55,6 @@ fun EventWithChildSection(
                             onClick = {
                                 navController.navigate("${Screen.ChildDetail.route}/${event.child.id}")
                             },
-                            authToken,
                             eventsViewModel
                         )
                     }

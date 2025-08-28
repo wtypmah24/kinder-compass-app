@@ -8,7 +8,6 @@ import com.example.school_companion.ui.viewmodel.ChildrenViewModel
 
 object ChildActionHandler {
     fun handle(
-        token: String,
         child: Child,
         action: ChildAction,
         navController: NavController,
@@ -20,11 +19,11 @@ object ChildActionHandler {
             }
 
             is ChildAction.Edit -> {
-                childrenViewModel.updateChild(token, child.id, action.updatedChild)
+                childrenViewModel.updateChild(child.id, action.updatedChild)
             }
 
             is ChildAction.Delete -> {
-                childrenViewModel.deleteChild(token, child.id)
+                childrenViewModel.deleteChild(child.id)
             }
         }
     }

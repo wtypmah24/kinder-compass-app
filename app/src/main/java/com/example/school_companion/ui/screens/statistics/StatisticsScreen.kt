@@ -33,7 +33,6 @@ import com.example.school_companion.ui.bar.dashboard.DashBoardBottomBar
 import com.example.school_companion.ui.card.statistic.StatisticsSelectorCard
 import com.example.school_companion.ui.card.statistic.StatisticsSummaryCard
 import com.example.school_companion.ui.tab.StatisticsTabs
-import com.example.school_companion.ui.viewmodel.AuthViewModel
 import com.example.school_companion.ui.viewmodel.ChildrenState
 import com.example.school_companion.ui.viewmodel.ChildrenViewModel
 import com.example.school_companion.ui.viewmodel.EntriesState
@@ -46,12 +45,10 @@ import com.example.school_companion.ui.viewmodel.ParamsState
 @Composable
 fun StatisticsScreen(
     navController: NavController,
-    authViewModel: AuthViewModel,
     paramsViewModel: MonitoringParamViewModel = hiltViewModel(),
     entriesViewModel: MonitoringEntryViewModel = hiltViewModel(),
     childrenViewModel: ChildrenViewModel = hiltViewModel(),
 ) {
-    val authToken by authViewModel.authToken.collectAsStateWithLifecycle()
     val paramsState by paramsViewModel.paramsState.collectAsStateWithLifecycle()
     val entriesState by entriesViewModel.entriesState.collectAsStateWithLifecycle()
     val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
@@ -64,12 +61,10 @@ fun StatisticsScreen(
 
     val timeRanges = listOf("Last Day", "Last 7 Days", "Last 30 Days", "Last 90 Days")
 
-    LaunchedEffect(authToken) {
-        authToken?.let { token ->
-            paramsViewModel.loadMonitoringParamData(token)
-            entriesViewModel.loadMonitoringEntryByCompanion(token)
-            childrenViewModel.loadChildren(token)
-        }
+    LaunchedEffect(Unit) {
+        paramsViewModel.loadMonitoringParamData()
+        entriesViewModel.loadMonitoringEntryByCompanion()
+        childrenViewModel.loadChildren()
     }
 
     Scaffold(

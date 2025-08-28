@@ -40,7 +40,6 @@ fun MonitoringEntryCard(
     entry: MonitoringEntry,
     child: Child,
     entriesViewModel: MonitoringEntryViewModel,
-    token: String
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
@@ -85,7 +84,6 @@ fun MonitoringEntryCard(
                 onDismiss = { showEditDialog = false },
                 onSave = { updateEntryRequestDto ->
                     entriesViewModel.updateMonitoringEntry(
-                        token = token,
                         entry = updateEntryRequestDto,
                         childId = child.id,
                         paramId = entry.parameterId
@@ -103,7 +101,7 @@ fun MonitoringEntryCard(
                 confirmButton = {
                     Button(
                         onClick = {
-                            entriesViewModel.deleteMonitoringEntry(token, entry.id, child.id)
+                            entriesViewModel.deleteMonitoringEntry(entry.id, child.id)
                             showDeleteConfirm = false
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
