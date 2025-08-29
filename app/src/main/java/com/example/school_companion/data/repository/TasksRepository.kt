@@ -3,6 +3,8 @@ package com.example.school_companion.data.repository
 import com.example.school_companion.data.api.TaskApi
 import com.example.school_companion.data.api.TaskRequestDto
 import com.example.school_companion.data.model.Task
+import com.example.school_companion.ui.util.toResult
+import com.example.school_companion.ui.util.toResultString
 import javax.inject.Inject
 
 class TasksRepository @Inject constructor(
@@ -10,13 +12,7 @@ class TasksRepository @Inject constructor(
 ) {
     suspend fun getTasks(childId: Long): Result<List<Task>> {
         return try {
-            val response = apiService.getTasksByChild(childId)
-            if (response.isSuccessful) {
-                val tasks = response.body() ?: emptyList()
-                Result.success(tasks)
-            } else {
-                Result.failure(Exception("Failed to get tasks: ${response.code()}"))
-            }
+            apiService.getTasksByChild(childId).toResult()
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -24,13 +20,8 @@ class TasksRepository @Inject constructor(
 
     suspend fun createTask(task: TaskRequestDto, childId: Long): Result<String> {
         return try {
-            val response = apiService.addTask(task, childId)
-            if (response.isSuccessful) {
-                val message = response.body()?.string() ?: "Task added successfully"
-                Result.success(message)
-            } else {
-                Result.failure(Exception("Failed to create task: ${response.code()}"))
-            }
+            apiService.addTask(task, childId)
+                .toResultString("Task added successfully")
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -38,13 +29,8 @@ class TasksRepository @Inject constructor(
 
     suspend fun updateTask(taskId: Long, task: TaskRequestDto, childId: Long): Result<String> {
         return try {
-            val response = apiService.updateTask(task, childId, taskId)
-            if (response.isSuccessful) {
-                val message = response.body()?.string() ?: "Task updated successfully"
-                Result.success(message)
-            } else {
-                Result.failure(Exception("Failed to update task: ${response.code()}"))
-            }
+            apiService.updateTask(task, childId, taskId)
+                .toResultString("Task updated successfully")
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -52,13 +38,8 @@ class TasksRepository @Inject constructor(
 
     suspend fun deleteTask(taskId: Long, childId: Long): Result<String> {
         return try {
-            val response = apiService.delete(taskId, childId)
-            if (response.isSuccessful) {
-                val message = response.body()?.string() ?: "Task deleted successfully"
-                Result.success(message)
-            } else {
-                Result.failure(Exception("Failed to delete task: ${response.code()}"))
-            }
+            apiService.delete(taskId, childId)
+                .toResultString("Task deleted successfully")
         } catch (e: Exception) {
             Result.failure(e)
         }

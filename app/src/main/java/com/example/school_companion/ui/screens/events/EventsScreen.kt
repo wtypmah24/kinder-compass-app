@@ -27,9 +27,9 @@ import com.example.school_companion.ui.bar.event.EventTopBar
 import com.example.school_companion.ui.dialog.event.AddEventDialog
 import com.example.school_companion.ui.dropdown.DropdownMenuWrapper
 import com.example.school_companion.ui.section.event.EventWithChildSection
-import com.example.school_companion.ui.viewmodel.ChildrenState
 import com.example.school_companion.ui.viewmodel.ChildrenViewModel
 import com.example.school_companion.ui.viewmodel.EventsViewModel
+import com.example.school_companion.ui.viewmodel.UiState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -81,7 +81,7 @@ fun EventsScreen(
         ) {
             //Child Filter Dropdown
             DropdownMenuWrapper(
-                items = if (childrenState is ChildrenState.Success) (childrenState as ChildrenState.Success).children else emptyList(),
+                items = if (childrenState is UiState.Success) (childrenState as UiState.Success).data else emptyList(),
                 selectedItem = selectedChild,
                 onItemSelected = { selectedChild = it },
                 itemToString = { "${it.name} ${it.surname}" },

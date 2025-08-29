@@ -8,9 +8,14 @@ class AuthInterceptor @Inject constructor(
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
         val original = chain.request()
-        val token = sessionManager.getToken()
+        val url = original.url.toString()
 
-        val request = if (token != null) {
+        if (url.contains("auth/login-app") || url.contains("auth/register")) {
+            return chain.proceed(original)
+        }
+
+        val token = sessionManager.getToken()
+        val request = if (!token.isNullOrEmpty()) {
             original.newBuilder()
                 .addHeader("Authorization", "Bearer $token")
                 .build()
@@ -21,3 +26,4 @@ class AuthInterceptor @Inject constructor(
         return chain.proceed(request)
     }
 }
+

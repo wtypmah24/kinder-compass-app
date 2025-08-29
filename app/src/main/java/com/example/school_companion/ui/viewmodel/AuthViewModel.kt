@@ -18,25 +18,25 @@ class AuthViewModel @Inject constructor(
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
-    private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
-    val authState: StateFlow<AuthState> = _authState.asStateFlow()
+    private val _authState = MutableStateFlow<UiState<Unit>>(UiState.Idle)
+    val authState: StateFlow<UiState<Unit>> = _authState.asStateFlow()
 
-    private val _currentCompanion = MutableStateFlow<Companion?>(null)
-    val currentCompanion: StateFlow<Companion?> = _currentCompanion.asStateFlow()
+    private val _currentCompanion = MutableStateFlow<UiState<Companion>>(UiState.Idle)
+    val currentCompanion: StateFlow<UiState<Companion>> = _currentCompanion.asStateFlow()
 
     fun login(email: String, password: String) {
+        _authState.value = UiState.Loading
         viewModelScope.launch {
-            _authState.value = AuthState.Loading
-
             val result = authRepository.login(email, password)
             result.fold(
                 onSuccess = { (token, user) ->
                     sessionManager.saveToken(token)
-                    _currentCompanion.value = user
-                    _authState.value = AuthState.Success
+                    _currentCompanion.value = UiState.Success(user)
+                    _authState.value = UiState.Success(Unit)
                 },
                 onFailure = { exception ->
-                    _authState.value = AuthState.Error(exception.message ?: "Login failed")
+                    val msg = exception.message ?: "Login failed"
+                    _authState.value = UiState.Error(msg)
                 }
             )
         }
@@ -49,68 +49,41 @@ class AuthViewModel @Inject constructor(
         lastName: String,
         role: String
     ) {
+        _authState.value = UiState.Loading
         viewModelScope.launch {
-            _authState.value = AuthState.Loading
-
             val result = authRepository.register(email, password, firstName, lastName, role)
-            result.fold(
-                onSuccess = {
-                    _authState.value = AuthState.RegistrationSuccess
-                },
-                onFailure = { exception ->
-                    _authState.value =
-                        AuthState.Error(exception.message ?: "Registration failed")
-                }
-            )
+            handleResult(result, _authState) {
+                login(email, password)
+            }
         }
     }
 
     fun logout() {
+        _authState.value = UiState.Loading
         viewModelScope.launch {
             val token = sessionManager.getToken()
             if (token != null) {
                 val result = authRepository.logout()
-                result.fold(
-                    onSuccess = {
-                        sessionManager.clearToken()
-                        _currentCompanion.value = null
-                        _authState.value = AuthState.Success
-                    },
-                    onFailure = { exception ->
-                        _authState.value = AuthState.Error(exception.message ?: "Logout failed")
-                    }
-                )
+                handleResult(result, _authState) {
+                    sessionManager.clearToken()
+                    _currentCompanion.value = UiState.Idle
+                }
             } else {
-                _authState.value = AuthState.Error("No token to logout")
+                _authState.value = UiState.Error("No token to logout")
             }
         }
     }
 
     fun getUserProfile() {
+        _currentCompanion.value = UiState.Loading
         viewModelScope.launch {
             val token = sessionManager.getToken()
             if (token != null) {
                 val result = authRepository.getUserProfile()
-                result.fold(
-                    onSuccess = { user ->
-                        _currentCompanion.value = user
-                    },
-                    onFailure = { exception ->
-                        _authState.value =
-                            AuthState.Error(exception.message ?: "Failed to get profile")
-                    }
-                )
+                handleResult(result, _currentCompanion)
             } else {
-                _authState.value = AuthState.Error("No token available")
+                _currentCompanion.value = UiState.Error("No token available")
             }
         }
     }
-}
-
-sealed class AuthState {
-    data object Idle : AuthState()
-    data object Loading : AuthState()
-    data object Success : AuthState()
-    data object RegistrationSuccess : AuthState()
-    data class Error(val message: String) : AuthState()
 }

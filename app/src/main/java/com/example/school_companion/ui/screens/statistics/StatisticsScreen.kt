@@ -33,12 +33,12 @@ import com.example.school_companion.ui.bar.dashboard.DashBoardBottomBar
 import com.example.school_companion.ui.card.statistic.StatisticsSelectorCard
 import com.example.school_companion.ui.card.statistic.StatisticsSummaryCard
 import com.example.school_companion.ui.tab.StatisticsTabs
-import com.example.school_companion.ui.viewmodel.ChildrenState
 import com.example.school_companion.ui.viewmodel.ChildrenViewModel
 import com.example.school_companion.ui.viewmodel.EntriesState
 import com.example.school_companion.ui.viewmodel.MonitoringEntryViewModel
 import com.example.school_companion.ui.viewmodel.MonitoringParamViewModel
 import com.example.school_companion.ui.viewmodel.ParamsState
+import com.example.school_companion.ui.viewmodel.UiState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -101,9 +101,9 @@ fun StatisticsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            if (childrenState is ChildrenState.Success && paramsState is ParamsState.Success) {
+            if (childrenState is UiState.Success && paramsState is ParamsState.Success) {
                 StatisticsSelectorCard(
-                    children = (childrenState as ChildrenState.Success).children,
+                    children = (childrenState as UiState.Success).data,
                     selectedChild = selectedChild,
                     onChildSelected = { selectedChild = it },
                     params = (paramsState as ParamsState.Success).paramData,

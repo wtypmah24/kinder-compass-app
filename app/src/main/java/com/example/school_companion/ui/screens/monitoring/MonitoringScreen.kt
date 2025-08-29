@@ -25,11 +25,11 @@ import com.example.school_companion.ui.card.monitoring.MonitoringSelectorCard
 import com.example.school_companion.ui.dialog.entry.AddEntryDialog
 import com.example.school_companion.ui.dialog.param.AddParamDialog
 import com.example.school_companion.ui.tab.MonitoringTabs
-import com.example.school_companion.ui.viewmodel.ChildrenState
 import com.example.school_companion.ui.viewmodel.ChildrenViewModel
 import com.example.school_companion.ui.viewmodel.MonitoringEntryViewModel
 import com.example.school_companion.ui.viewmodel.MonitoringParamViewModel
 import com.example.school_companion.ui.viewmodel.ParamsState
+import com.example.school_companion.ui.viewmodel.UiState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -80,9 +80,9 @@ fun MonitoringScreen(
         }
     ) { paddingValues ->
 
-        if (childrenState is ChildrenState.Success && paramsState is ParamsState.Success) {
+        if (childrenState is UiState.Success && paramsState is ParamsState.Success) {
             MonitoringSelectorCard(
-                children = (childrenState as ChildrenState.Success).children,
+                children = (childrenState as UiState.Success).data,
                 selectedChild = selectedChild,
                 onChildSelected = { selectedChild = it },
                 params = (paramsState as ParamsState.Success).paramData,
@@ -99,7 +99,7 @@ fun MonitoringScreen(
             onTabSelected = { selectedTabIndex = it },
             paramsState = paramsState,
             entriesState = entriesState,
-            children = (childrenState as? ChildrenState.Success)?.children.orEmpty(),
+            children = (childrenState as? UiState.Success)?.data.orEmpty(),
             paramsViewModel = paramsViewModel,
             entriesViewModel = entriesViewModel,
             selectedChild = selectedChild,

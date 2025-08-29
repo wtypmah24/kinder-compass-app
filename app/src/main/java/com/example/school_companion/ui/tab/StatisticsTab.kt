@@ -13,11 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.school_companion.data.model.Child
-import com.example.school_companion.data.model.MonitoringEntry
 import com.example.school_companion.data.model.MonitoringParam
 import com.example.school_companion.ui.section.statistic.ViewByChild
 import com.example.school_companion.ui.section.statistic.ViewByParameter
-import com.example.school_companion.ui.viewmodel.ChildrenState
 import com.example.school_companion.ui.viewmodel.EntriesState
 import com.example.school_companion.ui.viewmodel.UiState
 
@@ -29,7 +27,7 @@ fun StatisticsTabs(
     selectedChild: Child?,
     selectedParam: MonitoringParam?,
     selectedRange: String,
-    childrenState: ChildrenState,
+    childrenState: UiState<List<Child>>,
     entriesState: EntriesState
 ) {
     val tabs = listOf("View by Parameter", "View by Child")
@@ -52,14 +50,14 @@ fun StatisticsTabs(
         0 -> { // View by Parameter
             if (selectedParam == null) {
                 Text("Please select a parameter to see statistics charts")
-            } else if (childrenState !is ChildrenState.Success || entriesState !is EntriesState.Success) {
+            } else if (childrenState !is UiState.Success || entriesState !is EntriesState.Success) {
                 Text("Something went wrong. Try again later.")
             } else {
                 val filteredEntries = (entriesState).entryData
                     .filter { e -> e.parameterId == selectedParam.id }
                 ViewByParameter(
                     filteredEntries,
-                    (childrenState).children,
+                    (childrenState).data,
                     selectedRange
                 )
             }
@@ -68,7 +66,7 @@ fun StatisticsTabs(
         1 -> { // View by Child
             if (selectedChild == null) {
                 Text("Please select a child to see statistics charts")
-            } else if (childrenState !is ChildrenState.Success || entriesState !is EntriesState.Success) {
+            } else if (childrenState !is UiState.Success || entriesState !is EntriesState.Success) {
                 Text("Something went wrong. Try again later.")
             } else {
                 val filteredEntries = (entriesState).entryData

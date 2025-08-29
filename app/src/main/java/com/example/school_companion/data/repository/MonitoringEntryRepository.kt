@@ -3,6 +3,8 @@ package com.example.school_companion.data.repository
 import com.example.school_companion.data.api.EntryApi
 import com.example.school_companion.data.api.EntryRequestDto
 import com.example.school_companion.data.model.MonitoringEntry
+import com.example.school_companion.ui.util.toResult
+import com.example.school_companion.ui.util.toResultString
 import javax.inject.Inject
 
 class MonitoringEntryRepository @Inject constructor(
@@ -10,14 +12,7 @@ class MonitoringEntryRepository @Inject constructor(
 ) {
     suspend fun getMonitoringEntryData(childId: Long): Result<List<MonitoringEntry>> {
         return try {
-            val response = apiService.getEntriesByChild(childId)
-            if (response.isSuccessful) {
-                response.body()?.let { monitoringData ->
-                    Result.success(monitoringData)
-                } ?: Result.failure(Exception("Empty response"))
-            } else {
-                Result.failure(Exception("Failed to get monitoring data: ${response.code()}"))
-            }
+            apiService.getEntriesByChild(childId).toResult()
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -25,14 +20,7 @@ class MonitoringEntryRepository @Inject constructor(
 
     suspend fun getMonitoringEntryByCompanion(): Result<List<MonitoringEntry>> {
         return try {
-            val response = apiService.getEntriesByCompanion()
-            if (response.isSuccessful) {
-                response.body()?.let { monitoringData ->
-                    Result.success(monitoringData)
-                } ?: Result.failure(Exception("Empty response"))
-            } else {
-                Result.failure(Exception("Failed to get monitoring data: ${response.code()}"))
-            }
+            apiService.getEntriesByCompanion().toResult()
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -44,13 +32,8 @@ class MonitoringEntryRepository @Inject constructor(
         paramId: Long
     ): Result<String> {
         return try {
-            val response = apiService.addEntry(monitoringParam, childId, paramId)
-            if (response.isSuccessful) {
-                val message = response.body()?.string() ?: "Monitoring entry added successfully"
-                Result.success(message)
-            } else {
-                Result.failure(Exception("Failed to create monitoring entry: ${response.code()}"))
-            }
+            apiService.addEntry(monitoringParam, childId, paramId)
+                .toResultString("Monitoring entry added successfully")
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -62,13 +45,8 @@ class MonitoringEntryRepository @Inject constructor(
         childId: Long
     ): Result<String> {
         return try {
-            val response = apiService.updateEntry(entryUpdateDto, childId, entryId)
-            if (response.isSuccessful) {
-                val message = response.body()?.string() ?: "Monitoring entry updated successfully"
-                Result.success(message)
-            } else {
-                Result.failure(Exception("Failed to update monitoring entry: ${response.code()}"))
-            }
+            apiService.updateEntry(entryUpdateDto, childId, entryId)
+                .toResultString("Monitoring entry updated successfully")
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -79,13 +57,8 @@ class MonitoringEntryRepository @Inject constructor(
         childId: Long
     ): Result<String> {
         return try {
-            val response = apiService.delete(entryId, childId)
-            if (response.isSuccessful) {
-                val message = response.body()?.string() ?: "Monitoring entry deleted successfully"
-                Result.success(message)
-            } else {
-                Result.failure(Exception("Failed to delete monitoring entry: ${response.code()}"))
-            }
+            apiService.delete(entryId, childId)
+                .toResultString("Monitoring entry deleted successfully")
         } catch (e: Exception) {
             Result.failure(e)
         }

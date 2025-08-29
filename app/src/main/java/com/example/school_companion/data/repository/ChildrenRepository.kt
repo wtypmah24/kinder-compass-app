@@ -5,9 +5,8 @@ import com.example.school_companion.data.api.ChildrenApi
 import com.example.school_companion.data.api.DeletePhotoRequestDto
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.data.model.Photo
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
+import com.example.school_companion.ui.util.toResult
+import com.example.school_companion.ui.util.toResultString
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -20,13 +19,8 @@ class ChildrenRepository @Inject constructor(
 ) {
     suspend fun addChild(child: ChildDto): Result<String> {
         return try {
-            val response = apiService.addChild(child)
-            if (response.isSuccessful) {
-                val message = response.body()?.string() ?: "Child added successfully"
-                Result.success(message)
-            } else {
-                Result.failure(Exception("Failed to create child: ${response.code()}"))
-            }
+            apiService.addChild(child)
+                .toResultString("Child added successfully")
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -34,13 +28,8 @@ class ChildrenRepository @Inject constructor(
 
     suspend fun updateChild(childId: Long, child: ChildDto): Result<String> {
         return try {
-            val response = apiService.updateChild(child, childId)
-            if (response.isSuccessful) {
-                val message = response.body()?.string() ?: "Child updated successfully"
-                Result.success(message)
-            } else {
-                Result.failure(Exception("Failed to update child: ${response.code()}"))
-            }
+            apiService.updateChild(child, childId)
+                .toResultString("Child updated successfully")
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -48,13 +37,8 @@ class ChildrenRepository @Inject constructor(
 
     suspend fun deleteChild(childId: Long): Result<String> {
         return try {
-            val response = apiService.delete(childId)
-            if (response.isSuccessful) {
-                val message = response.body()?.string() ?: "Child deleted successfully"
-                Result.success(message)
-            } else {
-                Result.failure(Exception("Failed to delete child: ${response.code()}"))
-            }
+            apiService.delete(childId)
+                .toResultString("Child deleted successfully")
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -62,13 +46,7 @@ class ChildrenRepository @Inject constructor(
 
     suspend fun getChildren(): Result<List<Child>> {
         return try {
-            val response = apiService.getChildren()
-            if (response.isSuccessful) {
-                response.body()?.let { Result.success(it) }
-                    ?: Result.failure(Exception("Empty response"))
-            } else {
-                Result.failure(Exception("Failed to get children: ${response.code()}"))
-            }
+            apiService.getChildren().toResult()
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -76,13 +54,7 @@ class ChildrenRepository @Inject constructor(
 
     suspend fun getChild(childId: Long): Result<Child> {
         return try {
-            val response = apiService.getChild(childId)
-            if (response.isSuccessful) {
-                response.body()?.let { Result.success(it) }
-                    ?: Result.failure(Exception("Empty response"))
-            } else {
-                Result.failure(Exception("Failed to get child: ${response.code()}"))
-            }
+            apiService.getChild(childId).toResult()
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -90,13 +62,7 @@ class ChildrenRepository @Inject constructor(
 
     suspend fun getChildPhotos(childId: Long): Result<List<Photo>> {
         return try {
-            val response = apiService.getChildPhotos(childId)
-            if (response.isSuccessful) {
-                response.body()?.let { Result.success(it) }
-                    ?: Result.failure(Exception("Empty response"))
-            } else {
-                Result.failure(Exception("Failed to get child photos: ${response.code()}"))
-            }
+            apiService.getChildPhotos(childId).toResult()
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -112,13 +78,8 @@ class ChildrenRepository @Inject constructor(
         val descriptionPart = descriptionText.toRequestBody("text/plain".toMediaTypeOrNull())
 
         return try {
-            val response = apiService.addChildPhoto(childId, filePart, descriptionPart)
-            if (response.isSuccessful) {
-                val message = response.body()?.string() ?: "Photo added successfully"
-                Result.success(message)
-            } else {
-                Result.failure(Exception("Failed to add child photo: ${response.code()}"))
-            }
+            apiService.addChildPhoto(childId, filePart, descriptionPart)
+                .toResultString("Photo added successfully")
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -126,13 +87,8 @@ class ChildrenRepository @Inject constructor(
 
     suspend fun deleteChildPhoto(deletePhotoRequestDto: DeletePhotoRequestDto): Result<String> {
         return try {
-            val response = apiService.deleteChildPhoto(deletePhotoRequestDto)
-            if (response.isSuccessful) {
-                val message = response.body()?.string() ?: "Photo deleted successfully"
-                Result.success(message)
-            } else {
-                Result.failure(Exception("Failed to delete child photo: ${response.code()}"))
-            }
+            apiService.deleteChildPhoto(deletePhotoRequestDto)
+                .toResultString("Photo deleted successfully")
         } catch (e: Exception) {
             Result.failure(e)
         }

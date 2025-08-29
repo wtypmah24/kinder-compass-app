@@ -25,12 +25,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.school_companion.ui.bar.dashboard.DashBoardBottomBar
 import com.example.school_companion.ui.bar.profile.ProfileTopBar
+import com.example.school_companion.ui.box.ErrorBox
+import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.card.profile.UserInfoCard
 import com.example.school_companion.ui.card.profile.WorkSessionCard
 import com.example.school_companion.ui.card.profile.WorkSessionReportCard
 import com.example.school_companion.ui.viewmodel.AuthViewModel
 import com.example.school_companion.ui.viewmodel.CompanionViewModel
 import com.example.school_companion.ui.viewmodel.WorkSessionViewModel
+import com.example.school_companion.ui.viewmodel.onState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -41,7 +44,7 @@ fun ProfileScreen(
     companionViewModel: CompanionViewModel = hiltViewModel()
 
 ) {
-    val currentUser by authViewModel.currentCompanion.collectAsStateWithLifecycle()
+    val currentUserState by authViewModel.currentCompanion.collectAsStateWithLifecycle()
     val currentSession by workSessionViewModel.session.collectAsStateWithLifecycle()
     var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
 
@@ -81,11 +84,17 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                UserInfoCard(
-                    currentUser = currentUser,
-                    pickImageLauncher = pickImageLauncher,
-                    companionViewModel = companionViewModel,
-                    authViewModel
+                currentUserState.onState(
+                    onLoading = { LoadingBox() },
+                    onSuccess = { user ->
+                        UserInfoCard(
+                            currentUser = user,
+                            pickImageLauncher = pickImageLauncher,
+                            companionViewModel = companionViewModel,
+                            authViewModel = authViewModel
+                        )
+                    },
+                    onError = { msg -> ErrorBox(message = msg) }
                 )
             }
             item {

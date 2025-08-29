@@ -21,6 +21,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.school_companion.ui.bar.dashboard.DashBoardBottomBar
 import com.example.school_companion.ui.bar.dashboard.DashboardTopBar
+import com.example.school_companion.ui.box.ErrorBox
+import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.card.dashboard.WelcomeCompanionCard
 import com.example.school_companion.ui.constant.QuickActionsData
 import com.example.school_companion.ui.navigation.Screen
@@ -31,6 +33,8 @@ import com.example.school_companion.ui.util.ChildActionHandler
 import com.example.school_companion.ui.viewmodel.AuthViewModel
 import com.example.school_companion.ui.viewmodel.ChildrenViewModel
 import com.example.school_companion.ui.viewmodel.EventsViewModel
+import com.example.school_companion.ui.viewmodel.UiState
+import com.example.school_companion.ui.viewmodel.onState
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -41,7 +45,7 @@ fun DashboardScreen(
     childrenViewModel: ChildrenViewModel = hiltViewModel(),
     eventsViewModel: EventsViewModel = hiltViewModel(),
 ) {
-    val currentUser by authViewModel.currentCompanion.collectAsStateWithLifecycle()
+    val currentUserState by authViewModel.currentCompanion.collectAsStateWithLifecycle()
     val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
     val eventsState by eventsViewModel.eventsState.collectAsStateWithLifecycle()
     val quickActions = QuickActionsData.getQuickActions(navController)
@@ -49,7 +53,6 @@ fun DashboardScreen(
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
-
         childrenViewModel.loadChildren()
         eventsViewModel.loadEventsByCompanion()
     }
@@ -83,7 +86,11 @@ fun DashboardScreen(
         ) {
             // Welcome Section
             item {
-                currentUser?.let { WelcomeCompanionCard(currentUser = it) }
+                currentUserState.onState(
+                    onLoading = { LoadingBox() },
+                    onSuccess = { WelcomeCompanionCard(currentUser = it) },
+                    onError = { msg -> ErrorBox(message = msg) }
+                )
             }
 
             // Quick Actions

@@ -18,7 +18,7 @@ import com.example.school_companion.ui.field.EmailField
 import com.example.school_companion.ui.field.PasswordField
 import com.example.school_companion.ui.link.LoginLink
 import com.example.school_companion.ui.message.ErrorMessage
-import com.example.school_companion.ui.viewmodel.AuthState
+import com.example.school_companion.ui.viewmodel.UiState
 
 @Composable
 fun RegisterCard(
@@ -38,7 +38,7 @@ fun RegisterCard(
     onConfirmPasswordVisibilityChange: (Boolean) -> Unit,
     organization: String,
     onOrganizationChange: (String) -> Unit,
-    authState: AuthState,
+    authState: UiState<Unit>,
     onRegisterClick: () -> Unit,
     onLoginClick: () -> Unit
 ) {
@@ -73,16 +73,16 @@ fun RegisterCard(
             )
             OrganizationField(organization, onOrganizationChange)
 
-            if (authState is AuthState.Error) {
+            if (authState is UiState.Error) {
                 ErrorMessage((authState).message)
             }
 
             RegisterButton(
-                enabled = authState !is AuthState.Loading &&
+                enabled = authState !is UiState.Loading &&
                         name.isNotBlank() && surname.isNotBlank() &&
                         email.isNotBlank() && password.isNotBlank() &&
                         password == confirmPassword,
-                loading = authState is AuthState.Loading,
+                loading = authState is UiState.Loading,
                 onClick = onRegisterClick
             )
 

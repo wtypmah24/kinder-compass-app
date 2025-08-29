@@ -25,11 +25,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.school_companion.ui.bar.dashboard.DashBoardBottomBar
+import com.example.school_companion.ui.box.ErrorBox
+import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.header.child.ChildHeaderCard
 import com.example.school_companion.ui.tab.ChildTabContent
 import com.example.school_companion.ui.tab.ChildTabs
-import com.example.school_companion.ui.viewmodel.AuthViewModel
 import com.example.school_companion.ui.viewmodel.ChildrenViewModel
+import com.example.school_companion.ui.viewmodel.onState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,9 +53,15 @@ fun ChildDetailScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = "${selectedChild?.name} ${selectedChild?.surname}",
-                        fontWeight = FontWeight.Bold
+                    selectedChild.onState(
+                        onLoading = { LoadingBox() },
+                        onError = { msg -> ErrorBox(message = msg) },
+                        onSuccess = {
+                            Text(
+                                text = "${it.name} ${it.surname}",
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     )
                 },
                 navigationIcon = {
@@ -85,18 +93,22 @@ fun ChildDetailScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            selectedChild?.let { child ->
-                ChildHeaderCard(child = child)
-                ChildTabs(
-                    selectedTabIndex = selectedTabIndex,
-                    onTabSelected = { selectedTabIndex = it }
-                )
-                ChildTabContent(
-                    index = selectedTabIndex,
-                    child = child,
-                    navController = navController,
-                )
-            }
+            selectedChild.onState(
+                onLoading = { LoadingBox() },
+                onError = { msg -> ErrorBox(message = msg) },
+                onSuccess = {
+                    ChildHeaderCard(child = it)
+                    ChildTabs(
+                        selectedTabIndex = selectedTabIndex,
+                        onTabSelected = { selectedTabIndex = it }
+                    )
+                    ChildTabContent(
+                        index = selectedTabIndex,
+                        child = it,
+                        navController = navController,
+                    )
+                }
+            )
         }
     }
 }

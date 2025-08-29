@@ -30,7 +30,6 @@ import com.example.school_companion.ui.bar.dashboard.DashBoardBottomBar
 import com.example.school_companion.ui.dialog.child.AddChildDialog
 import com.example.school_companion.ui.section.children.ChildrenSection
 import com.example.school_companion.ui.util.ChildActionHandler
-import com.example.school_companion.ui.viewmodel.AuthViewModel
 import com.example.school_companion.ui.viewmodel.ChildrenViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)

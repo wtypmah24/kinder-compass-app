@@ -38,14 +38,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.ui.bar.dashboard.DashBoardBottomBar
+import com.example.school_companion.ui.box.ErrorBox
+import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.card.chat.MessageInputCard
 import com.example.school_companion.ui.list.MessagesList
 import com.example.school_companion.ui.selector.ChildSelector
 import com.example.school_companion.ui.selector.ThreadSelector
-import com.example.school_companion.ui.viewmodel.AuthViewModel
 import com.example.school_companion.ui.viewmodel.ChatViewModel
-import com.example.school_companion.ui.viewmodel.ChildrenState
 import com.example.school_companion.ui.viewmodel.ChildrenViewModel
+import com.example.school_companion.ui.viewmodel.UiState
+import com.example.school_companion.ui.viewmodel.getOrNull
+import com.example.school_companion.ui.viewmodel.onState
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -76,9 +79,11 @@ fun AssistantScreen(
     }
 
     LaunchedEffect(messages) {
-        if (messages.isNotEmpty()) {
-            coroutine.launch {
-                listState.animateScrollToItem(messages.size - 1)
+        messages.getOrNull()?.let { list ->
+            if (list.isNotEmpty()) {
+                coroutine.launch {
+                    listState.animateScrollToItem(list.size - 1)
+                }
             }
         }
     }
@@ -128,8 +133,8 @@ fun AssistantScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            if (childrenState is ChildrenState.Success) {
-                ChildSelector(children = (childrenState as ChildrenState.Success).children,
+            if (childrenState is UiState.Success) {
+                ChildSelector(children = (childrenState as UiState.Success).data,
                     selectedChild = selectedChild,
                     onSelect = {
                         selectedChild = it
@@ -139,8 +144,8 @@ fun AssistantScreen(
                     })
             }
 
-            if (chatIdsState is ChatViewModel.ChatIdsState.Success) {
-                ThreadSelector(threads = (chatIdsState as ChatViewModel.ChatIdsState.Success).children,
+            if (chatIdsState is UiState.Success) {
+                ThreadSelector(threads = (chatIdsState as UiState.Success).data,
                     selectedThread = selectedThread,
                     onSelect = { tid ->
                         selectedThread = tid
@@ -166,8 +171,14 @@ fun AssistantScreen(
                 shape = MaterialTheme.shapes.medium
             ) {
                 Column {
-                    MessagesList(
-                        messages = messages, listState = listState, modifier = Modifier.weight(1f)
+                    messages.onState(
+                        onLoading = { LoadingBox() },
+                        onError = { msg -> ErrorBox(message = msg) },
+                        onSuccess = {
+                            MessagesList(
+                                messages = it, listState = listState, modifier = Modifier.weight(1f)
+                            )
+                        }
                     )
                 }
             }

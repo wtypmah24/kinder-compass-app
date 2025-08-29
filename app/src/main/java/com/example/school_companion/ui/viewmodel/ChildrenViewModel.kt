@@ -20,143 +20,79 @@ class ChildrenViewModel @Inject constructor(
     private val childrenRepository: ChildrenRepository
 ) : ViewModel() {
 
-    private val _childrenState = MutableStateFlow<ChildrenState>(ChildrenState.Loading)
-    val childrenState: StateFlow<ChildrenState> = _childrenState.asStateFlow()
+    private val _childrenState = MutableStateFlow<UiState<List<Child>>>(UiState.Idle)
+    val childrenState: StateFlow<UiState<List<Child>>> = _childrenState.asStateFlow()
 
-    private val _selectedChild = MutableStateFlow<Child?>(null)
-    val selectedChild: StateFlow<Child?> = _selectedChild.asStateFlow()
+    private val _selectedChild = MutableStateFlow<UiState<Child>>(UiState.Idle)
+    val selectedChild: StateFlow<UiState<Child>> = _selectedChild.asStateFlow()
 
-    private val _photosState = MutableStateFlow<PhotosState>(PhotosState.Loading)
-    val photosState: StateFlow<PhotosState> = _photosState.asStateFlow()
+    private val _photosState = MutableStateFlow<UiState<List<Photo>>>(UiState.Idle)
+    val photosState: StateFlow<UiState<List<Photo>>> = _photosState.asStateFlow()
 
     fun loadChildren() {
         viewModelScope.launch {
-            _childrenState.value = ChildrenState.Loading
+            _childrenState.value = UiState.Loading
             val result = childrenRepository.getChildren()
-            result.fold(
-                onSuccess = { children ->
-                    _childrenState.value = ChildrenState.Success(children)
-                },
-                onFailure = { exception ->
-                    _childrenState.value =
-                        ChildrenState.Error(exception.message ?: "Failed to load children")
-                }
-            )
+            handleResult(result, _childrenState)
         }
     }
 
     fun addChild(child: ChildDto) {
         viewModelScope.launch {
             val result = childrenRepository.addChild(child)
-            result.fold(
-                onSuccess = {
-                    loadChildren()
-                },
-                onFailure = {
-                    loadChildren()
-                }
-            )
+            handleResult(result, MutableStateFlow(UiState.Idle)) {
+                loadChildren()
+            }
         }
     }
 
     fun loadChild(childId: Long) {
         viewModelScope.launch {
             val result = childrenRepository.getChild(childId)
-            result.fold(
-                onSuccess = { child ->
-                    _selectedChild.value = child
-                },
-                onFailure = { exception ->
-                    // обработка ошибки
-                }
-            )
+            handleResult(result, _selectedChild)
         }
     }
 
     fun loadChildPhotos(childId: Long) {
         viewModelScope.launch {
             val result = childrenRepository.getChildPhotos(childId)
-            result.fold(
-                onSuccess = { photos ->
-                    _photosState.value = PhotosState.Success(photos)
-                },
-                onFailure = { exception ->
-                    _photosState.value =
-                        PhotosState.Error(exception.message ?: "Failed to load photos")
-                }
-            )
+            handleResult(result, _photosState)
         }
     }
 
     fun updateChild(childId: Long, child: ChildDto) {
         viewModelScope.launch {
             val result = childrenRepository.updateChild(childId, child)
-            result.fold(
-                onSuccess = {
-                    loadChildren()
-                },
-                onFailure = {
-                    loadChildren()
-                }
-            )
+            handleResult(result, MutableStateFlow(UiState.Idle)) {
+                loadChildren()
+            }
         }
     }
 
     fun deleteChild(childId: Long) {
         viewModelScope.launch {
             val result = childrenRepository.deleteChild(childId)
-            result.fold(
-                onSuccess = {
-                    loadChildren()
-                },
-                onFailure = {
-                    loadChildren()
-                }
-            )
+            handleResult(result, MutableStateFlow(UiState.Idle)) {
+                loadChildren()
+            }
         }
     }
 
     fun addChildPhotos(childId: Long, file: File, descriptionText: String) {
         viewModelScope.launch {
             val result = childrenRepository.addChildPhotos(childId, file, descriptionText)
-            result.fold(
-                onSuccess = {
-                    loadChildPhotos(childId)
-                },
-                onFailure = { exception ->
-                    _childrenState.value =
-                        ChildrenState.Error(exception.message ?: "Failed to add photo")
-                    loadChildPhotos(childId)
-                }
-            )
+            handleResult(result, MutableStateFlow(UiState.Idle)) {
+                loadChildPhotos(childId)
+            }
         }
     }
 
     fun deleteChildPhotos(deletePhotoRequestDto: DeletePhotoRequestDto, childId: Long) {
         viewModelScope.launch {
             val result = childrenRepository.deleteChildPhoto(deletePhotoRequestDto)
-            result.fold(
-                onSuccess = {
-                    loadChildPhotos(childId)
-                },
-                onFailure = { exception ->
-                    _childrenState.value =
-                        ChildrenState.Error(exception.message ?: "Failed to delete photo")
-                    loadChildPhotos(childId)
-                }
-            )
+            handleResult(result, MutableStateFlow(UiState.Idle)) {
+                loadChildPhotos(childId)
+            }
         }
     }
-}
-
-sealed class ChildrenState {
-    data object Loading : ChildrenState()
-    data class Success(val children: List<Child>) : ChildrenState()
-    data class Error(val message: String) : ChildrenState()
-}
-
-sealed class PhotosState {
-    data object Loading : PhotosState()
-    data class Success(val photos: List<Photo>) : PhotosState()
-    data class Error(val message: String) : PhotosState()
 }

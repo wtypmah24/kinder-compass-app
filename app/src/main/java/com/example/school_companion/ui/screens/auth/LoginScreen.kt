@@ -28,8 +28,8 @@ import com.example.school_companion.ui.field.LoginFields
 import com.example.school_companion.ui.header.auth.LoginHeader
 import com.example.school_companion.ui.message.ErrorMessage
 import com.example.school_companion.ui.navigation.Screen
-import com.example.school_companion.ui.viewmodel.AuthState
 import com.example.school_companion.ui.viewmodel.AuthViewModel
+import com.example.school_companion.ui.viewmodel.UiState
 
 @Composable
 fun LoginScreen(
@@ -43,7 +43,7 @@ fun LoginScreen(
     val authState by viewModel.authState.collectAsStateWithLifecycle()
 
     LaunchedEffect(authState) {
-        if (authState is AuthState.Success) {
+        if (authState is UiState.Success) {
             navController.navigate(Screen.Dashboard.route) {
                 popUpTo(Screen.Login.route) { inclusive = true }
             }
@@ -51,9 +51,9 @@ fun LoginScreen(
     }
 
     val loginEnabled =
-        email.isNotBlank() && password.isNotBlank() && authState !is AuthState.Loading
-    val loginLoading = authState is AuthState.Loading
-    val errorMessage = (authState as? AuthState.Error)?.message
+        email.isNotBlank() && password.isNotBlank() && authState !is UiState.Loading
+    val loginLoading = authState is UiState.Loading
+    val errorMessage = (authState as? UiState.Error)?.message
 
     Scaffold { paddingValues ->
         Column(

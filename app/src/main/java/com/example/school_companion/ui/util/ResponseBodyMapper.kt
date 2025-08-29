@@ -1,6 +1,5 @@
 package com.example.school_companion.ui.util
 
-import okhttp3.ResponseBody
 import retrofit2.Response
 
 fun <T> Response<T>.toResult(): Result<T> {
@@ -12,14 +11,17 @@ fun <T> Response<T>.toResult(): Result<T> {
     }
 }
 
-fun Response<ResponseBody>.toResultString(defaultMessage: String): Result<String> {
+fun <T> Response<T>.toResultString(defaultMessage: String): Result<String> {
     return if (isSuccessful) {
-        try {
-            val msg = body()?.string() ?: defaultMessage
-            Result.success(msg)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        Result.success(defaultMessage)
+    } else {
+        Result.failure(Exception("Request failed: ${code()} ${message()}"))
+    }
+}
+
+fun <T> Response<T>.toResultUnit(): Result<Unit> {
+    return if (isSuccessful) {
+        Result.success(Unit)
     } else {
         Result.failure(Exception("Request failed: ${code()} ${message()}"))
     }

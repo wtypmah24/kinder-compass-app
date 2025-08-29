@@ -30,7 +30,8 @@ import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.card.child.ChildPhotoCard
 import com.example.school_companion.ui.dialog.photo.AddPhotoDialog
 import com.example.school_companion.ui.viewmodel.ChildrenViewModel
-import com.example.school_companion.ui.viewmodel.PhotosState
+import com.example.school_companion.ui.viewmodel.UiState
+import com.example.school_companion.ui.viewmodel.onState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -54,13 +55,11 @@ fun PhotosTab(
             Text("Add new photo")
         }
 
-        when (photosState) {
-            is PhotosState.Loading -> LoadingBox()
-
-            is PhotosState.Error -> ErrorBox(message = (photosState as PhotosState.Error).message)
-
-            is PhotosState.Success -> {
-                val photos = (photosState as PhotosState.Success).photos
+        photosState.onState(
+            onLoading = { LoadingBox() },
+            onError = { msg -> ErrorBox(message = msg) },
+            onSuccess = {
+                val photos = (photosState as UiState.Success).data
 
                 if (photos.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -87,7 +86,7 @@ fun PhotosTab(
                     }
                 }
             }
-        }
+        )
     }
 
     if (showAddDialog) {

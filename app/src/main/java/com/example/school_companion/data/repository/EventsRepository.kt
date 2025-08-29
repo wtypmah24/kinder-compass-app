@@ -3,6 +3,8 @@ package com.example.school_companion.data.repository
 import com.example.school_companion.data.api.EventApi
 import com.example.school_companion.data.api.EventRequestDto
 import com.example.school_companion.data.model.Event
+import com.example.school_companion.ui.util.toResult
+import com.example.school_companion.ui.util.toResultString
 import javax.inject.Inject
 
 class EventsRepository @Inject constructor(
@@ -10,13 +12,7 @@ class EventsRepository @Inject constructor(
 ) {
     suspend fun getEventsByCompanion(): Result<List<Event>> {
         return try {
-            val response = apiService.getEventsByCompanion()
-            if (response.isSuccessful) {
-                response.body()?.let { Result.success(it) }
-                    ?: Result.failure(Exception("Empty response"))
-            } else {
-                Result.failure(Exception("Failed to get events: ${response.code()}"))
-            }
+            apiService.getEventsByCompanion().toResult()
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -24,13 +20,7 @@ class EventsRepository @Inject constructor(
 
     suspend fun getEventsByChild(childId: Long): Result<List<Event>> {
         return try {
-            val response = apiService.getEventsByChild(childId)
-            if (response.isSuccessful) {
-                response.body()?.let { Result.success(it) }
-                    ?: Result.failure(Exception("Empty response"))
-            } else {
-                Result.failure(Exception("Failed to get events: ${response.code()}"))
-            }
+            apiService.getEventsByChild(childId).toResult()
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -38,12 +28,8 @@ class EventsRepository @Inject constructor(
 
     suspend fun createEvent(childId: Long, event: EventRequestDto): Result<String> {
         return try {
-            val response = apiService.addEvent(event, childId)
-            if (response.isSuccessful) {
-                Result.success(response.body()?.string() ?: "Event added successfully")
-            } else {
-                Result.failure(Exception("Failed to create event: ${response.code()}"))
-            }
+            apiService.addEvent(event, childId)
+                .toResultString("Event added successfully")
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -51,12 +37,8 @@ class EventsRepository @Inject constructor(
 
     suspend fun updateEvent(childId: Long, eventId: Long, event: EventRequestDto): Result<String> {
         return try {
-            val response = apiService.updateEvent(event, childId, eventId)
-            if (response.isSuccessful) {
-                Result.success(response.body()?.string() ?: "Event updated successfully")
-            } else {
-                Result.failure(Exception("Failed to update event: ${response.code()}"))
-            }
+            apiService.updateEvent(event, childId, eventId)
+                .toResultString("Event updated successfully")
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -64,12 +46,8 @@ class EventsRepository @Inject constructor(
 
     suspend fun deleteEvent(eventId: Long, childId: Long): Result<String> {
         return try {
-            val response = apiService.delete(eventId, childId)
-            if (response.isSuccessful) {
-                Result.success(response.body()?.string() ?: "Event deleted successfully")
-            } else {
-                Result.failure(Exception("Failed to delete event: ${response.code()}"))
-            }
+            apiService.delete(eventId, childId)
+                .toResultString("Event deleted successfully")
         } catch (e: Exception) {
             Result.failure(e)
         }
