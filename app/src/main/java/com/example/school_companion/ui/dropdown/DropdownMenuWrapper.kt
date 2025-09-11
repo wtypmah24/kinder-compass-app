@@ -35,7 +35,7 @@ fun <T> DropdownMenuWrapper(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val displayText = selectedItem?.let { itemToString(it) }
-        ?: if (selectedItem == null && extraItem != null) extraItemText else placeholder
+        ?: if (extraItem != null) extraItemText else placeholder
 
     Box {
         OutlinedTextField(

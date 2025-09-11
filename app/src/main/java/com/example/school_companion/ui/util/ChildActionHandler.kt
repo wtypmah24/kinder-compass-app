@@ -2,9 +2,9 @@ package com.example.school_companion.ui.util
 
 import androidx.navigation.NavController
 import com.example.school_companion.data.model.Child
-import com.example.school_companion.ui.card.child.ChildAction
-import com.example.school_companion.ui.navigation.Screen
-import com.example.school_companion.ui.viewmodel.ChildrenViewModel
+import com.example.school_companion.feature.children.child.ChildAction
+import com.example.school_companion.navigation.Screen
+import com.example.school_companion.feature.children.ChildrenViewModel
 
 object ChildActionHandler {
     fun handle(

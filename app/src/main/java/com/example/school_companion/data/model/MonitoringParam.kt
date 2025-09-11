@@ -1,8 +1,7 @@
 package com.example.school_companion.data.model
 
-import kotlinx.parcelize.Parcelize
 import android.os.Parcelable
-import java.time.LocalDateTime
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class MonitoringParam(
