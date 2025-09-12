@@ -89,14 +89,17 @@ fun NavGraph(
             DashboardScreen(
                 onNavigate = navigateTo,
                 currentUserState = companionState,
-                childrenState = childrenState,
                 eventsState = eventsState,
-                quickActions = QuickActionsData.getQuickActions(navigateTo)
+                quickActions = QuickActionsData.getQuickActions(navigateTo),
+                childrenViewModel = childrenViewModel
             )
         }
 
         composable(Screen.Children.route) {
-            ChildrenScreen(onNavigate = navigateTo, childrenState = childrenState)
+            ChildrenScreen(
+                onNavigate = navigateTo,
+                childrenViewModel = childrenViewModel
+            )
         }
 
         composable(
@@ -111,11 +114,16 @@ fun NavGraph(
             ChildDetailScreen(
                 onNavigate = navigateTo,
                 childId = childId ?: 0L,
+                childrenViewModel = childrenViewModel
             )
         }
 
         composable(Screen.Events.route) {
-            EventsScreen(navController = navController)
+            EventsScreen(
+                onNavigate = navigateTo,
+                childrenState = childrenState,
+                eventsViewModel = eventsViewModel
+            )
         }
 
         composable(Screen.Statistics.route) {

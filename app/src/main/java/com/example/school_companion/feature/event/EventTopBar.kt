@@ -15,11 +15,12 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 import com.example.school_companion.data.model.Child
+import com.example.school_companion.navigation.NavigateToWithArgs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventTopBar(
-    navController: NavController,
+    onNavigate: NavigateToWithArgs,
     selectedChild: Child?,
     context: Context,
     showAddEventDialog: MutableState<Boolean>
@@ -27,7 +28,7 @@ fun EventTopBar(
     TopAppBar(
         title = { Text("Termine", fontWeight = FontWeight.Bold) },
         navigationIcon = {
-            IconButton(onClick = { navController.navigateUp() }) {
+            IconButton(onClick = { onNavigate(null, null) }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
         },

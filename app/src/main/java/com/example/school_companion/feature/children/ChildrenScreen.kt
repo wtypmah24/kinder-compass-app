@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.navigation.NavigateToWithArgs
 import com.example.school_companion.ui.bar.DashBoardBottomBar
@@ -34,11 +35,10 @@ import com.example.school_companion.ui.util.UiState
 @Composable
 fun ChildrenScreen(
     onNavigate: NavigateToWithArgs,
-    childrenState: UiState<List<Child>>,
-    childrenViewModel: ChildrenViewModel = hiltViewModel()
+    childrenViewModel: ChildrenViewModel
 ) {
+    val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
     var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
-
     var showAddDialog by remember { mutableStateOf(false) }
 
     Scaffold(

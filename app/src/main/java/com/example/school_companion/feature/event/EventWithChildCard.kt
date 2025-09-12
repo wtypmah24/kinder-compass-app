@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.school_companion.data.api.EventRequestDto
 import com.example.school_companion.data.model.EventWithChild
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -47,16 +48,18 @@ import com.example.school_companion.data.model.EventWithChild
 fun EventWithChildCard(
     event: EventWithChild,
     onClick: () -> Unit,
-    eventsViewModel: EventsViewModel
+    onEditEvent: (childId: Long, eventId: Long, updatedEvent: EventRequestDto) -> Unit,
+    onDeleteEvent: (childId: Long, eventId: Long) -> Unit
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxWidth()) {
         Card(
-            modifier = Modifier.fillMaxWidth(), onClick = onClick, colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ), elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            modifier = Modifier.fillMaxWidth(),
+            onClick = onClick,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -128,6 +131,7 @@ fun EventWithChildCard(
                 }
             }
         }
+
         Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -155,11 +159,7 @@ fun EventWithChildCard(
             event = event.event,
             onDismiss = { showEditDialog = false },
             onSave = { updatedEventRequestDto ->
-                eventsViewModel.updateEvent(
-                    childId = event.child.id,
-                    eventId = event.event.id,
-                    event = updatedEventRequestDto
-                )
+                onEditEvent(event.child.id, event.event.id, updatedEventRequestDto)
                 showEditDialog = false
             }
         )
@@ -173,7 +173,7 @@ fun EventWithChildCard(
             confirmButton = {
                 Button(
                     onClick = {
-                        eventsViewModel.deleteEvent(event.event.id, event.child.id)
+                        onDeleteEvent(event.child.id, event.event.id)
                         showDeleteConfirm = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)

@@ -15,8 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.school_companion.data.model.Child
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.school_companion.data.model.Companion
 import com.example.school_companion.feature.children.ChildrenSection
 import com.example.school_companion.feature.children.ChildrenViewModel
@@ -37,13 +36,13 @@ import com.example.school_companion.ui.util.onState
 fun DashboardScreen(
     onNavigate: NavigateToWithArgs,
     currentUserState: UiState<Companion>,
-    childrenState: UiState<List<Child>>,
     eventsState: EventsState,
     quickActions: List<QuickAction>,
-    childrenViewModel: ChildrenViewModel = hiltViewModel(),
+    childrenViewModel: ChildrenViewModel,
 ) {
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {

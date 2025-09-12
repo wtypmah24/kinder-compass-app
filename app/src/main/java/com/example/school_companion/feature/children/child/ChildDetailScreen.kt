@@ -21,9 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.feature.children.ChildrenViewModel
 import com.example.school_companion.navigation.NavigateToWithArgs
@@ -39,17 +37,18 @@ import com.example.school_companion.ui.util.onState
 fun ChildDetailScreen(
     onNavigate: NavigateToWithArgs,
     childId: Long,
-    viewModel: ChildrenViewModel = hiltViewModel(),
+    childrenViewModel: ChildrenViewModel,
 ) {
-    val selectedChild by viewModel.selectedChild.collectAsStateWithLifecycle()
+    val selectedChild by childrenViewModel.selectedChild.collectAsStateWithLifecycle()
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(childId) {
         if (selectedChild !is UiState.Success || (selectedChild as UiState.Success<Child>).data.id != childId) {
-            viewModel.loadChild(childId)
+            childrenViewModel.loadChild(childId)
         }
     }
+
 
     Scaffold(
         topBar = {
