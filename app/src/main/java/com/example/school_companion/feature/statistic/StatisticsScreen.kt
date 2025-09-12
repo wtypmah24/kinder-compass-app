@@ -28,12 +28,14 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.school_companion.data.model.Child
+import com.example.school_companion.data.model.MonitoringEntry
 import com.example.school_companion.data.model.MonitoringParam
 import com.example.school_companion.feature.children.ChildrenViewModel
 import com.example.school_companion.feature.monitoring.entry.EntriesState
 import com.example.school_companion.feature.monitoring.entry.MonitoringEntryViewModel
 import com.example.school_companion.feature.monitoring.param.MonitoringParamViewModel
 import com.example.school_companion.feature.monitoring.param.ParamsState
+import com.example.school_companion.navigation.NavigateToWithArgs
 import com.example.school_companion.ui.bar.DashBoardBottomBar
 import com.example.school_companion.ui.util.UiState
 
@@ -41,14 +43,11 @@ import com.example.school_companion.ui.util.UiState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatisticsScreen(
-    navController: NavController,
-    paramsViewModel: MonitoringParamViewModel = hiltViewModel(),
-    entriesViewModel: MonitoringEntryViewModel = hiltViewModel(),
-    childrenViewModel: ChildrenViewModel = hiltViewModel(),
+    onNavigate: NavigateToWithArgs,
+    paramsState: ParamsState,
+    entriesState: EntriesState,
+    childrenState: UiState<List<Child>>,
 ) {
-    val paramsState by paramsViewModel.paramsState.collectAsStateWithLifecycle()
-    val entriesState by entriesViewModel.entriesState.collectAsStateWithLifecycle()
-    val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
 
     var selectedChild by remember { mutableStateOf<Child?>(null) }
     var selectedParam by remember { mutableStateOf<MonitoringParam?>(null) }
@@ -58,18 +57,12 @@ fun StatisticsScreen(
 
     val timeRanges = listOf("Last Day", "Last 7 Days", "Last 30 Days", "Last 90 Days")
 
-    LaunchedEffect(Unit) {
-        paramsViewModel.loadMonitoringParamData()
-        entriesViewModel.loadMonitoringEntryByCompanion()
-        childrenViewModel.loadChildren()
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Statistics", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = { onNavigate(null, null) }) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
@@ -83,10 +76,7 @@ fun StatisticsScreen(
                 selectedTabIndex = selectedBottomTabIndex,
                 onTabSelected = { selectedBottomTabIndex = it },
                 onTabNavigate = { screen ->
-                    navController.navigate(screen.route) {
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                    onNavigate(screen, null)
                 }
             )
         }
@@ -100,10 +90,10 @@ fun StatisticsScreen(
         ) {
             if (childrenState is UiState.Success && paramsState is ParamsState.Success) {
                 StatisticsSelectorCard(
-                    children = (childrenState as UiState.Success).data,
+                    children = childrenState.data,
                     selectedChild = selectedChild,
                     onChildSelected = { selectedChild = it },
-                    params = (paramsState as ParamsState.Success).paramData,
+                    params = paramsState.paramData,
                     selectedParam = selectedParam,
                     onParamSelected = { selectedParam = it },
                     ranges = timeRanges,
@@ -113,7 +103,7 @@ fun StatisticsScreen(
             }
 
             if (entriesState is EntriesState.Success) {
-                val entries = (entriesState as EntriesState.Success).entryData
+                val entries = entriesState.entryData
                 StatisticsSummaryCard(entries)
             }
 

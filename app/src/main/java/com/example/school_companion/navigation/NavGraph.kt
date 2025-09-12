@@ -24,6 +24,8 @@ import com.example.school_companion.feature.dashboard.QuickActionsData
 import com.example.school_companion.feature.event.EventsScreen
 import com.example.school_companion.feature.event.EventsViewModel
 import com.example.school_companion.feature.monitoring.MonitoringScreen
+import com.example.school_companion.feature.monitoring.entry.MonitoringEntryViewModel
+import com.example.school_companion.feature.monitoring.param.MonitoringParamViewModel
 import com.example.school_companion.feature.profile.ProfileScreen
 import com.example.school_companion.feature.settings.SettingsScreen
 import com.example.school_companion.feature.statistic.StatisticsScreen
@@ -36,15 +38,21 @@ fun NavGraph(
     authViewModel: AuthViewModel = hiltViewModel(),
     childrenViewModel: ChildrenViewModel = hiltViewModel(),
     eventsViewModel: EventsViewModel = hiltViewModel(),
+    paramsViewModel: MonitoringParamViewModel = hiltViewModel(),
+    entriesViewModel: MonitoringEntryViewModel = hiltViewModel(),
 ) {
     val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
     val companionState by authViewModel.currentCompanion.collectAsStateWithLifecycle()
     val eventsState by eventsViewModel.eventsState.collectAsStateWithLifecycle()
+    val paramsState by paramsViewModel.paramsState.collectAsStateWithLifecycle()
+    val entriesState by entriesViewModel.entriesState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         childrenViewModel.loadChildren()
         authViewModel.getUserProfile()
         eventsViewModel.loadEventsByCompanion()
+        paramsViewModel.loadMonitoringParamData()
+        entriesViewModel.loadMonitoringEntryByCompanion()
     }
 
     val navigateTo: NavigateToWithArgs = { screen, args ->
@@ -127,7 +135,12 @@ fun NavGraph(
         }
 
         composable(Screen.Statistics.route) {
-            StatisticsScreen(navController = navController)
+            StatisticsScreen(
+                onNavigate = navigateTo,
+                childrenState = childrenState,
+                paramsState = paramsState,
+                entriesState = entriesState
+            )
         }
 
         composable(Screen.Profile.route) {

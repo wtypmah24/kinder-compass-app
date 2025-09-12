@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +38,10 @@ fun EventsScreen(
     var selectedChild: Child? by remember { mutableStateOf(null) }
     val context = LocalContext.current
     var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        eventsViewModel.loadEventsWithChildren()
+    }
 
     Scaffold(
         topBar = {
