@@ -2,7 +2,10 @@ package com.example.school_companion.feature.profile
 
 import android.net.Uri
 import android.os.Build
+import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -28,31 +31,41 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.school_companion.data.api.CompanionUpdateDto
+import com.example.school_companion.data.api.PasswordUpdateDto
 import com.example.school_companion.data.model.Companion
-import com.example.school_companion.feature.auth.AuthViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun UserInfoCard(
     currentUser: Companion?,
-    pickImageLauncher: ManagedActivityResultLauncher<String, Uri?>,
-    companionViewModel: CompanionViewModel,
-    authViewModel: AuthViewModel
+    onUpdateInfo: (CompanionUpdateDto) -> Unit,
+    onUpdatePassword: (PasswordUpdateDto) -> Unit,
+    onDeleteAccount: () -> Unit
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
     var showUpdatePasswordDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    val pickImageLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent(),
+            onResult = { uri: Uri? ->
+                uri?.let {
+                    Toast.makeText(context, "Chosen: $uri", Toast.LENGTH_SHORT).show()
+                }
+            })
 
     Box(modifier = Modifier.fillMaxWidth()) {
         Card(
             modifier = Modifier.fillMaxWidth()
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
+            Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = "Benutzerinformationen",
                     fontSize = 18.sp,
@@ -108,9 +121,9 @@ fun UserInfoCard(
                         }
                     }
                 }
+
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Buttons row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -131,6 +144,7 @@ fun UserInfoCard(
             }
         }
     }
+
     if (showDeleteConfirm) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
@@ -143,7 +157,7 @@ fun UserInfoCard(
             confirmButton = {
                 Button(
                     onClick = {
-                        companionViewModel.deleteCompanion { authViewModel.logout() }
+                        onDeleteAccount()
                         showDeleteConfirm = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
@@ -158,23 +172,25 @@ fun UserInfoCard(
             }
         )
     }
-    if (showEditDialog) {
-        if (currentUser != null) {
-            EditCompanionDialog(
-                companion = currentUser,
-                onDismiss = { showEditDialog = false }
-            ) { dto ->
-                companionViewModel.updateCompanion(
-                    dto
-                ) { authViewModel.getUserProfile() }
+
+    if (showEditDialog && currentUser != null) {
+        EditCompanionDialog(
+            companion = currentUser,
+            onDismiss = { showEditDialog = false },
+            onSave = { dto ->
+                onUpdateInfo(dto)
+                showEditDialog = false
             }
-        }
+        )
     }
+
     if (showUpdatePasswordDialog) {
         UpdatePasswordDialog(
             onDismiss = { showUpdatePasswordDialog = false },
             onSave = { dto ->
-                companionViewModel.updatePassword(dto)
-            })
+                onUpdatePassword(dto)
+                showUpdatePasswordDialog = false
+            }
+        )
     }
 }

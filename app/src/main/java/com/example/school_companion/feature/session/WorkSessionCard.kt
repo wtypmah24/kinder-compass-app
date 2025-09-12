@@ -19,16 +19,23 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun WorkSessionCard(
-    currentSession: SessionState,
-    workSessionViewModel: WorkSessionViewModel
+    workSessionViewModel: WorkSessionViewModel = hiltViewModel()
 ) {
+    val currentSession by workSessionViewModel.session.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) {
+        workSessionViewModel.status()
+    }
     Card(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -53,14 +60,14 @@ fun WorkSessionCard(
 
                 is SessionState.Error -> {
                     Text(
-                        text = "Error: ${currentSession.message}",
+                        text = "Error: ${(currentSession as SessionState.Error).message}",
                         modifier = Modifier.padding(16.dp),
                         color = MaterialTheme.colorScheme.error
                     )
                 }
 
                 is SessionState.Success -> {
-                    val session = currentSession.session
+                    val session = (currentSession as SessionState.Success).session
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),

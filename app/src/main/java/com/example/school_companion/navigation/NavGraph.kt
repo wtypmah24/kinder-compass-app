@@ -144,7 +144,7 @@ fun NavGraph(
         }
 
         composable(Screen.Profile.route) {
-            ProfileScreen(navController = navController, authViewModel = authViewModel)
+            ProfileScreen(onNavigate = navigateTo, authViewModel = authViewModel)
         }
 
         composable(Screen.Settings.route) {

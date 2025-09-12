@@ -2,6 +2,7 @@ package com.example.school_companion.feature.profile
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -16,20 +17,27 @@ import com.example.school_companion.navigation.Screen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileTopBar(
-    navController: NavController,
+    onBack: () -> Unit,
+    onLogout: () -> Unit
 ) {
-    TopAppBar(title = {
-        Text(
-            text = "Profile", fontWeight = FontWeight.Bold
-        )
-    }, navigationIcon = {
-        IconButton(onClick = { navController.navigateUp() }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+    TopAppBar(
+        title = {
+            Text(
+                text = "Profile",
+                fontWeight = FontWeight.Bold
+            )
+        },
+        navigationIcon = {
+            IconButton(onClick = onBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            }
+        },
+        actions = {
+            IconButton(onClick = onLogout) {
+                Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Logout")
+            }
         }
-    }, actions = {
-        IconButton(onClick = { navController.navigate(Screen.Login.route) }) {
-            Icon(Icons.Default.Logout, contentDescription = "Logout")
-        }
-    })
+    )
 }
+
 

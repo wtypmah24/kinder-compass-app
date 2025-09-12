@@ -1,10 +1,6 @@
 package com.example.school_companion.feature.profile
 
-import android.net.Uri
 import android.os.Build
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,64 +8,45 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import com.example.school_companion.ui.bar.DashBoardBottomBar
-import com.example.school_companion.ui.box.ErrorBox
-import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.feature.auth.AuthViewModel
 import com.example.school_companion.feature.session.WorkSessionCard
 import com.example.school_companion.feature.session.WorkSessionReportCard
-import com.example.school_companion.feature.session.WorkSessionViewModel
+import com.example.school_companion.navigation.NavigateToWithArgs
+import com.example.school_companion.navigation.Screen
+import com.example.school_companion.ui.bar.DashBoardBottomBar
+import com.example.school_companion.ui.box.ErrorBox
+import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.util.onState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ProfileScreen(
-    navController: NavController,
-    authViewModel: AuthViewModel = hiltViewModel(),
-    workSessionViewModel: WorkSessionViewModel = hiltViewModel(),
+    onNavigate: NavigateToWithArgs,
+    authViewModel: AuthViewModel,
     companionViewModel: CompanionViewModel = hiltViewModel()
-
 ) {
     val currentUserState by authViewModel.currentCompanion.collectAsStateWithLifecycle()
-    val currentSession by workSessionViewModel.session.collectAsStateWithLifecycle()
     var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
 
-    val context = LocalContext.current
-
-    val pickImageLauncher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent(),
-            onResult = { uri: Uri? ->
-                uri?.let {
-                    Toast.makeText(context, "Chosen: $uri", Toast.LENGTH_SHORT).show()
-                }
-            })
-
-    LaunchedEffect(Unit) {
-        workSessionViewModel.status()
-    }
-
     Scaffold(topBar = {
-        ProfileTopBar(navController)
+        ProfileTopBar(
+            onBack = { onNavigate(null, null) },
+            onLogout = { onNavigate(Screen.Login, null) }
+        )
     }, bottomBar = {
         DashBoardBottomBar(
             selectedTabIndex = selectedBottomTabIndex,
             onTabSelected = { selectedBottomTabIndex = it },
             onTabNavigate = { screen ->
-                navController.navigate(screen.route) {
-                    launchSingleTop = true
-                    restoreState = true
-                }
+                onNavigate(screen, null)
             }
         )
     }) { paddingValues ->
@@ -83,25 +60,32 @@ fun ProfileScreen(
             item {
                 currentUserState.onState(
                     onLoading = { LoadingBox() },
+                    onError = { msg -> ErrorBox(message = msg) },
                     onSuccess = { user ->
                         UserInfoCard(
                             currentUser = user,
-                            pickImageLauncher = pickImageLauncher,
-                            companionViewModel = companionViewModel,
-                            authViewModel = authViewModel
+                            onUpdateInfo = { dto ->
+                                companionViewModel.updateCompanion(dto) {
+                                    authViewModel.getUserProfile()
+                                }
+                            },
+                            onUpdatePassword = { dto ->
+                                companionViewModel.updatePassword(dto)
+                            },
+                            onDeleteAccount = {
+                                companionViewModel.deleteCompanion {
+                                    authViewModel.logout()
+                                }
+                            }
                         )
                     },
-                    onError = { msg -> ErrorBox(message = msg) }
                 )
             }
             item {
-                WorkSessionCard(
-                    currentSession = currentSession,
-                    workSessionViewModel = workSessionViewModel
-                )
+                WorkSessionCard()
             }
             item {
-                WorkSessionReportCard(workSessionViewModel)
+                WorkSessionReportCard()
             }
         }
     }

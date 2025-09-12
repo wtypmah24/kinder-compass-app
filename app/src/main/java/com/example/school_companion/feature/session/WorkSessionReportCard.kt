@@ -25,12 +25,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun WorkSessionReportCard(
-    workSessionViewModel: WorkSessionViewModel
+    workSessionViewModel: WorkSessionViewModel = hiltViewModel()
 ) {
     var startDate by remember { mutableStateOf<LocalDate?>(LocalDate.now()) }
     var endDate by remember { mutableStateOf<LocalDate?>(LocalDate.now()) }
