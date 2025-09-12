@@ -18,22 +18,19 @@ import com.example.school_companion.data.model.MonitoringParam
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MonitoringTopBar(
-    navController: NavController,
-    selectedChild: Child?,
-    selectedParam: MonitoringParam?,
+    onBack: () -> Unit,
     showAddParamDialog: MutableState<Boolean>
 ) {
     TopAppBar(
         title = { Text("Monitoring", fontWeight = FontWeight.Bold) },
         navigationIcon = {
-            IconButton(onClick = { navController.navigateUp() }) {
+            IconButton(onClick = { onBack }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
         },
         actions = {
             IconButton(
                 onClick = { showAddParamDialog.value = true },
-                enabled = selectedChild != null && selectedParam != null
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Monitoring Entry")
             }

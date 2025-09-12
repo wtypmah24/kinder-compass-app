@@ -148,11 +148,16 @@ fun NavGraph(
         }
 
         composable(Screen.Settings.route) {
-            SettingsScreen(navController = navController)
+            SettingsScreen(onNavigate = navigateTo)
         }
 
         composable(Screen.Monitoring.route) {
-            MonitoringScreen(navController = navController)
+            MonitoringScreen(
+                onNavigate = navigateTo,
+                paramsViewModel = paramsViewModel,
+                entriesViewModel = entriesViewModel,
+                childrenState = childrenState
+            )
         }
 
         composable(Screen.Assistant.route) {

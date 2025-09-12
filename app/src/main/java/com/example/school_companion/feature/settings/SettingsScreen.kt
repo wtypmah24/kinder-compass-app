@@ -27,17 +27,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
+import com.example.school_companion.navigation.NavigateToWithArgs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    navController: NavController
+    onNavigate: NavigateToWithArgs
 ) {
     var notificationsEnabled by remember { mutableStateOf(true) }
     var language by remember { mutableStateOf("Deutsch") }
     var darkMode by remember { mutableStateOf(false) }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -48,7 +48,7 @@ fun SettingsScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = { onNavigate(null, null) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
@@ -75,7 +75,7 @@ fun SettingsScreen(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
-                    
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -89,7 +89,7 @@ fun SettingsScreen(
                     }
                 }
             }
-            
+
             // Language Settings
             Card(
                 modifier = Modifier.fillMaxWidth()
@@ -103,7 +103,7 @@ fun SettingsScreen(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
-                    
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -114,7 +114,7 @@ fun SettingsScreen(
                     }
                 }
             }
-            
+
             // Theme Settings
             Card(
                 modifier = Modifier.fillMaxWidth()
@@ -128,7 +128,7 @@ fun SettingsScreen(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
-                    
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -142,7 +142,7 @@ fun SettingsScreen(
                     }
                 }
             }
-            
+
             // About Section
             Card(
                 modifier = Modifier.fillMaxWidth()
@@ -156,7 +156,7 @@ fun SettingsScreen(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
-                    
+
                     Text(
                         text = "Schulbegleiterin v1.0",
                         fontSize = 16.sp
