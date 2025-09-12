@@ -11,6 +11,7 @@ import com.example.school_companion.feature.goal.GoalsTab
 import com.example.school_companion.feature.monitoring.entry.MonitoringEntryTab
 import com.example.school_companion.feature.need.SpecialNeedsTab
 import com.example.school_companion.feature.note.NotesTab
+import com.example.school_companion.navigation.NavigateToWithArgs
 import com.example.school_companion.navigation.Screen
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -18,7 +19,7 @@ import com.example.school_companion.navigation.Screen
 fun ChildTabContent(
     index: Int,
     child: Child,
-    navController: NavController
+    onNavigate: NavigateToWithArgs
 ) {
 
     when (index) {
@@ -26,7 +27,7 @@ fun ChildTabContent(
 
         1 -> MonitoringEntryTab(
             child = child,
-            onAddEntry = { navController.navigate(Screen.Monitoring.route) }
+            onAddEntry = { onNavigate(Screen.Monitoring, null) }
         )
 
         2 -> NotesTab(child = child)

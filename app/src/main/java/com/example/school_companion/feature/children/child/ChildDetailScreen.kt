@@ -24,17 +24,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.example.school_companion.data.model.Child
 import com.example.school_companion.feature.children.ChildrenViewModel
+import com.example.school_companion.navigation.NavigateToWithArgs
 import com.example.school_companion.ui.bar.DashBoardBottomBar
 import com.example.school_companion.ui.box.ErrorBox
 import com.example.school_companion.ui.box.LoadingBox
+import com.example.school_companion.ui.util.UiState
 import com.example.school_companion.ui.util.onState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChildDetailScreen(
-    navController: NavController,
+    onNavigate: NavigateToWithArgs,
     childId: Long,
     viewModel: ChildrenViewModel = hiltViewModel(),
 ) {
@@ -43,7 +46,9 @@ fun ChildDetailScreen(
     var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(childId) {
-        viewModel.loadChild(childId)
+        if (selectedChild !is UiState.Success || (selectedChild as UiState.Success<Child>).data.id != childId) {
+            viewModel.loadChild(childId)
+        }
     }
 
     Scaffold(
@@ -62,7 +67,7 @@ fun ChildDetailScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = { onNavigate(null, null) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
@@ -74,13 +79,7 @@ fun ChildDetailScreen(
                 selectedTabIndex = selectedBottomTabIndex,
                 onTabSelected = { selectedBottomTabIndex = it },
                 onTabNavigate = { screen ->
-                    navController.navigate(screen.route) {
-                        popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                    onNavigate(screen, null)
                 }
             )
         }
@@ -102,7 +101,7 @@ fun ChildDetailScreen(
                     ChildTabContent(
                         index = selectedTabIndex,
                         child = it,
-                        navController = navController,
+                        onNavigate = onNavigate,
                     )
                 }
             )

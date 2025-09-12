@@ -13,9 +13,11 @@ object ChildActionHandler {
         onNavigate: NavigateToWithArgs,
         onDeleteChild: (childId: Long) -> Unit,
         onEditChild: (childId: Long, updatedChild: ChildDto) -> Unit,
+        onSetSelectedChild: ((Child) -> Unit)? = null
     ) {
         when (action) {
             is ChildAction.ViewDetails -> {
+                onSetSelectedChild?.invoke(child)
                 onNavigate(Screen.ChildDetail, mapOf("childId" to child.id))
             }
 

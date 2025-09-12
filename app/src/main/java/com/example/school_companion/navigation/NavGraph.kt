@@ -109,7 +109,7 @@ fun NavGraph(
         ) { backStackEntry ->
             val childId = backStackEntry.arguments?.getLong("childId")
             ChildDetailScreen(
-                navController = navController,
+                onNavigate = navigateTo,
                 childId = childId ?: 0L,
             )
         }

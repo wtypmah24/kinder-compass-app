@@ -31,6 +31,14 @@ class ChildrenViewModel @Inject constructor(
     private val _photosState = MutableStateFlow<UiState<List<Photo>>>(UiState.Idle)
     val photosState: StateFlow<UiState<List<Photo>>> = _photosState.asStateFlow()
 
+    fun setSelectedChild(child: Child?) {
+        _selectedChild.value = if (child != null && child.id != 0L && child.name.isNotBlank()) {
+            UiState.Success(child)
+        } else {
+            UiState.Error("Child data is invalid or empty")
+        }
+    }
+
     fun loadChildren() {
         viewModelScope.launch {
             _childrenState.value = UiState.Loading

@@ -99,6 +99,9 @@ fun DashboardScreen(
                                     id,
                                     updatedChild
                                 )
+                            },
+                            onSetSelectedChild = { selectedChild ->
+                                childrenViewModel.setSelectedChild(selectedChild)
                             }
                         )
 
