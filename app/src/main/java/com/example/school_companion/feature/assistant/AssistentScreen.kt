@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Message
+import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,15 +34,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.school_companion.data.model.Child
+import com.example.school_companion.feature.children.ChildrenViewModel
 import com.example.school_companion.ui.bar.DashBoardBottomBar
 import com.example.school_companion.ui.box.ErrorBox
 import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.selector.GenericSelector
-import com.example.school_companion.feature.children.ChildrenViewModel
 import com.example.school_companion.ui.util.UiState
 import com.example.school_companion.ui.util.getOrNull
 import com.example.school_companion.ui.util.onState
@@ -108,7 +108,7 @@ fun AssistantScreen(
                     ).show()
                 }
             }) {
-                Icon(Icons.Filled.Message, contentDescription = "New chat")
+                Icon(Icons.AutoMirrored.Filled.Message, contentDescription = "New chat")
             }
         })
     }, bottomBar = {
