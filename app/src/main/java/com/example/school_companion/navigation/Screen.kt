@@ -13,3 +13,4 @@ sealed class Screen(val route: String) {
     data object Settings : Screen("settings")
     data object Assistant : Screen("assistant")
 }
+typealias NavigateToWithArgs = (screen: Screen?, args: Map<String, Any>?) -> Unit

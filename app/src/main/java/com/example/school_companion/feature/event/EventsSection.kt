@@ -18,15 +18,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
+import com.example.school_companion.navigation.NavigateToWithArgs
+import com.example.school_companion.navigation.Screen
 import com.example.school_companion.ui.box.ErrorBox
 import com.example.school_companion.ui.box.LoadingBox
-import com.example.school_companion.navigation.Screen
 
 @Composable
 fun EventsSection(
     eventsState: EventsState,
-    navController: NavController
+    onNavigate: NavigateToWithArgs
 ) {
     Column {
         Text(
@@ -74,7 +74,7 @@ fun EventsSection(
                     }
                     if (events.size > 3) {
                         TextButton(
-                            onClick = { navController.navigate(Screen.Events.route) },
+                            onClick = { onNavigate(Screen.Events, null) },
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text("Alle ${events.size} Termine anzeigen")

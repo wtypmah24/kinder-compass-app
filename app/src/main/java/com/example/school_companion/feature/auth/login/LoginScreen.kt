@@ -21,15 +21,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import com.example.school_companion.ui.message.ErrorMessage
-import com.example.school_companion.navigation.Screen
 import com.example.school_companion.feature.auth.AuthViewModel
+import com.example.school_companion.navigation.NavigateToWithArgs
+import com.example.school_companion.navigation.Screen
+import com.example.school_companion.ui.message.ErrorMessage
 import com.example.school_companion.ui.util.UiState
 
 @Composable
 fun LoginScreen(
-    navController: NavController,
+    onNavigate: NavigateToWithArgs,
     viewModel: AuthViewModel
 ) {
     var email by remember { mutableStateOf("") }
@@ -40,9 +40,7 @@ fun LoginScreen(
 
     LaunchedEffect(authState) {
         if (authState is UiState.Success) {
-            navController.navigate(Screen.Dashboard.route) {
-                popUpTo(Screen.Login.route) { inclusive = true }
-            }
+            onNavigate(Screen.Dashboard, null)
         }
     }
 
@@ -88,7 +86,7 @@ fun LoginScreen(
                     loginEnabled = loginEnabled,
                     loginLoading = loginLoading,
                     onLoginClick = { viewModel.login(email, password) },
-                    onRegisterClick = { navController.navigate(Screen.Register.route) }
+                    onRegisterClick = { onNavigate(Screen.Register, null) }
                 )
             }
         }

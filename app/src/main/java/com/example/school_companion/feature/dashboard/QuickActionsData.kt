@@ -8,27 +8,34 @@ import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.People
 import androidx.navigation.NavController
+import com.example.school_companion.navigation.NavigateToWithArgs
 import com.example.school_companion.navigation.Screen
 
 object QuickActionsData {
-    fun getQuickActions(navController: NavController): List<QuickAction> = listOf(
+    fun getQuickActions(onNavigate: NavigateToWithArgs): List<QuickAction> = listOf(
         QuickAction(
             "Monitoring",
             Icons.Default.Assessment
-        ) { navController.navigate(Screen.Monitoring.route) },
-        QuickAction("Termine", Icons.Default.Event) { navController.navigate(Screen.Events.route) },
+        ) { onNavigate(Screen.Monitoring, null) },
+        QuickAction(
+            "Termine",
+            Icons.Default.Event
+        ) { onNavigate(Screen.Events, null) },
         QuickAction(
             "Kinder",
             Icons.Default.People
-        ) { navController.navigate(Screen.Children.route) },
+        ) { onNavigate(Screen.Children, null) },
         QuickAction(
             "Statistiken",
             Icons.Default.BarChart
-        ) { navController.navigate(Screen.Statistics.route) },
+        ) { onNavigate(Screen.Statistics, null) },
         QuickAction(
             "AI Assistant",
             Icons.Default.Assistant
-        ) { navController.navigate(Screen.Assistant.route) },
-        QuickAction("Planner", Icons.Default.EditCalendar) { /* TODO */ }
+        ) { onNavigate(Screen.Assistant, null) },
+        QuickAction(
+            "Planner",
+            Icons.Default.EditCalendar
+        ) { /* TODO */ }
     )
 }

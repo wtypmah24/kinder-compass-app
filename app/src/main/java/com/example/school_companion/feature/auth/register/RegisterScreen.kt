@@ -17,14 +17,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import com.example.school_companion.navigation.Screen
 import com.example.school_companion.feature.auth.AuthViewModel
+import com.example.school_companion.navigation.NavigateToWithArgs
+import com.example.school_companion.navigation.Screen
 import com.example.school_companion.ui.util.UiState
 
 @Composable
 fun RegisterScreen(
-    navController: NavController,
+    onNavigate: NavigateToWithArgs,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     var name by remember { mutableStateOf("") }
@@ -40,9 +40,7 @@ fun RegisterScreen(
 
     LaunchedEffect(authState) {
         if (authState is UiState.Success) {
-            navController.navigate(Screen.Dashboard.route) {
-                popUpTo(Screen.Register.route) { inclusive = true }
-            }
+            onNavigate(Screen.Dashboard, null)
         }
     }
 
@@ -78,7 +76,9 @@ fun RegisterScreen(
                 onRegisterClick = {
                     viewModel.register(email, password, name, surname, organization)
                 },
-                onLoginClick = { navController.navigate(Screen.Login.route) }
+                onLoginClick = {
+                    onNavigate(Screen.Login, null)
+                }
             )
         }
     }

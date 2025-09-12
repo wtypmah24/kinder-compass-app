@@ -14,7 +14,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -24,26 +23,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
+import com.example.school_companion.data.model.Child
+import com.example.school_companion.navigation.NavigateToWithArgs
 import com.example.school_companion.ui.bar.DashBoardBottomBar
 import com.example.school_companion.ui.util.ChildActionHandler
+import com.example.school_companion.ui.util.UiState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChildrenScreen(
-    navController: NavController,
+    onNavigate: NavigateToWithArgs,
+    childrenState: UiState<List<Child>>,
     childrenViewModel: ChildrenViewModel = hiltViewModel()
 ) {
-    val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
     var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
 
     var showAddDialog by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        childrenViewModel.loadChildren()
-    }
 
     Scaffold(
         topBar = {
@@ -55,7 +51,7 @@ fun ChildrenScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = { onNavigate(null, null) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
@@ -71,10 +67,7 @@ fun ChildrenScreen(
                 selectedTabIndex = selectedBottomTabIndex,
                 onTabSelected = { selectedBottomTabIndex = it },
                 onTabNavigate = { screen ->
-                    navController.navigate(screen.route) {
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                    onNavigate(screen, null)
                 }
             )
         }
@@ -85,8 +78,14 @@ fun ChildrenScreen(
                 ChildActionHandler.handle(
                     child,
                     action,
-                    navController,
-                    childrenViewModel
+                    onNavigate,
+                    onDeleteChild = { id -> childrenViewModel.deleteChild(id) },
+                    onEditChild = { id, updatedChild ->
+                        childrenViewModel.updateChild(
+                            id,
+                            updatedChild
+                        )
+                    }
                 )
             },
             maxItems = Int.MAX_VALUE,

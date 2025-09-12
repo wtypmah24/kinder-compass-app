@@ -1,29 +1,30 @@
 package com.example.school_companion.ui.util
 
-import androidx.navigation.NavController
+import com.example.school_companion.data.api.ChildDto
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.feature.children.child.ChildAction
+import com.example.school_companion.navigation.NavigateToWithArgs
 import com.example.school_companion.navigation.Screen
-import com.example.school_companion.feature.children.ChildrenViewModel
 
 object ChildActionHandler {
     fun handle(
         child: Child,
         action: ChildAction,
-        navController: NavController,
-        childrenViewModel: ChildrenViewModel
+        onNavigate: NavigateToWithArgs,
+        onDeleteChild: (childId: Long) -> Unit,
+        onEditChild: (childId: Long, updatedChild: ChildDto) -> Unit,
     ) {
         when (action) {
             is ChildAction.ViewDetails -> {
-                navController.navigate("${Screen.ChildDetail.route}/${child.id}")
+                onNavigate(Screen.ChildDetail, mapOf("childId" to child.id))
             }
 
             is ChildAction.Edit -> {
-                childrenViewModel.updateChild(child.id, action.updatedChild)
+                onEditChild(child.id, action.updatedChild)
             }
 
             is ChildAction.Delete -> {
-                childrenViewModel.deleteChild(child.id)
+                onDeleteChild(child.id)
             }
         }
     }

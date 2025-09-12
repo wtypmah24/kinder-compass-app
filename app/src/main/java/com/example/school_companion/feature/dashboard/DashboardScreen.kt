@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -17,47 +16,40 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
+import com.example.school_companion.data.model.Child
+import com.example.school_companion.data.model.Companion
 import com.example.school_companion.feature.children.ChildrenSection
+import com.example.school_companion.feature.children.ChildrenViewModel
+import com.example.school_companion.feature.event.EventsSection
+import com.example.school_companion.feature.event.EventsState
+import com.example.school_companion.navigation.NavigateToWithArgs
+import com.example.school_companion.navigation.Screen
 import com.example.school_companion.ui.bar.DashBoardBottomBar
 import com.example.school_companion.ui.bar.DashboardTopBar
 import com.example.school_companion.ui.box.ErrorBox
 import com.example.school_companion.ui.box.LoadingBox
-import com.example.school_companion.navigation.Screen
-import com.example.school_companion.feature.event.EventsSection
 import com.example.school_companion.ui.util.ChildActionHandler
-import com.example.school_companion.feature.auth.AuthViewModel
-import com.example.school_companion.feature.children.ChildrenViewModel
-import com.example.school_companion.feature.event.EventsViewModel
+import com.example.school_companion.ui.util.UiState
 import com.example.school_companion.ui.util.onState
-
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DashboardScreen(
-    navController: NavController,
-    authViewModel: AuthViewModel,
+    onNavigate: NavigateToWithArgs,
+    currentUserState: UiState<Companion>,
+    childrenState: UiState<List<Child>>,
+    eventsState: EventsState,
+    quickActions: List<QuickAction>,
     childrenViewModel: ChildrenViewModel = hiltViewModel(),
-    eventsViewModel: EventsViewModel = hiltViewModel(),
 ) {
-    val currentUserState by authViewModel.currentCompanion.collectAsStateWithLifecycle()
-    val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
-    val eventsState by eventsViewModel.eventsState.collectAsStateWithLifecycle()
-    val quickActions = QuickActionsData.getQuickActions(navController)
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-
-    LaunchedEffect(Unit) {
-        childrenViewModel.loadChildren()
-        eventsViewModel.loadEventsByCompanion()
-    }
 
     Scaffold(
         topBar = {
             DashboardTopBar(
-                onProfileClick = { navController.navigate(Screen.Profile.route) },
-                onSettingsClick = { navController.navigate(Screen.Settings.route) }
+                onProfileClick = { onNavigate(Screen.Profile, null) },
+                onSettingsClick = { onNavigate(Screen.Settings, null) }
             )
         },
         bottomBar = {
@@ -65,10 +57,7 @@ fun DashboardScreen(
                 selectedTabIndex = selectedTabIndex,
                 onTabSelected = { selectedTabIndex = it },
                 onTabNavigate = { screen ->
-                    navController.navigate(screen.route) {
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                    onNavigate(screen, null)
                 }
             )
         }
@@ -103,12 +92,19 @@ fun DashboardScreen(
                         ChildActionHandler.handle(
                             child,
                             action,
-                            navController,
-                            childrenViewModel
+                            onNavigate,
+                            onDeleteChild = { id -> childrenViewModel.deleteChild(id) },
+                            onEditChild = { id, updatedChild ->
+                                childrenViewModel.updateChild(
+                                    id,
+                                    updatedChild
+                                )
+                            }
                         )
+
                     },
                     onShowAllClick = {
-                        navController.navigate(Screen.Children.route)
+                        onNavigate(Screen.Children, null)
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -116,7 +112,7 @@ fun DashboardScreen(
 
             // Upcoming Events
             item {
-                EventsSection(eventsState = eventsState, navController = navController)
+                EventsSection(eventsState = eventsState, onNavigate = onNavigate)
             }
         }
     }
