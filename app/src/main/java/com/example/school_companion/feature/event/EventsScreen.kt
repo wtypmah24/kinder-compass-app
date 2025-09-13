@@ -11,7 +11,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -21,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.navigation.NavigateToWithArgs
-import com.example.school_companion.ui.bar.DashBoardBottomBar
 import com.example.school_companion.ui.dropdown.DropdownMenuWrapper
 import com.example.school_companion.ui.util.UiState
 
@@ -37,7 +35,6 @@ fun EventsScreen(
     val showAddEventDialog = remember { mutableStateOf(false) }
     var selectedChild: Child? by remember { mutableStateOf(null) }
     val context = LocalContext.current
-    var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
         eventsViewModel.loadEventsWithChildren()
@@ -50,15 +47,6 @@ fun EventsScreen(
                 selectedChild = selectedChild,
                 context = context,
                 showAddEventDialog = showAddEventDialog
-            )
-        },
-        bottomBar = {
-            DashBoardBottomBar(
-                selectedTabIndex = selectedBottomTabIndex,
-                onTabSelected = { selectedBottomTabIndex = it },
-                onTabNavigate = { screen ->
-                    onNavigate(screen, null)
-                }
             )
         }
     ) { paddingValues ->

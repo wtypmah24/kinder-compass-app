@@ -25,7 +25,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.feature.children.ChildrenViewModel
 import com.example.school_companion.navigation.NavigateToWithArgs
-import com.example.school_companion.ui.bar.DashBoardBottomBar
 import com.example.school_companion.ui.box.ErrorBox
 import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.util.UiState
@@ -41,7 +40,6 @@ fun ChildDetailScreen(
 ) {
     val selectedChild by childrenViewModel.selectedChild.collectAsStateWithLifecycle()
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(childId) {
         if (selectedChild !is UiState.Success || (selectedChild as UiState.Success<Child>).data.id != childId) {
@@ -69,16 +67,6 @@ fun ChildDetailScreen(
                     IconButton(onClick = { onNavigate(null, null) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
-            )
-        },
-
-        bottomBar = {
-            DashBoardBottomBar(
-                selectedTabIndex = selectedBottomTabIndex,
-                onTabSelected = { selectedBottomTabIndex = it },
-                onTabNavigate = { screen ->
-                    onNavigate(screen, null)
                 }
             )
         }

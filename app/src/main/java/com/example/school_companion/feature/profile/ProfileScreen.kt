@@ -9,9 +9,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -21,7 +18,6 @@ import com.example.school_companion.feature.session.WorkSessionCard
 import com.example.school_companion.feature.session.WorkSessionReportCard
 import com.example.school_companion.navigation.NavigateToWithArgs
 import com.example.school_companion.navigation.Screen
-import com.example.school_companion.ui.bar.DashBoardBottomBar
 import com.example.school_companion.ui.box.ErrorBox
 import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.util.onState
@@ -34,20 +30,11 @@ fun ProfileScreen(
     companionViewModel: CompanionViewModel = hiltViewModel()
 ) {
     val currentUserState by authViewModel.currentCompanion.collectAsStateWithLifecycle()
-    var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
 
     Scaffold(topBar = {
         ProfileTopBar(
             onBack = { onNavigate(null, null) },
             onLogout = { onNavigate(Screen.Login, null) }
-        )
-    }, bottomBar = {
-        DashBoardBottomBar(
-            selectedTabIndex = selectedBottomTabIndex,
-            onTabSelected = { selectedBottomTabIndex = it },
-            onTabNavigate = { screen ->
-                onNavigate(screen, null)
-            }
         )
     }) { paddingValues ->
         LazyColumn(

@@ -24,7 +24,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -38,7 +37,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.navigation.NavigateToWithArgs
-import com.example.school_companion.ui.bar.DashBoardBottomBar
 import com.example.school_companion.ui.box.ErrorBox
 import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.selector.GenericSelector
@@ -63,8 +61,6 @@ fun AssistantScreen(
     val listState = rememberLazyListState()
     val coroutine = rememberCoroutineScope()
     val context = LocalContext.current
-
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     val messages by chatViewModel.messages.collectAsStateWithLifecycle()
 
@@ -108,12 +104,6 @@ fun AssistantScreen(
                 Icon(Icons.AutoMirrored.Filled.Message, contentDescription = "New chat")
             }
         })
-    }, bottomBar = {
-        DashBoardBottomBar(
-            selectedTabIndex = selectedTabIndex,
-            onTabSelected = { selectedTabIndex = it },
-            onTabNavigate = { screen -> onNavigate(screen, null) }
-        )
     }) { paddingValues ->
         Column(
             modifier = Modifier

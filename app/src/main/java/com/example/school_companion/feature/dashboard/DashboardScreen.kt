@@ -10,9 +10,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -23,8 +20,6 @@ import com.example.school_companion.feature.event.EventsSection
 import com.example.school_companion.feature.event.EventsState
 import com.example.school_companion.navigation.NavigateToWithArgs
 import com.example.school_companion.navigation.Screen
-import com.example.school_companion.ui.bar.AppTopBar
-import com.example.school_companion.ui.bar.DashBoardBottomBar
 import com.example.school_companion.ui.box.ErrorBox
 import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.util.ChildActionHandler
@@ -41,26 +36,9 @@ fun DashboardScreen(
     childrenViewModel: ChildrenViewModel,
 ) {
 
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
     val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
 
-    Scaffold(
-        topBar = {
-            AppTopBar(
-                onProfileClick = { onNavigate(Screen.Profile, null) },
-                onSettingsClick = { onNavigate(Screen.Settings, null) }
-            )
-        },
-        bottomBar = {
-            DashBoardBottomBar(
-                selectedTabIndex = selectedTabIndex,
-                onTabSelected = { selectedTabIndex = it },
-                onTabNavigate = { screen ->
-                    onNavigate(screen, null)
-                }
-            )
-        }
-    ) { paddingValues ->
+    Scaffold { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()

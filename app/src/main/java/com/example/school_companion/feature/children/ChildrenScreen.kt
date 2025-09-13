@@ -15,7 +15,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -24,7 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.school_companion.navigation.NavigateToWithArgs
-import com.example.school_companion.ui.bar.DashBoardBottomBar
 import com.example.school_companion.ui.util.ChildActionHandler
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -35,7 +33,6 @@ fun ChildrenScreen(
     childrenViewModel: ChildrenViewModel
 ) {
     val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
-    var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
     var showAddDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -56,15 +53,6 @@ fun ChildrenScreen(
                     IconButton(onClick = { showAddDialog = true }) {
                         Icon(Icons.Default.Add, contentDescription = "Add Child")
                     }
-                }
-            )
-        },
-        bottomBar = {
-            DashBoardBottomBar(
-                selectedTabIndex = selectedBottomTabIndex,
-                onTabSelected = { selectedBottomTabIndex = it },
-                onTabNavigate = { screen ->
-                    onNavigate(screen, null)
                 }
             )
         }

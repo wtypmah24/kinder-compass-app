@@ -15,7 +15,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -24,19 +23,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.example.school_companion.data.model.Child
-import com.example.school_companion.data.model.MonitoringEntry
 import com.example.school_companion.data.model.MonitoringParam
-import com.example.school_companion.feature.children.ChildrenViewModel
 import com.example.school_companion.feature.monitoring.entry.EntriesState
-import com.example.school_companion.feature.monitoring.entry.MonitoringEntryViewModel
-import com.example.school_companion.feature.monitoring.param.MonitoringParamViewModel
 import com.example.school_companion.feature.monitoring.param.ParamsState
 import com.example.school_companion.navigation.NavigateToWithArgs
-import com.example.school_companion.ui.bar.DashBoardBottomBar
 import com.example.school_companion.ui.util.UiState
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -53,7 +44,6 @@ fun StatisticsScreen(
     var selectedParam by remember { mutableStateOf<MonitoringParam?>(null) }
     var selectedRange by remember { mutableStateOf("Last 7 days") }
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
 
     val timeRanges = listOf("Last Day", "Last 7 Days", "Last 30 Days", "Last 90 Days")
 
@@ -68,15 +58,6 @@ fun StatisticsScreen(
                             contentDescription = "Back"
                         )
                     }
-                }
-            )
-        },
-        bottomBar = {
-            DashBoardBottomBar(
-                selectedTabIndex = selectedBottomTabIndex,
-                onTabSelected = { selectedBottomTabIndex = it },
-                onTabNavigate = { screen ->
-                    onNavigate(screen, null)
                 }
             )
         }

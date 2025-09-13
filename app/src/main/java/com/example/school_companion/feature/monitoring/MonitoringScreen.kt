@@ -22,7 +22,6 @@ import com.example.school_companion.feature.monitoring.param.AddParamDialog
 import com.example.school_companion.feature.monitoring.param.MonitoringParamViewModel
 import com.example.school_companion.feature.monitoring.param.ParamsState
 import com.example.school_companion.navigation.NavigateToWithArgs
-import com.example.school_companion.ui.bar.DashBoardBottomBar
 import com.example.school_companion.ui.util.UiState
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -41,20 +40,12 @@ fun MonitoringScreen(
     var showAddEntryDialog by remember { mutableStateOf(false) }
     val showAddParamDialog = remember { mutableStateOf(false) }
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    var selectedBottomTabIndex by remember { mutableIntStateOf(0) }
 
     Scaffold(
         topBar = {
             MonitoringTopBar(
                 onBack = { onNavigate(null, null) },
                 showAddParamDialog = showAddParamDialog
-            )
-        },
-        bottomBar = {
-            DashBoardBottomBar(
-                selectedTabIndex = selectedBottomTabIndex,
-                onTabSelected = { selectedBottomTabIndex = it },
-                onTabNavigate = { screen -> onNavigate(screen, null) }
             )
         }
     ) { paddingValues ->

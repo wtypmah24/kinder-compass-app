@@ -22,7 +22,7 @@ import com.example.school_companion.navigation.Screen
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
-fun DashBoardBottomBar(
+fun AppBottomBar(
     selectedTabIndex: Int,
     onTabSelected: (Int) -> Unit,
     onTabNavigate: (Screen) -> Unit
