@@ -13,14 +13,14 @@ import androidx.compose.ui.text.font.FontWeight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardTopBar(
+fun AppTopBar(
     onProfileClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
     TopAppBar(
         title = {
             Text(
-                text = "Dashboard",
+                text = "Kinder Compass",
                 fontWeight = FontWeight.Bold
             )
         },

@@ -77,7 +77,6 @@ fun NavGraph(
         startDestination = startDestination
     ) {
 
-        // Auth screens
         composable(Screen.Login.route) {
             LoginScreen(
                 onNavigate = navigateTo,
@@ -92,7 +91,6 @@ fun NavGraph(
             )
         }
 
-        // Main screens
         composable(Screen.Dashboard.route) {
             DashboardScreen(
                 onNavigate = navigateTo,

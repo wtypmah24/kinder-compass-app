@@ -16,33 +16,46 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import com.example.school_companion.feature.auth.register.RegisterFormState
 
 @Composable
-fun PasswordField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    visible: Boolean,
-    onVisibilityChange: (Boolean) -> Unit
+fun PasswordInputField(
+    formState: RegisterFormState,
+    onFormChange: (RegisterFormState) -> Unit,
+    confirm: Boolean = false
 ) {
+    val value = if (confirm) formState.confirmPassword else formState.password
+    val visible = if (confirm) formState.confirmPasswordVisible else formState.passwordVisible
+    val label = if (confirm) "Passwort bestätigen" else "Passwort"
+
     OutlinedTextField(
         value = value,
-        onValueChange = onValueChange,
-        label = { Text("Passwort") },
-        leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Password") },
+        onValueChange = { newValue ->
+            if (confirm) onFormChange(formState.copy(confirmPassword = newValue))
+            else onFormChange(formState.copy(password = newValue))
+        },
+        label = { Text(label) },
+        leadingIcon = { Icon(Icons.Default.Lock, contentDescription = label) },
         trailingIcon = {
-            IconButton(onClick = { onVisibilityChange(!visible) }) {
+            IconButton(
+                onClick = {
+                    if (confirm) onFormChange(formState.copy(confirmPasswordVisible = !visible))
+                    else onFormChange(formState.copy(passwordVisible = !visible))
+                }
+            ) {
                 Icon(
-                    if (visible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                    imageVector = if (visible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                     contentDescription = if (visible) "Hide password" else "Show password"
                 )
             }
         },
         visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
         modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Password,
             imeAction = ImeAction.Done
         ),
-        singleLine = true
+        isError = confirm && formState.password != formState.confirmPassword && value.isNotEmpty()
     )
 }

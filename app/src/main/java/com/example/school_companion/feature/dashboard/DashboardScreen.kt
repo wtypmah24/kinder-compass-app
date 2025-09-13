@@ -23,8 +23,8 @@ import com.example.school_companion.feature.event.EventsSection
 import com.example.school_companion.feature.event.EventsState
 import com.example.school_companion.navigation.NavigateToWithArgs
 import com.example.school_companion.navigation.Screen
+import com.example.school_companion.ui.bar.AppTopBar
 import com.example.school_companion.ui.bar.DashBoardBottomBar
-import com.example.school_companion.ui.bar.DashboardTopBar
 import com.example.school_companion.ui.box.ErrorBox
 import com.example.school_companion.ui.box.LoadingBox
 import com.example.school_companion.ui.util.ChildActionHandler
@@ -46,7 +46,7 @@ fun DashboardScreen(
 
     Scaffold(
         topBar = {
-            DashboardTopBar(
+            AppTopBar(
                 onProfileClick = { onNavigate(Screen.Profile, null) },
                 onSettingsClick = { onNavigate(Screen.Settings, null) }
             )

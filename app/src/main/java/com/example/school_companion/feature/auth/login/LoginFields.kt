@@ -4,8 +4,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
+import com.example.school_companion.feature.auth.register.RegisterFormState
 import com.example.school_companion.ui.field.EmailField
-import com.example.school_companion.ui.field.PasswordField
+import com.example.school_companion.ui.field.PasswordInputField
 
 @Composable
 fun LoginFields(
@@ -18,6 +19,15 @@ fun LoginFields(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         EmailField(email, onEmailChange)
-        PasswordField(password, onPasswordChange, passwordVisible, onPasswordVisibilityChange)
+        PasswordInputField(
+            formState = RegisterFormState(
+                password = password,
+                passwordVisible = passwordVisible
+            ),
+            onFormChange = { updatedState ->
+                onPasswordChange(updatedState.password)
+                onPasswordVisibilityChange(updatedState.passwordVisible)
+            }
+        )
     }
 }

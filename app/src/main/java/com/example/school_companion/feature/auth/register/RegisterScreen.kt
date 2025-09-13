@@ -27,15 +27,9 @@ fun RegisterScreen(
     onNavigate: NavigateToWithArgs,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
-    var name by remember { mutableStateOf("") }
-    var surname by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
-    var confirmPasswordVisible by remember { mutableStateOf(false) }
-    var organization by remember { mutableStateOf("") }
-
+    var formState by remember {
+        mutableStateOf(RegisterFormState())
+    }
     val authState by viewModel.authState.collectAsStateWithLifecycle()
 
     LaunchedEffect(authState) {
@@ -56,25 +50,17 @@ fun RegisterScreen(
             RegisterHeader()
 
             RegisterCard(
-                name = name,
-                onNameChange = { name = it },
-                surname = surname,
-                onSurnameChange = { surname = it },
-                email = email,
-                onEmailChange = { email = it },
-                password = password,
-                onPasswordChange = { password = it },
-                confirmPassword = confirmPassword,
-                onConfirmPasswordChange = { confirmPassword = it },
-                passwordVisible = passwordVisible,
-                onPasswordVisibilityChange = { passwordVisible = it },
-                confirmPasswordVisible = confirmPasswordVisible,
-                onConfirmPasswordVisibilityChange = { confirmPasswordVisible = it },
-                organization = organization,
-                onOrganizationChange = { organization = it },
+                formState = formState,
+                onFormChange = { formState = it },
                 authState = authState,
                 onRegisterClick = {
-                    viewModel.register(email, password, name, surname, organization)
+                    viewModel.register(
+                        formState.email,
+                        formState.password,
+                        formState.name,
+                        formState.surname,
+                        formState.organization
+                    )
                 },
                 onLoginClick = {
                     onNavigate(Screen.Login, null)

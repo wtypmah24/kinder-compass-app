@@ -1,5 +1,6 @@
 package com.example.school_companion.ui.bar
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Assessment
@@ -19,6 +20,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import com.example.school_companion.navigation.Screen
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun DashBoardBottomBar(
     selectedTabIndex: Int,
