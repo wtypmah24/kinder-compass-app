@@ -161,7 +161,7 @@ fun NavGraph(
         }
 
         composable(Screen.Assistant.route) {
-            AssistantScreen(navController = navController)
+            AssistantScreen(onNavigate = navigateTo, childrenState = childrenState)
         }
     }
 }

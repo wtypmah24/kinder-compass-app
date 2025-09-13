@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -55,9 +54,7 @@ fun MonitoringScreen(
             DashBoardBottomBar(
                 selectedTabIndex = selectedBottomTabIndex,
                 onTabSelected = { selectedBottomTabIndex = it },
-                onTabNavigate = { screen ->
-                    onNavigate(screen, null)
-                }
+                onTabNavigate = { screen -> onNavigate(screen, null) }
             )
         }
     ) { paddingValues ->

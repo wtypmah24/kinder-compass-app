@@ -59,7 +59,6 @@ fun ChildCard(
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Placeholder for child photo
                 Card(
                     modifier = Modifier.size(56.dp),
                     colors = CardDefaults.cardColors(

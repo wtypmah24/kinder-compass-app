@@ -36,9 +36,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.example.school_companion.data.model.Child
-import com.example.school_companion.feature.children.ChildrenViewModel
+import com.example.school_companion.navigation.NavigateToWithArgs
 import com.example.school_companion.ui.bar.DashBoardBottomBar
 import com.example.school_companion.ui.box.ErrorBox
 import com.example.school_companion.ui.box.LoadingBox
@@ -52,11 +51,10 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AssistantScreen(
-    navController: NavController,
-    childrenViewModel: ChildrenViewModel = hiltViewModel(),
+    onNavigate: NavigateToWithArgs,
+    childrenState: UiState<List<Child>>,
     chatViewModel: ChatViewModel = hiltViewModel(),
 ) {
-    val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
     val chatIdsState by chatViewModel.chatIdsState.collectAsStateWithLifecycle()
 
     var selectedChild by remember { mutableStateOf<Child?>(null) }
@@ -71,7 +69,6 @@ fun AssistantScreen(
     val messages by chatViewModel.messages.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        childrenViewModel.loadChildren()
         chatViewModel.getChatIds()
     }
 
@@ -91,7 +88,7 @@ fun AssistantScreen(
                 "AI Assistant", fontWeight = FontWeight.Bold
             )
         }, navigationIcon = {
-            IconButton(onClick = { navController.navigateUp() }) {
+            IconButton(onClick = { onNavigate(null, null) }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
         }, actions = {
@@ -115,12 +112,7 @@ fun AssistantScreen(
         DashBoardBottomBar(
             selectedTabIndex = selectedTabIndex,
             onTabSelected = { selectedTabIndex = it },
-            onTabNavigate = { screen ->
-                navController.navigate(screen.route) {
-                    launchSingleTop = true
-                    restoreState = true
-                }
-            }
+            onTabNavigate = { screen -> onNavigate(screen, null) }
         )
     }) { paddingValues ->
         Column(
@@ -132,7 +124,7 @@ fun AssistantScreen(
         ) {
             if (childrenState is UiState.Success) {
                 GenericSelector(
-                    items = (childrenState as UiState.Success<List<Child>>).data,
+                    items = childrenState.data,
                     selectedItem = selectedChild,
                     onSelect = {
                         selectedChild = it

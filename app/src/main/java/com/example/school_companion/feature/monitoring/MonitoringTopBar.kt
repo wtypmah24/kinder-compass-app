@@ -11,9 +11,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.font.FontWeight
-import androidx.navigation.NavController
-import com.example.school_companion.data.model.Child
-import com.example.school_companion.data.model.MonitoringParam
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

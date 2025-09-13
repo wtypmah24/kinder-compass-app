@@ -38,11 +38,7 @@ fun EditNoteDialog(
             }
         },
         confirmButton = {
-            Button(onClick = {
-                onSave(
-                    NoteRequestDto(content)
-                )
-            }) {
+            Button(onClick = { onSave(NoteRequestDto(content)) }) {
                 Text("Save")
             }
         },

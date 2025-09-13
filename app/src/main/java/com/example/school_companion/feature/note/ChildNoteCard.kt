@@ -46,7 +46,9 @@ fun ChildNoteCard(
 
     Box(modifier = Modifier.fillMaxWidth()) {
         Card(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -54,12 +56,22 @@ fun ChildNoteCard(
             }
         }
 
-        Row(modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)) {
+        Row(modifier = Modifier
+            .align(Alignment.TopEnd)
+            .padding(8.dp)) {
             IconButton(onClick = { showEditDialog = true }) {
-                Icon(Icons.Default.Edit, contentDescription = "Edit Note", tint = MaterialTheme.colorScheme.primary)
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = "Edit Note",
+                    tint = MaterialTheme.colorScheme.primary
+                )
             }
             IconButton(onClick = { showDeleteConfirm = true }) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete Note", tint = MaterialTheme.colorScheme.error)
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Delete Note",
+                    tint = MaterialTheme.colorScheme.error
+                )
             }
         }
     }
