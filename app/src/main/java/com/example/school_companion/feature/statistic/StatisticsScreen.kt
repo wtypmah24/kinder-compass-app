@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,6 +48,7 @@ fun StatisticsScreen(
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     val timeRanges = listOf("Last Day", "Last 7 Days", "Last 30 Days", "Last 90 Days")
+    val scrollState = rememberScrollState()
 
     Scaffold(
         topBar = {
@@ -66,6 +69,7 @@ fun StatisticsScreen(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
+                .verticalScroll(scrollState)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -100,4 +104,3 @@ fun StatisticsScreen(
         }
     }
 }
-
