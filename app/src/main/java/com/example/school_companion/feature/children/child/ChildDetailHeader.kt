@@ -1,5 +1,7 @@
 package com.example.school_companion.feature.children.child
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.school_companion.data.model.Child
@@ -83,3 +86,21 @@ fun ChildHeaderCard(child: Child) {
         }
     }
 }
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview(showBackground = true, name = "Child Header Card Preview")
+@Composable
+fun ChildHeaderCardPreview() {
+    val sampleChild = Child(
+        id = 1L,
+        name = "Alice",
+        surname = "Johnson",
+        email = "alice@example.com",
+        phoneNumber = "+123456789",
+        dateOfBirth = "2015-06-21",
+        active = true
+    )
+
+    ChildHeaderCard(child = sampleChild)
+}
+

@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.school_companion.data.model.AssistantAnswer
 import java.time.Instant
@@ -68,4 +69,49 @@ fun ChatMessageCard(msg: AssistantAnswer) {
             }
         }
     }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview(showBackground = true, name = "User Message")
+@Composable
+fun ChatMessageCardPreview_User() {
+    ChatMessageCard(
+        msg = AssistantAnswer(
+            id = "msg-1",
+            thread_id = "thread-1",
+            role = "user",
+            message = "Hi! How are you?",
+            created_at = System.currentTimeMillis()
+        )
+    )
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview(showBackground = true, name = "Assistant Message")
+@Composable
+fun ChatMessageCardPreview_Assistant() {
+    ChatMessageCard(
+        msg = AssistantAnswer(
+            id = "msg-2",
+            thread_id = "thread-1",
+            role = "assistant",
+            message = "Hello! i'm fine 😊 How can i help you?",
+            created_at = System.currentTimeMillis()
+        )
+    )
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview(showBackground = true, name = "Typing Indicator")
+@Composable
+fun ChatMessageCardPreview_Typing() {
+    ChatMessageCard(
+        msg = AssistantAnswer(
+            id = "TEMP_ASSISTANT_ID",
+            thread_id = "thread-1",
+            role = "assistant",
+            message = "",
+            created_at = System.currentTimeMillis()
+        )
+    )
 }

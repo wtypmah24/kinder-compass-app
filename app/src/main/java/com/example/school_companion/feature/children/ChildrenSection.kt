@@ -3,6 +3,7 @@ package com.example.school_companion.feature.children
 import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.school_companion.data.model.Child
@@ -38,7 +40,7 @@ fun ChildrenSection(
     onShowAllClick: (() -> Unit)? = null,
     @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = "Ihre Kinder",
             fontSize = 20.sp,
@@ -93,4 +95,97 @@ fun ChildrenSection(
             }
         )
     }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview(showBackground = true, name = "Children Section - Empty")
+@Composable
+fun ChildrenSectionPreview_Empty() {
+    ChildrenSection(
+        childrenState = UiState.Success(emptyList()),
+        onChildAction = { _, _ -> }
+    )
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview(showBackground = true, name = "Children Section - With Children")
+@Composable
+fun ChildrenSectionPreview_WithChildren() {
+    val sampleChildren = listOf(
+        Child(
+            id = 1L,
+            name = "Alice",
+            surname = "Johnson",
+            email = "alice@example.com",
+            phoneNumber = "+123456789",
+            dateOfBirth = "2015-06-21",
+            active = true
+        ),
+        Child(
+            id = 2L,
+            name = "Bob",
+            surname = "Smith",
+            email = "bob@example.com",
+            phoneNumber = "+987654321",
+            dateOfBirth = "2013-09-12",
+            active = true
+        )
+    )
+
+    ChildrenSection(
+        childrenState = UiState.Success(sampleChildren),
+        maxItems = 3,
+        onChildAction = { _, _ -> }
+    )
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview(showBackground = true, name = "Children Section - Show All Button")
+@Composable
+fun ChildrenSectionPreview_ShowAll() {
+    val sampleChildren = listOf(
+        Child(
+            id = 1L,
+            name = "Alice",
+            surname = "Johnson",
+            email = "",
+            phoneNumber = "",
+            dateOfBirth = "",
+            active = true
+        ),
+        Child(
+            id = 2L,
+            name = "Bob",
+            surname = "Smith",
+            email = "",
+            phoneNumber = "",
+            dateOfBirth = "",
+            active = true
+        ),
+        Child(
+            id = 3L,
+            name = "Charlie",
+            surname = "Brown",
+            email = "",
+            phoneNumber = "",
+            dateOfBirth = "",
+            active = true
+        ),
+        Child(
+            id = 4L,
+            name = "Diana",
+            surname = "Prince",
+            email = "",
+            phoneNumber = "",
+            dateOfBirth = "",
+            active = true
+        )
+    )
+
+    ChildrenSection(
+        childrenState = UiState.Success(sampleChildren),
+        maxItems = 3,
+        onChildAction = { _, _ -> },
+        onShowAllClick = {}
+    )
 }

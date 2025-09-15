@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.school_companion.ui.dropdown.DropdownMenuWrapper
 
 @Composable
@@ -31,7 +32,8 @@ fun ThreadSelector(
 ) {
     var threadToDelete by remember { mutableStateOf<String?>(null) }
 
-    DropdownMenuWrapper(items = threads,
+    DropdownMenuWrapper(
+        items = threads,
         selectedItem = selectedThread,
         onItemSelected = onSelect,
         itemToString = { it },
@@ -56,7 +58,8 @@ fun ThreadSelector(
         })
 
     if (threadToDelete != null) {
-        AlertDialog(onDismissRequest = { threadToDelete = null },
+        AlertDialog(
+            onDismissRequest = { threadToDelete = null },
             title = { Text("Delete chat with AI?") },
             text = { Text("Are you sure you want to delete ${threadToDelete}?") },
             confirmButton = {
@@ -76,4 +79,21 @@ fun ThreadSelector(
                 }
             })
     }
+}
+
+@Preview(showBackground = true, name = "Thread Selector Preview")
+@Composable
+fun ThreadSelectorPreview() {
+    val sampleThreads = listOf("Thread 1", "Thread 2", "Thread 3")
+    var selectedThread by remember { mutableStateOf<String?>(null) }
+
+    ThreadSelector(
+        threads = sampleThreads,
+        selectedThread = selectedThread,
+        onSelect = { selectedThread = it },
+        onDelete = { threadId ->
+            // For preview, just print to log or do nothing
+            println("Deleted $threadId")
+        }
+    )
 }

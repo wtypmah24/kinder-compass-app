@@ -75,9 +75,9 @@ fun LoginContent(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Normal State")
 @Composable
-fun LoginContentPreview() {
+fun LoginContentPreview_Normal() {
     LoginContent(
         email = "john@example.com",
         onEmailChange = {},
@@ -87,6 +87,42 @@ fun LoginContentPreview() {
         onPasswordVisibilityChange = {},
         loginEnabled = true,
         loginLoading = false,
+        errorMessage = null,
+        onLoginClick = {},
+        onRegisterClick = {}
+    )
+}
+
+@Preview(showBackground = true, name = "Error State")
+@Composable
+fun LoginContentPreview_Error() {
+    LoginContent(
+        email = "john@example.com",
+        onEmailChange = {},
+        password = "password123",
+        onPasswordChange = {},
+        passwordVisible = true,
+        onPasswordVisibilityChange = {},
+        loginEnabled = true,
+        loginLoading = false,
+        errorMessage = "Wrong pass",
+        onLoginClick = {},
+        onRegisterClick = {}
+    )
+}
+
+@Preview(showBackground = true, name = "Loading State")
+@Composable
+fun LoginContentPreview_Loading() {
+    LoginContent(
+        email = "john@example.com",
+        onEmailChange = {},
+        password = "password123",
+        onPasswordChange = {},
+        passwordVisible = false,
+        onPasswordVisibilityChange = {},
+        loginEnabled = false,
+        loginLoading = true,
         errorMessage = null,
         onLoginClick = {},
         onRegisterClick = {}

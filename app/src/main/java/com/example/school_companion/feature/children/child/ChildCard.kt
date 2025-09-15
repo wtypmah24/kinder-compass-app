@@ -94,6 +94,21 @@ fun ChildCard(
                     )
                 }
 
+                IconButton(onClick = { showEditDialog = true }) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit Child Info",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                IconButton(onClick = { showDeleteConfirm = true }) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete Child",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+
                 Icon(
                     Icons.Default.ChevronRight,
                     contentDescription = "View details",
@@ -101,26 +116,7 @@ fun ChildCard(
                 )
             }
         }
-        Row(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(8.dp)
-        ) {
-            IconButton(onClick = { showEditDialog = true }) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit Child Info",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-            IconButton(onClick = { showDeleteConfirm = true }) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete Child",
-                    tint = MaterialTheme.colorScheme.error
-                )
-            }
-        }
+
         if (showEditDialog) {
             EditChildDialog(
                 child = child,

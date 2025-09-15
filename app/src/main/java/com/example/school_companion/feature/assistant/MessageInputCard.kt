@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -39,4 +40,26 @@ fun MessageInputCard(
             Text("Send")
         }
     }
+}
+
+@Preview(showBackground = true, name = "Enabled Input")
+@Composable
+fun MessageInputCardPreview_Enabled() {
+    MessageInputCard(
+        messageText = "Hello, AI!",
+        onMessageChange = {},
+        canSend = true,
+        onSend = {}
+    )
+}
+
+@Preview(showBackground = true, name = "Disabled Input")
+@Composable
+fun MessageInputCardPreview_Disabled() {
+    MessageInputCard(
+        messageText = "",
+        onMessageChange = {},
+        canSend = false,
+        onSend = {}
+    )
 }

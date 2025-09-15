@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -26,4 +27,37 @@ fun AuthButton(enabled: Boolean, loading: Boolean, text: String, onClick: () -> 
             Text(text)
         }
     }
+}
+
+@Preview(showBackground = true, name = "Auth Button - Enabled")
+@Composable
+fun AuthButtonPreview_Enabled() {
+    AuthButton(
+        enabled = true,
+        loading = false,
+        text = "Sign Up",
+        onClick = {}
+    )
+}
+
+@Preview(showBackground = true, name = "Auth Button - Disabled")
+@Composable
+fun AuthButtonPreview_Disabled() {
+    AuthButton(
+        enabled = false,
+        loading = false,
+        text = "Sign Up",
+        onClick = {}
+    )
+}
+
+@Preview(showBackground = true, name = "Auth Button - Loading")
+@Composable
+fun AuthButtonPreview_Loading() {
+    AuthButton(
+        enabled = true,
+        loading = true,
+        text = "Sign Up",
+        onClick = {}
+    )
 }

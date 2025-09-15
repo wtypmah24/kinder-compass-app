@@ -3,24 +3,8 @@ package com.example.school_companion.feature.assistant
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,21 +12,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.school_companion.data.model.Child
 import com.example.school_companion.navigation.NavigateToWithArgs
-import com.example.school_companion.ui.box.ErrorBox
-import com.example.school_companion.ui.box.LoadingBox
-import com.example.school_companion.ui.selector.GenericSelector
 import com.example.school_companion.ui.util.UiState
 import com.example.school_companion.ui.util.getOrNull
-import com.example.school_companion.ui.util.onState
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -54,6 +30,7 @@ fun AssistantScreen(
     chatViewModel: ChatViewModel = hiltViewModel(),
 ) {
     val chatIdsState by chatViewModel.chatIdsState.collectAsStateWithLifecycle()
+    val messages by chatViewModel.messages.collectAsStateWithLifecycle()
 
     var selectedChild by remember { mutableStateOf<Child?>(null) }
     var selectedThread by remember { mutableStateOf<String?>(null) }
@@ -61,8 +38,6 @@ fun AssistantScreen(
     val listState = rememberLazyListState()
     val coroutine = rememberCoroutineScope()
     val context = LocalContext.current
-
-    val messages by chatViewModel.messages.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         chatViewModel.getChatIds()
@@ -78,106 +53,53 @@ fun AssistantScreen(
         }
     }
 
-    Scaffold(topBar = {
-        TopAppBar(title = {
-            Text(
-                "AI Assistant", fontWeight = FontWeight.Bold
-            )
-        }, navigationIcon = {
-            IconButton(onClick = { onNavigate(null, null) }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-            }
-        }, actions = {
-            IconButton(onClick = {
-                if (selectedChild != null) {
-                    selectedThread = null
-                    chatViewModel.clearMessages()
-                    messageText = ""
-                } else {
-                    Toast.makeText(
-                        context,
-                        "To start a new chat you need to choose a child",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }) {
-                Icon(Icons.AutoMirrored.Filled.Message, contentDescription = "New chat")
-            }
-        })
-    }) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            if (childrenState is UiState.Success) {
-                GenericSelector(
-                    items = childrenState.data,
-                    selectedItem = selectedChild,
-                    onSelect = {
-                        selectedChild = it
-                        selectedThread = null
-                        chatViewModel.clearMessages()
-                        messageText = ""
-                    },
-                    itemToString = { "${it.name} ${it.surname}" },
-                    placeholder = "Choose Child"
-                )
-            }
-
-            if (chatIdsState is UiState.Success) {
-                ThreadSelector(
-                    threads = (chatIdsState as UiState.Success).data,
-                    selectedThread = selectedThread,
-                    onSelect = { tid ->
-                        selectedThread = tid
-                        selectedChild = null
-                        if (tid != null) {
-                            chatViewModel.getChatByThreadId(tid)
-                        }
-                    },
-                    onDelete = { tid ->
-                        chatViewModel.removeChatByThreadId(tid)
-                        chatViewModel.getChatIds()
-                        if (tid == selectedThread) chatViewModel.clearMessages()
-                        selectedThread = null
-                    })
-            }
-
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .border(1.dp, Color.Gray, shape = MaterialTheme.shapes.medium),
-                tonalElevation = 2.dp,
-                shape = MaterialTheme.shapes.medium
-            ) {
-                Column {
-                    messages.onState(
-                        onLoading = { LoadingBox() },
-                        onError = { msg -> ErrorBox(message = msg) },
-                        onSuccess = {
-                            MessagesList(
-                                messages = it, listState = listState, modifier = Modifier.weight(1f)
-                            )
-                        }
-                    )
-                }
-            }
-            MessageInputCard(
+    AssistantContent(
+        onNavigate = onNavigate,
+        childrenState = childrenState,
+        chatIdsState = chatIdsState,
+        messagesState = messages,
+        selectedChild = selectedChild,
+        onSelectChild = {
+            selectedChild = it
+            selectedThread = null
+            chatViewModel.clearMessages()
+            messageText = ""
+        },
+        selectedThread = selectedThread,
+        onSelectThread = { tid ->
+            selectedThread = tid
+            selectedChild = null
+            if (tid != null) chatViewModel.getChatByThreadId(tid)
+        },
+        onDeleteThread = { tid ->
+            chatViewModel.removeChatByThreadId(tid)
+            chatViewModel.getChatIds()
+            if (tid == selectedThread) chatViewModel.clearMessages()
+            selectedThread = null
+        },
+        messageText = messageText,
+        onMessageChange = { messageText = it },
+        onSendMessage = {
+            chatViewModel.sendMessage(
                 messageText = messageText,
-                onMessageChange = { messageText = it },
-                canSend = (selectedChild != null) || (selectedThread != null),
-                onSend = {
-                    chatViewModel.sendMessage(
-                        messageText = messageText,
-                        selectedChildId = selectedChild?.id,
-                        selectedThread = selectedThread
-                    )
-                    messageText = ""
-                })
-        }
-    }
+                selectedChildId = selectedChild?.id,
+                selectedThread = selectedThread
+            )
+            messageText = ""
+        },
+        onNewChat = {
+            if (selectedChild != null) {
+                selectedThread = null
+                chatViewModel.clearMessages()
+                messageText = ""
+            } else {
+                Toast.makeText(
+                    context,
+                    "To start a new chat you need to choose a child",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        },
+        listState = listState
+    )
 }
