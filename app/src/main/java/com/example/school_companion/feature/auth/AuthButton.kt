@@ -1,8 +1,11 @@
 package com.example.school_companion.feature.auth
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -16,7 +19,16 @@ fun AuthButton(enabled: Boolean, loading: Boolean, text: String, onClick: () -> 
     Button(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        enabled = enabled
+        enabled = enabled,
+        colors= ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
+        border = BorderStroke(
+            width = 2.dp,
+            color = MaterialTheme.colorScheme.primary
+        ),
+        shape = RoundedCornerShape(12.dp)
     ) {
         if (loading) {
             CircularProgressIndicator(
@@ -24,7 +36,7 @@ fun AuthButton(enabled: Boolean, loading: Boolean, text: String, onClick: () -> 
                 color = MaterialTheme.colorScheme.onPrimary
             )
         } else {
-            Text(text)
+            Text(text, style = MaterialTheme.typography.titleLarge)
         }
     }
 }

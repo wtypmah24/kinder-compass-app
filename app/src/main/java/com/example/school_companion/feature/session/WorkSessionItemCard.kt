@@ -2,6 +2,7 @@ package com.example.school_companion.feature.session
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,17 +28,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.school_companion.data.api.SessionApi.SessionUpdateDto
 import com.example.school_companion.data.model.WorkSession
-import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun WorkSessionItemCard(
     session: WorkSession,
-    sessionViewModel: WorkSessionViewModel,
-    startDate: LocalDate,
-    endDate: LocalDate
+    onSessionUpdate: (SessionUpdateDto) -> Unit,
+    onSessionDelete: () -> Unit,
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
@@ -48,8 +49,12 @@ fun WorkSessionItemCard(
                 .fillMaxWidth()
                 .padding(vertical = 4.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            border = BorderStroke(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.secondary
+            ),
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Start: ${session.startTime}")
@@ -83,24 +88,20 @@ fun WorkSessionItemCard(
             session = session,
             onDismiss = { showEditDialog = false },
             onSave = { dto ->
-                sessionViewModel.update(
-                    sessionId = session.id,
-                    dto = dto,
-                    startDate,
-                    endDate
-                )
+                onSessionUpdate
                 showEditDialog = false
             }
         )
     }
     if (showDeleteConfirm) {
-        AlertDialog(onDismissRequest = { showDeleteConfirm = false },
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
             title = { Text("Delete work session?") },
             text = { Text("Are you sure you want to delete «${session.startTime} -- ${session.endTime}»?") },
             confirmButton = {
                 Button(
                     onClick = {
-                        sessionViewModel.delete(session.id, startDate, endDate)
+                        onSessionDelete
                         showDeleteConfirm = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
@@ -113,5 +114,29 @@ fun WorkSessionItemCard(
                     Text("Cancel")
                 }
             })
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview(showBackground = true)
+@Composable
+fun WorkSessionItemCardPreview() {
+    val sampleSession = WorkSession(
+        id = 1L,
+        startTime = "2025-09-16 09:00",
+        endTime = "2025-09-16 17:00",
+        note = "Team meeting and project work"
+    )
+
+    MaterialTheme {
+        WorkSessionItemCard(
+            session = sampleSession,
+            onSessionUpdate = { dto ->
+                // Preview stub
+            },
+            onSessionDelete = {
+                // Preview stub
+            }
+        )
     }
 }

@@ -13,8 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Button
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -37,12 +38,12 @@ import coil.request.ImageRequest
 
 @Composable
 fun AvatarCard(
-    avatarId: String, onChangeAvatarClick: () -> Unit
+    avatarId: String, onChangeAvatarClick: () -> Unit, modifier: Modifier
 ) {
     var showFullScreen by remember { mutableStateOf(false) }
 
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(16.dp)
+        horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier.padding(16.dp)
     ) {
         Card(
             modifier = Modifier
@@ -53,7 +54,6 @@ fun AvatarCard(
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-//                    .data("http://10.0.2.2:8080/$avatarId").crossfade(true).build(),
                     .data("https://wtypmah.duckdns.org/api/$avatarId").crossfade(true).build(),
                 contentDescription = avatarId,
                 modifier = Modifier.fillMaxSize(),
@@ -63,9 +63,16 @@ fun AvatarCard(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Button(onClick = onChangeAvatarClick) {
-            Text("Change Avatar")
-        }
+        AssistChip(
+            onClick = onChangeAvatarClick,
+            label = { Text("Change Avatar") },
+            leadingIcon = {
+                Icon(
+                    Icons.Default.CameraAlt,
+                    contentDescription = null
+                )
+            }
+        )
     }
 
     if (showFullScreen) {
