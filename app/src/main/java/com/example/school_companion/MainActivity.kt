@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import com.example.school_companion.ui.navigation.NavGraph
+import com.example.school_companion.navigation.NavGraph
 import com.example.school_companion.ui.theme.SchoolcompanionTheme
 
 @AndroidEntryPoint

@@ -1,0 +1,106 @@
+package com.example.school_companion.feature.statistic
+
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.example.school_companion.data.model.Child
+import com.example.school_companion.data.model.MonitoringParam
+import com.example.school_companion.feature.monitoring.entry.EntriesState
+import com.example.school_companion.feature.monitoring.param.ParamsState
+import com.example.school_companion.navigation.NavigateToWithArgs
+import com.example.school_companion.ui.util.UiState
+
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StatisticsScreen(
+    onNavigate: NavigateToWithArgs,
+    paramsState: ParamsState,
+    entriesState: EntriesState,
+    childrenState: UiState<List<Child>>,
+) {
+
+    var selectedChild by remember { mutableStateOf<Child?>(null) }
+    var selectedParam by remember { mutableStateOf<MonitoringParam?>(null) }
+    var selectedRange by remember { mutableStateOf("Last 7 days") }
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+
+    val timeRanges = listOf("Last Day", "Last 7 Days", "Last 30 Days", "Last 90 Days")
+    val scrollState = rememberScrollState()
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Statistics", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = { onNavigate(null, null) }) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            if (childrenState is UiState.Success && paramsState is ParamsState.Success) {
+                StatisticsSelectorCard(
+                    children = childrenState.data,
+                    selectedChild = selectedChild,
+                    onChildSelected = { selectedChild = it },
+                    params = paramsState.paramData,
+                    selectedParam = selectedParam,
+                    onParamSelected = { selectedParam = it },
+                    ranges = timeRanges,
+                    selectedRange = selectedRange,
+                    onRangeSelected = { if (it != null) selectedRange = it }
+                )
+            }
+
+            if (entriesState is EntriesState.Success) {
+                val entries = entriesState.entryData
+                StatisticsSummaryCard(entries)
+            }
+
+            StatisticsTabs(
+                selectedTabIndex = selectedTabIndex,
+                onTabSelected = { selectedTabIndex = it },
+                selectedChild = selectedChild,
+                selectedParam = selectedParam,
+                selectedRange = selectedRange,
+                childrenState = childrenState,
+                entriesState = entriesState
+            )
+        }
+    }
+}

@@ -1,0 +1,189 @@
+package com.example.school_companion.navigation
+
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.navArgument
+import com.example.school_companion.feature.assistant.AssistantScreen
+import com.example.school_companion.feature.auth.AuthViewModel
+import com.example.school_companion.feature.auth.login.LoginScreen
+import com.example.school_companion.feature.auth.register.RegisterScreen
+import com.example.school_companion.feature.children.ChildrenScreen
+import com.example.school_companion.feature.children.ChildrenViewModel
+import com.example.school_companion.feature.children.child.ChildDetailScreen
+import com.example.school_companion.feature.dashboard.DashboardScreen
+import com.example.school_companion.feature.dashboard.QuickActionsData
+import com.example.school_companion.feature.event.EventsScreen
+import com.example.school_companion.feature.event.EventsViewModel
+import com.example.school_companion.feature.monitoring.MonitoringScreen
+import com.example.school_companion.feature.monitoring.entry.MonitoringEntryViewModel
+import com.example.school_companion.feature.monitoring.param.MonitoringParamViewModel
+import com.example.school_companion.feature.profile.ProfileScreen
+import com.example.school_companion.feature.settings.SettingsScreen
+import com.example.school_companion.feature.statistic.StatisticsScreen
+import com.example.school_companion.ui.bar.AppBottomBar
+import com.example.school_companion.ui.bar.AppTopBar
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun NavGraph(
+    navController: NavHostController,
+    startDestination: String = Screen.Login.route,
+    authViewModel: AuthViewModel = hiltViewModel(),
+    childrenViewModel: ChildrenViewModel = hiltViewModel(),
+    eventsViewModel: EventsViewModel = hiltViewModel(),
+    paramsViewModel: MonitoringParamViewModel = hiltViewModel(),
+    entriesViewModel: MonitoringEntryViewModel = hiltViewModel(),
+) {
+    val childrenState by childrenViewModel.childrenState.collectAsStateWithLifecycle()
+    val companionState by authViewModel.currentCompanion.collectAsStateWithLifecycle()
+    val eventsState by eventsViewModel.eventsState.collectAsStateWithLifecycle()
+    val paramsState by paramsViewModel.paramsState.collectAsStateWithLifecycle()
+    val entriesState by entriesViewModel.entriesState.collectAsStateWithLifecycle()
+
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry?.destination?.route
+
+    LaunchedEffect(Unit) {
+        childrenViewModel.loadChildren()
+        authViewModel.getUserProfile()
+        eventsViewModel.loadEventsByCompanion()
+        paramsViewModel.loadMonitoringParamData()
+        entriesViewModel.loadMonitoringEntryByCompanion()
+    }
+
+    val navigateTo: NavigateToWithArgs = { screen, args ->
+        if (screen == null) {
+            navController.navigateUp()
+        } else {
+            val route = if (args != null && args.isNotEmpty()) {
+                var r = screen.route
+                args.forEach { (_, value) ->
+                    r += "/$value"
+                }
+                r
+            } else {
+                screen.route
+            }
+            navController.navigate(route)
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            if (currentRoute !in listOf(Screen.Login.route, Screen.Register.route)) {
+                AppTopBar(
+                    onProfileClick = { navigateTo(Screen.Profile, null) },
+                    onSettingsClick = { navigateTo(Screen.Settings, null) }
+                )
+            }
+        },
+        bottomBar = {
+            if (currentRoute !in listOf(Screen.Login.route, Screen.Register.route)) {
+                AppBottomBar(
+                    selectedTabIndex = selectedTabIndex,
+                    onTabSelected = { selectedTabIndex = it },
+                    onTabNavigate = { screen -> navigateTo(screen, null) }
+                )
+            }
+        }
+    ) { paddingValues ->
+        NavHost(
+            navController = navController,
+            startDestination = startDestination,
+            modifier = Modifier.padding(paddingValues)
+        ) {
+            composable(Screen.Login.route) {
+                LoginScreen(
+                    onNavigate = navigateTo,
+                    viewModel = authViewModel
+                )
+            }
+            composable(Screen.Register.route) {
+                RegisterScreen(
+                    onNavigate = navigateTo,
+                    viewModel = authViewModel
+                )
+            }
+            composable(Screen.Dashboard.route) {
+                DashboardScreen(
+                    onNavigate = navigateTo,
+                    currentUserState = companionState,
+                    eventsState = eventsState,
+                    quickActions = QuickActionsData.getQuickActions(navigateTo),
+                    childrenViewModel = childrenViewModel
+                )
+            }
+            composable(Screen.Children.route) {
+                ChildrenScreen(
+                    onNavigate = navigateTo,
+                    childrenViewModel = childrenViewModel
+                )
+            }
+            composable(
+                Screen.ChildDetail.route + "/{childId}",
+                arguments = listOf(navArgument("childId") { type = NavType.LongType })
+            ) { backStackEntry ->
+                val childId = backStackEntry.arguments?.getLong("childId") ?: 0L
+                ChildDetailScreen(
+                    onNavigate = navigateTo,
+                    childId = childId,
+                    childrenViewModel = childrenViewModel
+                )
+            }
+            composable(Screen.Events.route) {
+                EventsScreen(
+                    onNavigate = navigateTo,
+                    childrenState = childrenState,
+                    eventsViewModel = eventsViewModel
+                )
+            }
+
+            composable(Screen.Statistics.route) {
+                StatisticsScreen(
+                    onNavigate = navigateTo,
+                    childrenState = childrenState,
+                    paramsState = paramsState,
+                    entriesState = entriesState
+                )
+            }
+
+            composable(Screen.Profile.route) {
+                ProfileScreen(onNavigate = navigateTo, authViewModel = authViewModel)
+            }
+
+            composable(Screen.Settings.route) {
+                SettingsScreen(onNavigate = navigateTo)
+            }
+
+            composable(Screen.Monitoring.route) {
+                MonitoringScreen(
+                    onNavigate = navigateTo,
+                    paramsViewModel = paramsViewModel,
+                    entriesViewModel = entriesViewModel,
+                    childrenState = childrenState
+                )
+            }
+
+            composable(Screen.Assistant.route) {
+                AssistantScreen(onNavigate = navigateTo, childrenState = childrenState)
+            }
+        }
+    }
+}

@@ -1,0 +1,33 @@
+package com.example.school_companion.feature.auth.login
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
+import com.example.school_companion.feature.auth.register.RegisterFormState
+import com.example.school_companion.ui.field.EmailField
+import com.example.school_companion.ui.field.PasswordInputField
+
+@Composable
+fun LoginFields(
+    email: String,
+    onEmailChange: (String) -> Unit,
+    password: String,
+    onPasswordChange: (String) -> Unit,
+    passwordVisible: Boolean,
+    onPasswordVisibilityChange: (Boolean) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        EmailField(email, onEmailChange)
+        PasswordInputField(
+            formState = RegisterFormState(
+                password = password,
+                passwordVisible = passwordVisible
+            ),
+            onFormChange = { updatedState ->
+                onPasswordChange(updatedState.password)
+                onPasswordVisibilityChange(updatedState.passwordVisible)
+            }
+        )
+    }
+}

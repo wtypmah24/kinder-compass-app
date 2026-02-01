@@ -1,0 +1,89 @@
+package com.example.school_companion.feature.event
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.school_companion.navigation.NavigateToWithArgs
+import com.example.school_companion.navigation.Screen
+import com.example.school_companion.ui.box.ErrorBox
+import com.example.school_companion.ui.box.LoadingBox
+
+@Composable
+fun EventsSection(
+    eventsState: EventsState,
+    onNavigate: NavigateToWithArgs
+) {
+    Column {
+        Text(
+            text = "Anstehende Termine",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+
+        when (eventsState) {
+            is EventsState.Loading -> LoadingBox()
+            is EventsState.Error -> ErrorBox(eventsState.message)
+
+            is EventsState.Success -> {
+                val events =
+                    (eventsState).events
+                if (events.isEmpty()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                Icons.Default.Event,
+                                contentDescription = null,
+                                modifier = Modifier.size(48.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "Keine anstehenden Termine",
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+                    }
+                } else {
+                    (events.take(3)).forEach { event ->
+                        EventCard(event = event)
+                    }
+                    if (events.size > 3) {
+                        TextButton(
+                            onClick = { onNavigate(Screen.Events, null) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Alle ${events.size} Termine anzeigen")
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+}
+
